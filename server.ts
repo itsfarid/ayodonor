@@ -54,7 +54,7 @@ async function startServer() {
       if (isEligible) {
         return res.json({
           success: true,
-          text: `### 🎉 Mantap Jiwa, **${name || "Sobat Hero"}**! \n\nKamu **100% SIAP SENSOR** alias lolos kriteria utama donor darah! \n\n*   **Umur & Badan:** Sip banget!\n*   **Tidur:** Cukup dan bugar!\n*   **Kondisi medis:** Fit luar dalam!\n*   **Jeda Jarak:** Aman tentram!\n\nYuk, langsung meluncur ke unit PMI terdekat! Satu kantong darah darimu bisa jadi mukjizat buat 3 nyawa. Jangan lupa minum air yang cukup sebelum disuntik ya, gaes! 🩸🚀`
+          text: `### 🎉 Mantap Jiwa, **${name || "Sobat Hero"}**! \n\nBerdasarkan 4 pertanyaan ini, kamu **KEMUNGKINAN BESAR** memenuhi syarat awal — tapi keputusan akhir tetap ditentukan lewat pemeriksaan medis langsung di PMI (cek Hb, tensi, riwayat kesehatan lengkap).\n\n*   **Umur & Badan:** Sip banget!\n*   **Tidur:** Cukup dan bugar!\n*   **Kondisi medis:** Fit luar dalam!\n*   **Jeda Jarak:** Aman tentram!\n\nYuk, datang ke unit PMI terdekat buat screening resmi. Satu kantong darah darimu bisa jadi mukjizat buat 3 nyawa. Jangan lupa minum air yang cukup sebelum datang ya, gaes! 🩸🚀`
         });
       } else {
         let adviceList = [];
@@ -78,12 +78,13 @@ Nama Pengguna: ${name || "Sobat Hero"}
 3. Kondisi Medis / Obat-obatan & Haid: ${meds === 'safe' ? 'Aman (Lolos)' : 'Sedang minum antibiotik, obat keras, atau sedang datang bulan'}
 4. Jarak Waktu Donor (Min 2 bulan) & Tato/Tindik baru (Min 6 bulan): ${recency === 'safe' ? 'Aman (Lolos)' : 'Baru donor belakangan ini atau baru tato/tindik'}
 
-Hasil Kelayakan Teknis: ${isEligible ? "LOLOS MENYAMBAR" : "TERTUNDA DULU SEMESTARA"}
+Hasil Skrining Awal (bukan diagnosis final): ${isEligible ? "KEMUNGKINAN BESAR memenuhi syarat awal" : "KEMUNGKINAN belum siap donor hari ini — sebaiknya ditunda dulu"}
 
 Tulis evaluasi ini dengan gaya bahasa anak muda Indonesia yang super kasual, penuh canda tapi edukatif dan ilmiah ringan (Jakarta/Kekinian slang, gunakan panggilan santai seperti bro, sis, gokil, keren, kuy).
 Gaya Evaluasi:
-- Jika LOLOS: Berikan apresiasi heboh, jelaskan dengan analogi asyik manfaat tubuh yang di-reset (ganti oli, bakar kalori gila-gilaan, bikin kulit seger) dan selamatkan 3 nyawa. Ajakan gaspol ke PMI terdekat.
-- Jika BELUM LOLOS: Jelaskan alasan mengapa parameter yang gagal (misal kurang tidur atau haid/obat) secara medis mengharuskan dia menunda donor darah demi kesehatannya sendiri. Sampaikan ini dengan nada merangkul, menghibur, sangat suportif, dan beri tahu tips bersiap diri untuk hari besok. Jangan buat dia kecewa atau sedih!
+- Jika KEMUNGKINAN BESAR siap: Berikan apresiasi yang hangat (jangan overclaim "100% lolos"). Jelaskan bahwa ini hanya skrining awal 4 pertanyaan — keputusan akhir ditentukan pemeriksaan medis PMI (Hb, tensi, riwayat lengkap). Motivasi utama ajakan ke PMI: **menyelamatkan 3 nyawa**, bukan diet/bakar kalori. Boleh sebut tubuh memakai energi untuk regenerasi darah sebagai bonus sampingan saja, tanpa framing diet.
+- Jika KEMUNGKINAN belum siap: Jelaskan alasan mengapa parameter yang belum pas (misal kurang tidur atau haid/obat) secara medis lebih aman jika dia menunda donor darah demi kesehatannya sendiri. Sampaikan dengan nada merangkul, menghibur, sangat suportif, dan beri tips bersiap diri untuk hari lain. Jangan buat dia kecewa atau sedih!
+- LARANGAN KERAS: Jangan klaim donor mencegah/menyebabkan "kanker". Jangan bilang hasil kuis ini sudah pasti lolos atau gagal donor. Pakai bahasa "kemungkinan besar" / "kemungkinan belum siap", lalu selalu arahkan ke pemeriksaan PMI.
 
 Format respon kamu menggunakan Markdown yang rapi dan elegan.`;
 
@@ -91,7 +92,7 @@ Format respon kamu menggunakan Markdown yang rapi dan elegan.`;
         model: "gemini-3.5-flash",
         contents: prompt,
         config: {
-          systemInstruction: "Kamu adalah 'AyoDonor Personal Buddy', asisten interaktif donor darah tergaul yang membakar semangat anak muda Indonesia untuk berani mendonor darah secara aman, ramah, dan bebas stress.",
+          systemInstruction: "Kamu adalah 'AyoDonor Personal Buddy', asisten interaktif donor darah yang ramah dan memberi semangat anak muda Indonesia untuk mendonor secara aman. Jangan pernah mengklaim hasil kuis sebagai kepastian medis lolos/tidak lolos — gunakan bahasa 'kemungkinan besar' dan selalu arahkan ke pemeriksaan resmi PMI. Jangan tautkan donor darah dengan pencegahan kanker atau framing diet/bakar kalori sebagai alasan utama mendonor.",
         }
       });
 
@@ -118,7 +119,7 @@ Format respon kamu menggunakan Markdown yang rapi dan elegan.`;
       if (!isRelated) {
         reply = "### 🥤 Waduh, OOT (Out of Topic) Nih, Sob! \n\nTopik itu menarik banget (kayak manis-gurihnya es cendol, atau hal seru lainnya!), tapi **AyoDonor Buddy** ini khusus dilatih untuk membahas seputar donor darah, mitos medis, serta info kelayakan kesehatan tubuh demi aksi heroik menyelamatkan 3 nyawa! \n\nDaripada ngomongin yang lain, yuk tanyain hal seputar donor darah aja. Contohnya: \n* 'Apakah donor darah bikin gemuk?' \n* 'Takut jarum suntik, gimana dong?' \n* 'Kenapa gak boleh begadang sebelum donor?'";
       } else if (msgLower.includes("gemuk")) {
-        reply = "### 🛑 Mitos Gedenya: 'Donor Darah Bikin Badan Gemuk/Melar'\n\n**Faktanya:** Ini mah mitos tatanan semesta kuliner, bro/sis! \n\nPas kamu donor, tubuh kamu itu membakar energi sekitar **650 kalori** demi mengganti darah yang disumbangin. Itu setara lari santai selama 45 menit! \n\n*Kenapa ada stigma bikin gemuk?* \nSoalnya setelah donor, biasanya PMI kasih asupan teh anget, telur rebus, plus biskuit cokelat manis. Nah, kalau pulangnya kita balas dendam pesen ayam geprek plus boba bumbu cinta 2 porsi, ya itu yang bikin melar! Jadi intinya, kontrol kalori setelah mendonor ya!";
+        reply = "### 🛑 Mitos Gedenya: 'Donor Darah Bikin Badan Gemuk/Melar'\n\n**Faktanya:** Ini mitos, bro/sis! Donor darah **bukan** program diet.\n\nPas kamu donor, tubuh memang memakai energi ekstra untuk regenerasi darah yang disumbangkan — itu efek samping regenerasi, bukan alasan utama buat datang ke PMI. Motivasi utamanya tetap **menyelamatkan sampai 3 nyawa**.\n\n*Kenapa ada stigma bikin gemuk?* \nSoalnya setelah donor, biasanya PMI kasih asupan teh anget, telur rebus, plus biskuit cokelat manis. Nah, kalau pulangnya kita balas dendam pesen ayam geprek plus boba 2 porsi, ya itu yang bikin melar! Jadi intinya, kontrol porsi makan setelah mendonor ya!";
       } else if (msgLower.includes("jarum") || msgLower.includes("takut") || msgLower.includes("sakit")) {
         reply = "### 💉 Tips Anti-Phobia: 'Gemetar Liat Jarum Suntik'\n\n**Santuy, kamu gak sendirian!** Banyak calon hero yang aslinya berotot kekar tapi langsung lemes pas liat jarum. \n\nBerikut rahasia dapet lencana hero tanpa rasa drama:\n1.  **Gak usah diliat:** Pas dokter mau tusuk, buang muka ke arah berlawanan. \n2.  **Mikirin Seblak:** Bayangin aroma baso aci kuah seblak pedas level 5 kesukaanmu. Ketakutanmu bakal berpindah jadi laper!\n3.  **Hanya 3 Detik:** Rasa cubitannya cuma secuil kayak digigit semut merah lewat. Setelah nancep, sisanya kamu tinggal rebahan nonton video lucu selama 10 menit. Easy peasy!";
       } else if (msgLower.includes("lemas") || msgLower.includes("pusing")) {
@@ -156,7 +157,12 @@ CRITICAL TOPIC REGULATION (PEMBATASAN TOPIK MUTLAK):
 - Kamu HARUS menolaknya secara halus, humoris, gaul, kemudian menyambungkannya kembali ke pentingnya donor darah! Contoh penolakan: 'Eits, daripada ngeracik es cendol manis gurih, mending racik kesehatan tubuhmu biar darahmu selalu manis bertenaga buat nerima sertifikat hero! Yuk nanya seputar donor darah aja, kuy!'
 - Tetap gunakan bahasa santai pergaulan anak muda Indonesia masa kini (lu, gue, bro, sis, gokil, kuy, jangan kaku parah).
 - Jawab mitos-mitos merugikan (takut gemuk, lemas, phobia jarum, tato, dsb) secara logis, ilmiah sederhana, tapi diselingi lawakan segar dan analogi kocak.
-- Selalu berikan respon terstruktur dengan bullet points atau list jika menjelaskan tips, agar sangat mudah dibaca lewat layar HP.`
+- Selalu berikan respon terstruktur dengan bullet points atau list jika menjelaskan tips, agar sangat mudah dibaca lewat layar HP.
+
+AKURASI MEDIS (WAJIB DIPATUHI):
+- Jangan pernah klaim donor darah mencegah/menyebabkan "kanker" atau penyakit serius lain tanpa dasar kuat.
+- Jangan framing donor sebagai cara diet, bakar lemak, atau "bakar X kalori" sebagai alasan utama. Motivasi utama selalu kemanusiaan / menyelamatkan nyawa. Boleh sebut tubuh memakai energi untuk regenerasi darah sebagai efek samping saja.
+- Jangan sampaikan hasil skrining mandiri / kuis sebagai kepastian "sudah lolos" atau "sudah tidak lolos". Gunakan bahasa "kemungkinan besar" dan selalu arahkan ke pemeriksaan resmi di PMI (cek Hb, tensi, riwayat kesehatan lengkap).`
         }
       });
 

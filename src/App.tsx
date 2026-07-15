@@ -164,7 +164,7 @@ export default function App() {
       console.error(err);
       const isEligible = finalAnswers.ageWeight === "safe" && finalAnswers.sleep === "safe" && finalAnswers.meds === "safe" && finalAnswers.recency === "safe";
       if (isEligible) {
-        setQuizResult(`### 🎉 Mantap Jiwa, **${visitorName || "Sobat Hero"}**! \n\nKamu **100% SIAP SENSOR** alias lolos kriteria utama donor darah! \n\n*   **Umur & Badan:** Sip banget!\n*   **Tidur:** Cukup dan bugar!\n*   **Kondisi medis:** Fit luar dalam!\n*   **Jeda Jarak:** Aman tentram!\n\nYuk, langsung meluncur ke unit PMI terdekat! Satu kantong darah darimu bisa jadi mukjizat buat 3 nyawa. Jangan lupa minum air yang cukup sebelum disuntik ya, gaes! 🩸🚀`);
+        setQuizResult(`### 🎉 Mantap Jiwa, **${visitorName || "Sobat Hero"}**! \n\nBerdasarkan 4 pertanyaan ini, kamu **KEMUNGKINAN BESAR** memenuhi syarat awal — tapi keputusan akhir tetap ditentukan lewat pemeriksaan medis langsung di PMI (cek Hb, tensi, riwayat kesehatan lengkap).\n\n*   **Umur & Badan:** Sip banget!\n*   **Tidur:** Cukup dan bugar!\n*   **Kondisi medis:** Fit luar dalam!\n*   **Jeda Jarak:** Aman tentram!\n\nYuk, datang ke unit PMI terdekat buat screening resmi. Satu kantong darah darimu bisa jadi mukjizat buat 3 nyawa. Jangan lupa minum air yang cukup sebelum datang ya, gaes! 🩸🚀`);
       } else {
         const adviceList = [];
         if (finalAnswers.ageWeight !== "safe") adviceList.push("*   **Umur / BB Belum Pas:** Minimal umur 17 tahun dan berat badan 45 kg ya, sob. Tubuh butuh sirkulasi darah yang stabil agar darahmu aman didonor.");
@@ -215,7 +215,7 @@ export default function App() {
       if (!isRelated) {
         localReply = "### 🥤 Waduh, OOT (Out of Topic) Nih, Sob! \n\nTopik itu menarik banget (kayak manis-gurihnya es cendol, atau hal seru lainnya!), tapi **AyoDonor Buddy** ini khusus dilatih untuk membahas seputar donor darah, mitos medis, serta info kelayakan kesehatan tubuh demi aksi heroik menyelamatkan 3 nyawa! \n\nDaripada ngomongin yang lain, yuk tanyain hal seputar donor darah aja. Contohnya: \n* 'Apakah donor darah bikin gemuk?' \n* 'Takut jarum suntik, gimana dong?' \n* 'Kenapa gak boleh begadang sebelum donor?'";
       } else if (lower.includes("gemuk")) {
-        localReply = "### Mitos Gedenya: 'Donor Bikin Gemuk'\n\n**Faktanya:** Salah besar! Donor membakar **650 kalori**! Yang bikin melar itu kalau setelah donor kita makan geprek double nasi porsi kuli mas! 🍔";
+        localReply = "### Mitos Gedenya: 'Donor Bikin Gemuk'\n\n**Faktanya:** Donor darah gak bikin badan melar. Tubuh memang memakai energi ekstra untuk regenerasi darah yang disumbangkan — tapi itu **efek samping regenerasi**, bukan alasan utama buat donor, apalagi bukan program diet.\n\nMotivasi utamanya tetap **menyelamatkan nyawa**. Yang bikin melar biasanya porsi balas dendam makan geprek double nasi setelahnya! 🍔";
       } else if (lower.includes("jarum") || lower.includes("takut") || lower.includes("sakit")) {
         localReply = "### Tips Usir Takut Jarum\n\n1. Tangkup mata kalian atau buang muka pas ditusuk.\n2. Tarik napas dalem 3 detik, gak lebih sakit dari digigit semut buduk!\n3. Bayangin habis donor dapet mie instan cup dan biskuit hangat PMI. Kenikmatan hakiki!";
       } else if (lower.includes("lemas") || lower.includes("pusing")) {
@@ -339,8 +339,8 @@ export default function App() {
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-800">~650 Kkal</div>
-              <div className="text-xs text-slate-500 font-medium">Terbakar Tiap Kali Donor Darah</div>
+              <div className="text-2xl font-black text-slate-800">3 Nyawa</div>
+              <div className="text-xs text-slate-500 font-medium">Potensi Terselamatkan per Kantong</div>
             </div>
           </div>
 
@@ -437,11 +437,11 @@ export default function App() {
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-red-500">✔</span>
-                    <span><strong>Bakar 650 Kalori Sekejap:</strong> Memeras lemak tubuh secara sehat tanpa capek treadmill 1,5 jam!</span>
+                    <span><strong>Tubuh Regenerasi Darah:</strong> Saat mengganti volume yang didonorkan, tubuh memakai energi ekstra — bonus sampingan saja; motivasi utamanya tetap menyelamatkan nyawa.</span>
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-red-500">✔</span>
-                    <span><strong>Kurangi Zat Besi Berlebih:</strong> Zat besi yang terlalu tinggi padahal bisa bikin kanker lho! Donor jadi katup kuncinya.</span>
+                    <span><strong>Keseimbangan Zat Besi:</strong> Membantu menjaga kadar zat besi tubuh tetap seimbang.</span>
                   </li>
                 </ul>
               </div>
@@ -699,7 +699,7 @@ export default function App() {
               <span className="absolute top-2 right-2 text-xl">🍔</span>
               <h4 className="font-extrabold text-red-600 mb-2 text-sm">Katanya: Gara-gara donor jadi gemuk?</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                <strong>Faktanya:</strong> Tubuh membakar 650 kalori saat donor! Kamu ngerasa gemuk itu karena porsi balas dendam makan bakso jumbo 2 mangkuk setelahnya, ya jelas melar sob!
+                <strong>Faktanya:</strong> Donor darah bukan program diet. Tubuh memang memakai energi untuk regenerasi darah — tapi alasan utamanya tetap kemanusiaan. Ngerasa gemuk? Biasanya karena porsi balas dendam bakso jumbo 2 mangkuk setelahnya, ya jelas melar sob!
               </p>
             </div>
 
@@ -999,6 +999,16 @@ export default function App() {
                       <div className="relative z-10">
                         {parseMarkdown(quizResult)}
                       </div>
+                    </div>
+
+                    <div
+                      role="note"
+                      className="mt-4 flex items-start gap-3 rounded-2xl border-2 border-amber-400 bg-amber-100 px-4 py-3.5 text-amber-950 shadow-sm"
+                    >
+                      <span className="text-xl leading-none shrink-0" aria-hidden="true">⚠️</span>
+                      <p className="text-sm font-semibold leading-relaxed">
+                        Ini bukan diagnosis medis. Kriteria lengkap dan pemeriksaan resmi hanya dilakukan oleh petugas PMI saat kamu datang langsung.
+                      </p>
                     </div>
 
                     {answers.ageWeight === "safe" && answers.sleep === "safe" && answers.meds === "safe" && answers.recency === "safe" && (
