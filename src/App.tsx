@@ -269,13 +269,13 @@ export default function App() {
             <div className="flex flex-wrap justify-center md:justify-start gap-3">
               <a 
                 href="#education" 
-                className="bg-white text-red-600 px-6 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-red-50 hover:shadow-lg active:scale-95 transition-all outline-none"
+                className="bg-white text-red-600 px-6 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-red-50 hover:shadow-lg active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-red-600"
               >
                 Intip Manfaat Gokil 💡
               </a>
               <a 
                 href="#quiz-section" 
-                className="bg-red-700/40 text-white border border-white/30 backdrop-blur-md px-6 py-3 rounded-xl font-semibold text-sm hover:bg-red-700/60 active:scale-95 transition-all outline-none"
+                className="bg-red-700/40 text-white border border-white/30 backdrop-blur-md px-6 py-3 rounded-xl font-semibold text-sm hover:bg-red-700/60 active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-red-600"
               >
                 Cek Kelayakan Kamu 🔍
               </a>
@@ -383,7 +383,7 @@ export default function App() {
           <button 
             id="tab-kesehatan"
             onClick={() => setActiveEducationTab("kesehatan")}
-            className={`flex-1 py-3 text-xs md:text-sm font-bold rounded-xl transition-all duration-350 outline-none ${
+            className={`flex-1 py-3 text-xs md:text-sm font-bold rounded-xl transition-all duration-350 outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 ${
               activeEducationTab === "kesehatan" 
                 ? "bg-white text-red-600 shadow-sm" 
                 : "text-slate-600 hover:text-slate-900 hover:bg-white/30"
@@ -394,7 +394,7 @@ export default function App() {
           <button 
             id="tab-sosial"
             onClick={() => setActiveEducationTab("sosial")}
-            className={`flex-1 py-3 text-xs md:text-sm font-bold rounded-xl transition-all duration-350 outline-none ${
+            className={`flex-1 py-3 text-xs md:text-sm font-bold rounded-xl transition-all duration-350 outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 ${
               activeEducationTab === "sosial" 
                 ? "bg-white text-red-600 shadow-sm" 
                 : "text-slate-600 hover:text-slate-900 hover:bg-white/30"
@@ -405,7 +405,7 @@ export default function App() {
           <button 
             id="tab-personal"
             onClick={() => setActiveEducationTab("personal")}
-            className={`flex-1 py-3 text-xs md:text-sm font-bold rounded-xl transition-all duration-350 outline-none ${
+            className={`flex-1 py-3 text-xs md:text-sm font-bold rounded-xl transition-all duration-350 outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 ${
               activeEducationTab === "personal" 
                 ? "bg-white text-red-600 shadow-sm" 
                 : "text-slate-600 hover:text-slate-900 hover:bg-white/30"
@@ -766,6 +766,9 @@ export default function App() {
                 </p>
 
                 <div className="mt-6 max-w-sm mx-auto">
+                  <label htmlFor="visitor-name-input" className="sr-only">
+                    Nama panggilan pahlawan
+                  </label>
                   <input 
                     id="visitor-name-input"
                     type="text"
@@ -788,7 +791,7 @@ export default function App() {
                       setHasEnteredName(true);
                       setQuizStep(1);
                     }}
-                    className={`w-full mt-4 p-4 rounded-2xl font-extrabold text-sm shadow-md active:scale-95 transition-all outline-none ${
+                    className={`w-full mt-4 p-4 rounded-2xl font-extrabold text-sm shadow-md active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 ${
                       visitorName.trim() 
                         ? "bg-red-600 text-white hover:bg-red-700 cursor-pointer" 
                         : "bg-slate-200 text-slate-400 cursor-not-allowed"
@@ -1044,7 +1047,8 @@ export default function App() {
                       <button
                         id="btn-reset-quiz"
                         onClick={resetQuiz}
-                        className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-slate-800 active:scale-95 transition-all outline-none"
+                        aria-label="Ulangi kuis kelayakan"
+                        className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-slate-800 active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                       >
                         🔄 Check Kelayakan Lagi
                       </button>
@@ -1150,28 +1154,32 @@ export default function App() {
               <button
                 id="chip-gemuk"
                 onClick={() => sendChatMessage("Apakah donor darah bikin gemuk? 🍔")}
-                className="bg-white hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-350 text-xs font-bold py-1.5 px-3 rounded-full cursor-pointer active:scale-95 transition-all outline-none"
+                aria-label="Apakah donor darah bikin gemuk?"
+                className="bg-white hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-350 text-xs font-bold py-1.5 px-3 rounded-full cursor-pointer active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
               >
                 🍔 Bikin Gemuk?
               </button>
               <button
                 id="chip-jarum"
                 onClick={() => sendChatMessage("Takut jarum suntik, gimana ya caranya biar gak gemeteran? 💉")}
-                className="bg-white hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-350 text-xs font-bold py-1.5 px-3 rounded-full cursor-pointer active:scale-95 transition-all outline-none"
+                aria-label="Takut jarum suntik, gimana ya caranya biar gak gemeteran?"
+                className="bg-white hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-350 text-xs font-bold py-1.5 px-3 rounded-full cursor-pointer active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
               >
                 💉 Takut Jarum Suntik
               </button>
               <button
                 id="chip-lemas"
                 onClick={() => sendChatMessage("Beneran bikin lemas pusing loyo gak sih? 🌀")}
-                className="bg-white hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-350 text-xs font-bold py-1.5 px-3 rounded-full cursor-pointer active:scale-95 transition-all outline-none"
+                aria-label="Beneran bikin lemas pusing loyo gak sih?"
+                className="bg-white hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-350 text-xs font-bold py-1.5 px-3 rounded-full cursor-pointer active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
               >
                 🌀 Lemes & Pusing?
               </button>
               <button
                 id="chip-tato"
                 onClick={() => sendChatMessage("Punya tato hiasan boleh donor gak sih seleranya? 🎨")}
-                className="bg-white hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-350 text-xs font-bold py-1.5 px-3 rounded-full cursor-pointer active:scale-95 transition-all outline-none"
+                aria-label="Punya tato hiasan boleh donor gak sih?"
+                className="bg-white hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-350 text-xs font-bold py-1.5 px-3 rounded-full cursor-pointer active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
               >
                 🎨 Tato Boleh Donor?
               </button>
@@ -1179,6 +1187,9 @@ export default function App() {
 
             {/* Message input layout */}
             <div className="p-3 bg-white border-t border-slate-200 flex gap-2">
+              <label htmlFor="chat-message-input" className="sr-only">
+                Tulis pertanyaan untuk Droppy
+              </label>
               <input
                 id="chat-message-input"
                 type="text"
@@ -1195,7 +1206,8 @@ export default function App() {
               <button
                 id="btn-send-message"
                 onClick={() => sendChatMessage(chatInput)}
-                className="bg-red-600 hover:bg-red-700 text-white rounded-xl px-5 font-extrabold text-sm shadow-md active:scale-95 transition-all outline-none cursor-pointer flex items-center justify-center gap-1"
+                aria-label="Kirim pesan ke Droppy"
+                className="bg-red-600 hover:bg-red-700 text-white rounded-xl px-5 font-extrabold text-sm shadow-md active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 cursor-pointer flex items-center justify-center gap-1"
               >
                 Kirim
               </button>

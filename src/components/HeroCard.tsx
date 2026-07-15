@@ -191,7 +191,7 @@ export default function HeroCard({ visitorName }: HeroCardProps) {
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={downloadCardAsSvg}
-            className="flex-1 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-5 py-3.5 rounded-xl transition-all shadow-md active:scale-97 flex items-center justify-center gap-2 cursor-pointer border border-red-500"
+            className="flex-1 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-5 py-3.5 rounded-xl transition-all shadow-md active:scale-97 flex items-center justify-center gap-2 cursor-pointer border border-red-500 outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
           >
             <Download className="w-4 h-4 shrink-0 animate-bounce" />
             Download Kartu (.svg)
@@ -199,7 +199,7 @@ export default function HeroCard({ visitorName }: HeroCardProps) {
           
           <button
             onClick={() => setShowShareModal(true)}
-            className="flex-1 bg-slate-800 hover:bg-slate-750 text-white font-extrabold text-xs px-5 py-3.5 rounded-xl transition-all border border-slate-700 shadow shadow-slate-950/20 active:scale-97 flex items-center justify-center gap-2 cursor-pointer"
+            className="flex-1 bg-slate-800 hover:bg-slate-750 text-white font-extrabold text-xs px-5 py-3.5 rounded-xl transition-all border border-slate-700 shadow shadow-slate-950/20 active:scale-97 flex items-center justify-center gap-2 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900"
           >
             <Linkedin className="w-4 h-4 text-blue-400 shrink-0" />
             Bagikan Ke LinkedIn / Sosmed
@@ -224,7 +224,11 @@ export default function HeroCard({ visitorName }: HeroCardProps) {
 
             {/* Editable Textbox Box */}
             <div className="mt-5 relative">
+              <label htmlFor="hero-share-text" className="sr-only">
+                Caption untuk dibagikan
+              </label>
               <textarea
+                id="hero-share-text"
                 readOnly
                 value={shareText}
                 rows={7}
@@ -233,7 +237,8 @@ export default function HeroCard({ visitorName }: HeroCardProps) {
               
               <button
                 onClick={copyShareText}
-                className="absolute top-3 right-3 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs p-2.5 rounded-xl border border-slate-200 transition-all flex items-center gap-1.5 shadow-sm"
+                aria-label={copied ? "Caption sudah disalin" : "Salin caption"}
+                className="absolute top-3 right-3 bg-white hover:bg-slate-50 text-slate-700 font-bold text-xs p-2.5 rounded-xl border border-slate-200 transition-all flex items-center gap-1.5 shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
               >
                 {copied ? (
                   <>
@@ -255,7 +260,7 @@ export default function HeroCard({ visitorName }: HeroCardProps) {
                 href={`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent("https://ai.studio/build")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 bg-gradient-to-r from-blue-700 to-blue-600 text-white font-extrabold text-xs py-3.5 rounded-xl transition-all shadow-md text-center flex items-center justify-center gap-2 hover:from-blue-800 hover:to-blue-700"
+                className="flex-1 bg-gradient-to-r from-blue-700 to-blue-600 text-white font-extrabold text-xs py-3.5 rounded-xl transition-all shadow-md text-center flex items-center justify-center gap-2 hover:from-blue-800 hover:to-blue-700 outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
               >
                 <Linkedin className="w-4 h-4 shrink-0" />
                 Buka & Bagikan Ke LinkedIn
@@ -263,7 +268,7 @@ export default function HeroCard({ visitorName }: HeroCardProps) {
 
               <button
                 onClick={() => setShowShareModal(false)}
-                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs py-3.5 rounded-xl transition-all text-center"
+                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs py-3.5 rounded-xl transition-all text-center outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
               >
                 Kembali
               </button>

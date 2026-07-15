@@ -256,6 +256,9 @@ export default function PmiLocator() {
           {/* SEARCH & GEOLOCATE CONTROL BAR */}
           <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row gap-3">
             <div className="relative flex-1">
+              <label htmlFor="pmi-search-input" className="sr-only">
+                Cari lokasi PMI
+              </label>
               <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
               <input
                 id="pmi-search-input"
@@ -271,7 +274,8 @@ export default function PmiLocator() {
               id="btn-geolocate"
               onClick={handleDetectLocation}
               disabled={isLocating}
-              className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 outline-none cursor-pointer ${
+              aria-label="Deteksi lokasi saya"
+              className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 cursor-pointer ${
                 userLocation 
                   ? "bg-slate-900 text-emerald-400 border border-slate-800" 
                   : "bg-red-600 hover:bg-red-700 text-white"
@@ -512,7 +516,8 @@ export default function PmiLocator() {
                     <button
                       key={pmi.id}
                       onClick={() => setSelectedLocation(pmi)}
-                      className="absolute z-10 -translate-x-1/2 -translate-y-1/2 transition-all focus:outline-none focus:ring-0 group"
+                      aria-label={`Pilih lokasi ${pmi.name}`}
+                      className="absolute z-10 -translate-x-1/2 -translate-y-1/2 transition-all outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 group"
                       style={{
                         left: coords.x,
                         top: coords.y
@@ -593,7 +598,7 @@ export default function PmiLocator() {
                     href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(selectedLocation.name + ", " + selectedLocation.address)}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg active:scale-95 transition-all"
+                    className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
                   >
                     Buka Rute 🧭
                   </a>
