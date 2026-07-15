@@ -3,6 +3,7 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
+import rateLimit from "express-rate-limit";
 
 dotenv.config({ path: ".env.local" });
 dotenv.config();
@@ -12,6 +13,16 @@ async function startServer() {
   const PORT = 3000;
 
   app.use(express.json());
+
+  const aiLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 menit
+    max: 10, // maksimal 10 request per menit per IP
+    message: { success: false, error: "Terlalu banyak permintaan, coba lagi sebentar ya." },
+    standardHeaders: true,
+    legacyHeaders: false,
+  });
+
+  const QUIZ_ANSWER_VALUES = new Set(["safe", "unsafe", ""]);
 
   // Lazily initialize Gemini to prevent start crashes if GEMINI_API_KEY is not defined yet
   let aiClient: GoogleGenAI | null = null;
@@ -42,8 +53,29 @@ async function startServer() {
   });
 
   // Evaluate donor eligibility quiz with Gemini AI
-  app.post("/api/gemini/evaluate", async (req, res) => {
-    const { name, ageWeight, sleep, meds, recency } = req.body;
+  app.post("/api/gemini/evaluate", aiLimiter, async (req, res) => {
+    const { ageWeight, sleep, meds, recency } = req.body;
+    let { name } = req.body;
+
+    if (
+      typeof ageWeight !== "string" ||
+      typeof sleep !== "string" ||
+      typeof meds !== "string" ||
+      typeof recency !== "string" ||
+      !QUIZ_ANSWER_VALUES.has(ageWeight) ||
+      !QUIZ_ANSWER_VALUES.has(sleep) ||
+      !QUIZ_ANSWER_VALUES.has(meds) ||
+      !QUIZ_ANSWER_VALUES.has(recency)
+    ) {
+      return res.status(400).json({ success: false, error: "Data jawaban kuis tidak valid." });
+    }
+
+    if (typeof name === "string" && name.length > 50) {
+      name = name.substring(0, 50);
+    } else if (name != null && typeof name !== "string") {
+      name = undefined;
+    }
+
     const client = getGeminiClient();
 
     // Eligibility check logic (all must be "safe")
@@ -104,8 +136,33 @@ Format respon kamu menggunakan Markdown yang rapi dan elegan.`;
   });
 
   // Chat/Q&A Companion
-  app.post("/api/gemini/chat", async (req, res) => {
-    const { message, history } = req.body;
+  app.post("/api/gemini/chat", aiLimiter, async (req, res) => {
+    const { message } = req.body;
+    let history = req.body.history;
+
+    if (typeof message !== "string" || message.trim() === "") {
+      return res.status(400).json({ success: false, error: "Pesan tidak boleh kosong." });
+    }
+    if (message.length > 500) {
+      return res.status(400).json({
+        success: false,
+        error: "Pesan terlalu panjang, coba dipersingkat ya (maks 500 karakter).",
+      });
+    }
+
+    if (
+      !Array.isArray(history) ||
+      !history.every(
+        (item: unknown) =>
+          item != null &&
+          typeof item === "object" &&
+          typeof (item as { role?: unknown }).role === "string" &&
+          typeof (item as { text?: unknown }).text === "string"
+      )
+    ) {
+      history = [];
+    }
+
     const client = getGeminiClient();
 
     if (!client) {
@@ -192,6 +249,11 @@ AKURASI MEDIS (WAJIB DIPATUHI):
     });
     console.log("Serving production static assets from dist.");
   }
+
+  app.use((err: any, req: any, res: any, next: any) => {
+    console.error("Unhandled server error:", err);
+    res.status(500).json({ success: false, error: "Terjadi kesalahan pada server." });
+  });
 
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`AyoDonor application server runs on: http://localhost:${PORT}`);
