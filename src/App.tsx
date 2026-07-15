@@ -359,7 +359,12 @@ export default function App() {
       </section>
 
       {/* PMI LOCATOR SECTION */}
-      <PmiLocator />
+      <div id="pmi-locator-container">
+        <p className="max-w-6xl mx-auto w-full px-4 pt-6 text-center text-xs text-slate-500 leading-relaxed">
+          Lokasi berikut adalah contoh data untuk demo. Untuk info stok darah akurat, hubungi PMI terdekat atau cek pmi.or.id.
+        </p>
+        <PmiLocator />
+      </div>
 
       {/* SECTION 1: DASHBOARD MANFAAT MULTI-DIMENSI (Interactive Grid) */}
       <main id="education" className="max-w-6xl mx-auto w-full px-4 py-12 flex-grow">

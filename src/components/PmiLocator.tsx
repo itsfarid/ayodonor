@@ -19,6 +19,8 @@ interface PmiLocation {
   };
 }
 
+// CATATAN: Data lokasi & stok darah di bawah ini adalah CONTOH/ILUSTRASI untuk
+// keperluan demo. Belum terhubung ke sistem data PMI resmi/real-time.
 const INITIAL_PMI_DATA: PmiLocation[] = [
   {
     id: "pmi-jkt",
@@ -356,9 +358,14 @@ export default function PmiLocator() {
 
                         {/* Blood Stocks Sub-Grid */}
                         <div className="mt-4 pt-3.5 border-t border-dashed border-slate-100">
-                          <span className="text-[10px] uppercase font-mono font-bold text-slate-400 block mb-2">
-                            🔴 Live Stock Darah PMI:
-                          </span>
+                          <div className="flex items-center justify-between gap-2 mb-2">
+                            <span className="text-[10px] uppercase font-mono font-bold text-slate-400 block">
+                              🔴 Stock Darah PMI:
+                            </span>
+                            <span className="text-[9px] font-mono font-bold uppercase tracking-wide text-amber-800 bg-amber-100 border border-amber-300/70 px-1.5 py-0.5 rounded whitespace-nowrap">
+                              Ilustrasi Demo
+                            </span>
+                          </div>
                           <div className="grid grid-cols-4 gap-2">
                             {Object.entries(pmi.stocks).map(([type, status]) => (
                               <div
@@ -372,6 +379,9 @@ export default function PmiLocator() {
                               </div>
                             ))}
                           </div>
+                          <p className="text-[10px] text-slate-500 mt-2 leading-relaxed italic">
+                            *Status ilustratif, hubungi PMI setempat untuk info stok terkini.
+                          </p>
                         </div>
 
                         {/* Contacts & Quick Redirect Triggers */}
@@ -413,7 +423,7 @@ export default function PmiLocator() {
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] opacity-25" />
             
             {/* Radar Scope Header */}
-            <div className="relative z-10 flex justify-between items-center border-b border-slate-800 pb-3 mb-4">
+            <div className="relative z-10 flex flex-wrap justify-between items-center gap-2 border-b border-slate-800 pb-3 mb-4">
               <span className="flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
@@ -424,9 +434,14 @@ export default function PmiLocator() {
                 </span>
               </span>
               
-              <span className="text-[10px] font-mono text-emerald-400 font-extrabold uppercase bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                SENTINEL-v26 ACTIVE
-              </span>
+              <div className="flex items-center gap-1.5 flex-wrap justify-end">
+                <span className="text-[9px] font-mono text-amber-300 font-extrabold uppercase bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
+                  Data Contoh — belum real-time
+                </span>
+                <span className="text-[10px] font-mono text-emerald-400 font-extrabold uppercase bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                  SENTINEL-v26 ACTIVE
+                </span>
+              </div>
             </div>
 
             {/* INTERACTIVE COORDINATE MAP BODY */}
@@ -582,6 +597,33 @@ export default function PmiLocator() {
                   >
                     Buka Rute 🧭
                   </a>
+                </div>
+
+                <div className="mt-3 pt-3 border-t border-dashed border-slate-800">
+                  <div className="flex items-center justify-between gap-2 mb-2">
+                    <span className="text-[9px] uppercase font-mono font-bold text-slate-500">
+                      Status Stok (Aman / Cukup / Kritis)
+                    </span>
+                    <span className="text-[9px] font-mono font-extrabold uppercase text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded">
+                      Ilustrasi Demo
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {Object.entries(selectedLocation.stocks).map(([type, status]) => (
+                      <div
+                        key={type}
+                        className={`text-center py-1 px-1 rounded-lg border text-[10px] font-bold ${getStockBadgeColor(status)}`}
+                      >
+                        <span className="block text-slate-500 text-[9px]">Gol {type}</span>
+                        <span className="text-slate-900 font-black uppercase tracking-wider">
+                          {status}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="text-[10px] text-amber-400/90 mt-2 leading-relaxed italic">
+                    *Status ilustratif, hubungi PMI setempat untuk info stok terkini.
+                  </p>
                 </div>
               </div>
             )}
