@@ -33,6 +33,7 @@ export async function startTestServer(overrides: Partial<AppOptions> = {}): Prom
       mode: "production",
       getGeminiClient: () => null,
       staticDir: fixture.publicDir,
+      logRequests: false,
       ...overrides,
     });
   } catch (err) {

@@ -1,14 +1,5 @@
 // Local fallback responses used when Gemini is unconfigured or its quota is exhausted.
 
-export function isGeminiQuotaError(err: any): boolean {
-  const message = String(err?.message || "");
-  return (
-    err?.status === 429 ||
-    message.includes("RESOURCE_EXHAUSTED") ||
-    /quota/i.test(message)
-  );
-}
-
 export function buildEvaluateFallback(
   name: string | undefined,
   ageWeight: string,

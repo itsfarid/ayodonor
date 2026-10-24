@@ -38,6 +38,7 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
   }
 
   logEvent(httpStatus >= 500 ? "error" : "warn", "request_error", {
+    requestId: typeof res.locals?.requestId === "string" ? res.locals.requestId : undefined,
     method: req.method,
     path: req.path,
     status: httpStatus,
