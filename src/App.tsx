@@ -652,8 +652,6 @@ export default function App() {
               </p>
               <p style={{ marginBottom: 0 }}>
                 <SourceLinks refs={[{ id: "permenkes" }, { id: "pmi-faq" }, { id: "who-eligibility" }]} />
-                <br />
-                <a href="#sumber-informasi">Semua sumber dan perbedaannya</a>. Daftar klaim dan statusnya ada di docs/medical-claims.md.
               </p>
             </div>
           </div>
