@@ -1,14 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import PmiLocator from "./components/PmiLocator";
 import HeroCard from "./components/HeroCard";
+import Faq from "./components/Faq";
 import PrivacyNotice from "./components/PrivacyNotice";
-import {
-  allQuizAnswersSafe,
-  buildChatFallback,
-  buildQuizSummary,
-  MEDICAL_DISCLAIMER,
-  OFFLINE_NOTICE,
-} from "../shared/content";
+import { allQuizAnswersSafe, buildQuizSummary, MEDICAL_DISCLAIMER } from "../shared/content";
 
 // --- Custom Simple Markdown Parser for beautiful styled responses ---
 function parseMarkdown(text: string): React.ReactNode[] {
@@ -86,17 +81,7 @@ function renderStyledText(text: string): React.ReactNode {
   });
 }
 
-type ChatMessage = {
-  role: "user" | "model";
-  text: string;
-  /** ai = live model answer; fallback = automatic reply; error = system notice (e.g. rate limit). */
-  source?: "ai" | "fallback" | "error";
-};
-
-// Must stay within the limits enforced by server/validation.ts.
-const CHAT_HISTORY_MAX_ITEMS = 10;
-const CHAT_HISTORY_ITEM_MAX_CHARS = 2000;
-const CHAT_MESSAGE_MAX_CHARS = 500;
+// Matches the maxLength of the name input.
 const VISITOR_NAME_MAX_CHARS = 50;
 
 export default function App() {
@@ -116,31 +101,6 @@ export default function App() {
     recency: "" as "safe" | "unsafe" | ""
   });
   const [quizResult, setQuizResult] = useState<string>("");
-  // Where the explanation came from: live AI or the built-in automatic summary.
-  const [quizSource, setQuizSource] = useState<"ai" | "fallback">("fallback");
-  const [quizNotice, setQuizNotice] = useState<string>("");
-  const [isQuizEvaluating, setIsQuizEvaluating] = useState<boolean>(false);
-
-  // Chatbot State
-  const [chatOpened, setChatOpened] = useState<boolean>(false);
-  const [chatInput, setChatInput] = useState<string>("");
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
-    {
-      role: "model",
-      text: "Halo Kak! 😎 Aku **Sobat Hero AI**. Tanya aja hal umum soal donor darah. Jawabanku bisa keliru dan bukan nasihat medis; untuk syarat resmi, tanya PMI ya."
-    }
-  ]);
-  // Honest connection state: unknown until the first reply tells us where it came from.
-  const [aiStatus, setAiStatus] = useState<"unknown" | "ai" | "fallback">("unknown");
-  const [isChatSending, setIsChatSending] = useState<boolean>(false);
-  const chatBottomRef = useRef<HTMLDivElement>(null);
-
-  // Auto-scroll chat to bottom
-  useEffect(() => {
-    if (chatBottomRef.current) {
-      chatBottomRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [chatHistory, chatOpened]);
 
   // Handle Quiz Step Progression
   const answerQuizQuestion = (questionKey: "ageWeight" | "sleep" | "meds" | "recency", val: "safe" | "unsafe") => {
@@ -152,84 +112,12 @@ export default function App() {
     }
   };
 
-  // Ask the server for an explanation of the quiz summary. Falls back to the built-in summary.
-  const evaluateEligibility = async (finalAnswers: typeof answers) => {
-    setIsQuizEvaluating(true);
-    setQuizResult("");
-    setQuizNotice("");
-    const name = visitorName.trim() || undefined;
-    try {
-      const response = await fetch("/api/gemini/evaluate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, ...finalAnswers }),
-      });
-      const data = await response.json().catch(() => null);
-      if (response.ok && data?.success && typeof data.text === "string") {
-        setQuizResult(data.text);
-        setQuizSource(data.source === "ai" ? "ai" : "fallback");
-        if (data.source !== "ai") setQuizNotice(OFFLINE_NOTICE);
-      } else {
-        throw new Error(data?.code || `http_${response.status}`);
-      }
-    } catch (err) {
-      console.warn("Quiz explanation unavailable, using built-in summary.");
-      setQuizResult(buildQuizSummary(name, finalAnswers));
-      setQuizSource("fallback");
-      setQuizNotice(OFFLINE_NOTICE);
-    } finally {
-      setIsQuizEvaluating(false);
-    }
-  };
-
-  const finishQuiz = async (recency: "safe" | "unsafe") => {
-    if (isQuizEvaluating) return;
+  // The quiz summary is computed in the browser; nothing is sent to a server.
+  const finishQuiz = (recency: "safe" | "unsafe") => {
     const finalAnswers = { ...answers, recency };
     setAnswers(finalAnswers);
+    setQuizResult(buildQuizSummary(visitorName.trim() || undefined, finalAnswers));
     setQuizStep(5);
-    await evaluateEligibility(finalAnswers);
-  };
-
-  // Send message to the chat assistant
-  const sendChatMessage = async (msg: string) => {
-    if (!msg.trim() || isChatSending) return;
-
-    const userMsg: ChatMessage = { role: "user", text: msg };
-    setChatHistory((prev) => [...prev, userMsg]);
-    setChatInput("");
-    setIsChatSending(true);
-
-    try {
-      const response = await fetch("/api/gemini/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          message: msg,
-          // The API bounds history size; send only recent live turns, each capped in length.
-          history: chatHistory
-            .filter((h) => h.source !== "error" && h.source !== "fallback")
-            .slice(-CHAT_HISTORY_MAX_ITEMS)
-            .map((h) => ({ role: h.role, text: h.text.slice(0, CHAT_HISTORY_ITEM_MAX_CHARS) })),
-        }),
-      });
-      const data = await response.json().catch(() => null);
-      if (response.ok && data?.success && typeof data.text === "string") {
-        const source = data.source === "ai" ? "ai" : "fallback";
-        setAiStatus(source);
-        setChatHistory((prev) => [...prev, { role: "model", text: data.text, source }]);
-      } else if (data?.code === "rate_limited" || data?.code === "invalid_request" || data?.code === "payload_too_large") {
-        // The server refused this request: tell the user why instead of faking an answer.
-        setChatHistory((prev) => [...prev, { role: "model", text: String(data.error || "Permintaan ditolak."), source: "error" }]);
-      } else {
-        throw new Error(data?.code || `http_${response.status}`);
-      }
-    } catch (err) {
-      console.warn("Chat AI unavailable, using automatic reply.");
-      setAiStatus("fallback");
-      setChatHistory((prev) => [...prev, { role: "model", text: buildChatFallback(msg), source: "fallback" }]);
-    } finally {
-      setIsChatSending(false);
-    }
   };
 
   // Reset Quiz to retake
@@ -242,7 +130,6 @@ export default function App() {
       recency: ""
     });
     setQuizResult("");
-    setQuizNotice("");
   };
 
   return (
@@ -681,7 +568,7 @@ export default function App() {
                   Siapa Nama Pahlawan Kita Hari Ini?
                 </h3>
                 <p className="text-slate-500 text-xs md:text-sm mt-1 max-w-sm mx-auto">
-                  Tulis nama panggilan (boleh nama samaran). Nama dan jawaban kuismu dikirim ke server untuk menyusun ringkasan; lihat bagian Privasi di bawah.
+                  Tulis nama panggilan (boleh nama samaran). Nama dan jawabanmu hanya diproses di browser dan tidak dikirim ke server.
                 </p>
 
                 <div className="mt-6 max-w-sm mx-auto">
@@ -891,18 +778,7 @@ export default function App() {
             {/* STEP 5: FINAL EVALUATION SCREEN (Green card if Lolos, Yellow/Helpful callback if Unsafe) */}
             {quizStep === 5 && (
               <div id="quiz-results" className="text-left animate-fade-in">
-                {isQuizEvaluating ? (
-                  <div className="text-center py-12 flex flex-col items-center justify-center">
-                    {/* Pulsing Loading Spinner */}
-                    <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mb-4" />
-                    <h3 className="text-lg font-bold text-slate-800">
-                      Menyiapkan penjelasan hasil kuis...
-                    </h3>
-                    <p className="text-slate-500 text-xs mt-1">
-                      Menghubungi AI untuk menulis penjelasan. Jika tidak tersedia, kami tampilkan ringkasan otomatis.
-                    </p>
-                  </div>
-                ) : (
+                {(
                   <div>
                     {/* Real Evaluation Box Layout */}
                     <div className={`p-6 md:p-8 rounded-3xl border ${
@@ -919,9 +795,7 @@ export default function App() {
                       <div className="relative z-10">
                         {parseMarkdown(quizResult)}
                         <p className="mt-4 text-[11px] font-semibold text-slate-600">
-                          {quizSource === "ai"
-                            ? "Penjelasan ditulis AI dan bisa keliru. Ini bukan nasihat medis."
-                            : quizNotice || OFFLINE_NOTICE}
+                          Ringkasan ini disusun otomatis dari 4 jawabanmu dan tidak dikirim ke mana pun.
                         </p>
                       </div>
                     </div>
@@ -979,177 +853,7 @@ export default function App() {
         </div>
       </section>
 
-      {/* SECTION 3: AI DONOR COMPANION (CHATBOX FRONTEND) */}
-      <section id="chat-section" className="bg-white border-t border-slate-200 py-16 px-4">
-        <div className="max-w-4xl mx-auto">
-          
-          <div className="text-center mb-8">
-            <span className="text-xs font-mono font-bold text-red-600 bg-red-50 py-1.5 px-4 rounded-full uppercase tracking-wider">
-              💬 ASISTEN AI · BETA
-            </span>
-            <h2 className="text-3xl font-black text-slate-800 mt-3">
-              Chat Sobat Hero AI 🤖
-            </h2>
-            <p className="text-slate-500 text-sm mt-1">
-              Tanya hal umum seputar donor darah. Jawaban AI bisa keliru dan bukan nasihat medis; syarat resmi tetap ditentukan PMI.
-            </p>
-          </div>
-
-          <div className="bg-slate-50 rounded-3xl border border-slate-200 overflow-hidden shadow-lg flex flex-col h-[520px]">
-            
-            {/* Companion bar */}
-            <div className="bg-gradient-to-r from-red-650 to-red-600 text-white p-4 flex items-center justify-between border-b border-red-100 bg-red-600">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-white/20 border border-white/30 flex items-center justify-center text-xl animate-pulse">
-                  💧
-                </div>
-                <div>
-                  <h4 className="font-extrabold text-sm leading-tight">Sobat Hero AI</h4>
-                  <p className="text-[10px] text-red-100 flex items-center gap-1 mt-0.5" role="status">
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full ${
-                        aiStatus === "ai" ? "bg-emerald-400" : aiStatus === "fallback" ? "bg-amber-400" : "bg-slate-300"
-                      }`}
-                    />
-                    {aiStatus === "ai"
-                      ? "Terhubung ke AI"
-                      : aiStatus === "fallback"
-                        ? "Mode offline: balasan otomatis"
-                        : "Siap menjawab (AI bila tersedia)"}
-                  </p>
-                </div>
-              </div>
-
-              <div className="text-[10px] font-mono bg-red-900/30 px-3 py-1 rounded-full text-red-100">
-                {aiStatus === "ai" ? "AI aktif" : aiStatus === "fallback" ? "AI tidak tersedia" : "Beta"}
-              </div>
-            </div>
-
-            {/* Chat message display area */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
-              
-              {chatHistory.map((chat, idx) => (
-                <div 
-                  key={idx} 
-                  className={`flex items-start gap-2.5 max-w-[85%] ${
-                    chat.role === "user" ? "ml-auto flex-row-reverse" : "mr-auto"
-                  }`}
-                >
-                  {/* Chat bubble avatar */}
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm shrink-0 shadow-sm ${
-                    chat.role === "user" ? "bg-slate-900 text-white" : "bg-red-600 text-white"
-                  }`}>
-                    {chat.role === "user" ? "👋" : "💧"}
-                  </div>
-                  
-                  {/* Bubble Content */}
-                  <div className={`p-4 rounded-2xl ${
-                    chat.role === "user" 
-                      ? "bg-slate-900 text-white rounded-tr-none text-sm font-semibold" 
-                      : "bg-white text-slate-800 rounded-tl-none border border-slate-200 shadow-sm text-sm"
-                  }`}>
-                    {chat.role === "user" ? chat.text : parseMarkdown(chat.text)}
-                    {chat.role === "model" && chat.source && (
-                      <p className="mt-2 text-[10px] font-semibold text-slate-500">
-                        {chat.source === "ai"
-                          ? "Dijawab AI · bisa keliru, bukan nasihat medis"
-                          : chat.source === "fallback"
-                            ? "⚠️ Balasan otomatis, bukan dari AI"
-                            : "Pesan sistem"}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              ))}
-
-              {isChatSending && (
-                <div className="flex items-start gap-2.5 max-w-[85%] mr-auto">
-                  <div className="w-8 h-8 rounded-full bg-red-600 text-white flex items-center justify-center text-sm shrink-0 shadow-sm animate-bounce">
-                    💧
-                  </div>
-                  <div className="p-4 rounded-2xl bg-white border border-slate-200 text-slate-500 rounded-tl-none shadow-sm text-sm italic flex items-center gap-2">
-                    <span className="flex gap-1">
-                      <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                      <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                      <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-bounce" />
-                    </span>
-                    Sobat Hero AI lagi menyiapkan jawaban...
-                  </div>
-                </div>
-              )}
-
-              <div ref={chatBottomRef} />
-            </div>
-
-            {/* Predefined suggestion chips */}
-            <div className="bg-slate-100 p-2.5 border-t border-slate-200 overflow-x-auto flex gap-2 whitespace-nowrap">
-              <button
-                id="chip-gemuk"
-                onClick={() => sendChatMessage("Apakah donor darah bikin gemuk? 🍔")}
-                aria-label="Apakah donor darah bikin gemuk?"
-                className="bg-white hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-350 text-xs font-bold py-1.5 px-3 rounded-full cursor-pointer active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-              >
-                🍔 Bikin Gemuk?
-              </button>
-              <button
-                id="chip-jarum"
-                onClick={() => sendChatMessage("Takut jarum suntik, gimana ya caranya biar gak gemeteran? 💉")}
-                aria-label="Takut jarum suntik, gimana ya caranya biar gak gemeteran?"
-                className="bg-white hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-350 text-xs font-bold py-1.5 px-3 rounded-full cursor-pointer active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-              >
-                💉 Takut Jarum Suntik
-              </button>
-              <button
-                id="chip-lemas"
-                onClick={() => sendChatMessage("Beneran bikin lemas pusing loyo gak sih? 🌀")}
-                aria-label="Beneran bikin lemas pusing loyo gak sih?"
-                className="bg-white hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-350 text-xs font-bold py-1.5 px-3 rounded-full cursor-pointer active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-              >
-                🌀 Lemes & Pusing?
-              </button>
-              <button
-                id="chip-tato"
-                onClick={() => sendChatMessage("Punya tato hiasan boleh donor gak sih seleranya? 🎨")}
-                aria-label="Punya tato hiasan boleh donor gak sih?"
-                className="bg-white hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-350 text-xs font-bold py-1.5 px-3 rounded-full cursor-pointer active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
-              >
-                🎨 Tato Boleh Donor?
-              </button>
-            </div>
-
-            {/* Message input layout */}
-            <div className="p-3 bg-white border-t border-slate-200 flex gap-2">
-              <label htmlFor="chat-message-input" className="sr-only">
-                Tulis pertanyaan untuk Sobat Hero AI
-              </label>
-              <input
-                id="chat-message-input"
-                type="text"
-                maxLength={CHAT_MESSAGE_MAX_CHARS}
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Tanya hal umum soal donor darah..."
-                className="flex-1 p-3.5 border border-slate-200 focus:border-red-500 focus:outline-none rounded-xl text-sm"
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    sendChatMessage(chatInput);
-                  }
-                }}
-              />
-              <button
-                id="btn-send-message"
-                onClick={() => sendChatMessage(chatInput)}
-                aria-label="Kirim pesan ke Sobat Hero AI"
-                className="bg-red-600 hover:bg-red-700 text-white rounded-xl px-5 font-extrabold text-sm shadow-md active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 cursor-pointer flex items-center justify-center gap-1"
-              >
-                Kirim
-              </button>
-            </div>
-
-          </div>
-
-        </div>
-      </section>
+      <Faq />
 
       <PrivacyNotice />
 
@@ -1173,7 +877,7 @@ export default function App() {
               <a href="#education" className="hover:text-red-500 transition-colors">🏡 Dasar-dasar Donor Darah</a>
               <a href="#pmi-locator-container" className="hover:text-red-500 transition-colors">📍 Contoh Lokasi (Data Demo)</a>
               <a href="#quiz-section" className="hover:text-red-500 transition-colors">🩺 Kuis Panduan Awal</a>
-              <a href="#chat-section" className="hover:text-red-500 transition-colors">💬 Tanya Sobat Hero AI</a>
+              <a href="#faq-section" className="hover:text-red-500 transition-colors">💬 Tanya Jawab (FAQ)</a>
               <a href="#privasi" className="hover:text-red-500 transition-colors">🔒 Privasi & Data</a>
             </div>
           </div>
@@ -1183,7 +887,7 @@ export default function App() {
               <span>🛡️ Informasi Medis & Disclaimer</span>
             </h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Kuis dan teks di AyoDonor hanya untuk edukasi. Bukan diagnosis, bukan keputusan kelayakan, dan bukan nasihat medis. Kelayakan donor ditentukan petugas PMI lewat pemeriksaan langsung. Data lokasi dan stok di situs ini adalah contoh yang belum diverifikasi. Jawaban AI bisa keliru.
+              Kuis dan teks di AyoDonor hanya untuk edukasi. Bukan diagnosis, bukan keputusan kelayakan, dan bukan nasihat medis. Kelayakan donor ditentukan petugas PMI lewat pemeriksaan langsung. Data lokasi dan stok di situs ini adalah contoh yang belum diverifikasi.
               <span className="block mt-2">
                 Sumber utama: Permenkes No. 91 Tahun 2015 tentang Standar Pelayanan Transfusi Darah dan FAQ PMI (ayodonor.pmi.or.id). Daftar klaim dan sumbernya ada di docs/medical-claims.md.
               </span>

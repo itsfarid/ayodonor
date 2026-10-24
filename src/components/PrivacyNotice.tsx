@@ -11,16 +11,10 @@ export default function PrivacyNotice() {
 
         <ul className="mt-5 space-y-3 text-sm text-slate-700 leading-relaxed list-disc pl-5">
           <li>
-            <strong>Kuis:</strong> nama panggilan (boleh nama samaran) dan 4 jawabanmu dikirim ke server AyoDonor saat kuis selesai, untuk menyusun ringkasan.
+            <strong>Kuis dan FAQ:</strong> nama panggilan (boleh nama samaran) dan jawaban kuismu hanya diproses di browser. Tidak ada yang dikirim ke server atau pihak ketiga.
           </li>
           <li>
-            <strong>Chat:</strong> pesanmu dan sampai 10 pesan AI terakhir dikirim ke server setiap kali kamu mengirim pesan. Jangan menulis data pribadi atau kondisi medis sensitifmu di sini.
-          </li>
-          <li>
-            <strong>Layanan AI:</strong> bila fitur AI aktif, server meneruskan data di atas ke Google Gemini API untuk membuat teks. Pemrosesan oleh Google mengikuti ketentuan layanan Gemini API. Bila AI tidak aktif, situs memakai ringkasan otomatis dan menyatakannya.
-          </li>
-          <li>
-            <strong>Penyimpanan:</strong> aplikasi ini tidak punya basis data dan tidak menyimpan nama, jawaban kuis, atau isi chat. Log aplikasi hanya mencatat metadata teknis (waktu, alamat halaman, status, durasi), bukan isi pesan atau jawabanmu.
+            <strong>Penyimpanan:</strong> aplikasi ini tidak punya basis data, tidak memakai layanan AI, dan tidak menyimpan data yang kamu masukkan. Log server hanya mencatat metadata teknis (waktu, alamat halaman, status, durasi).
           </li>
           <li>
             <strong>Lokasi:</strong> hanya dipakai di browsermu untuk mengurutkan contoh lokasi dan tidak dikirim ke server. Browser akan meminta izinmu dulu.

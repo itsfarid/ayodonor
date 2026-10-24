@@ -26,17 +26,16 @@ describe("page structure and footer", () => {
     expect(footer).toMatch(/tidak berafiliasi dengan PMI maupun Kemenkes/);
     expect(footer).toMatch(/bukan keputusan kelayakan/);
     expect(footer).toMatch(/belum diverifikasi/);
-    expect(footer).toMatch(/Jawaban AI bisa keliru/);
   });
 
-  it("has a privacy section describing the real data flows", () => {
+  it("has a privacy section that matches the real (client-only) data flows", () => {
     const { container } = render(<App />);
     const privacy = container.querySelector("#privasi")!.textContent!;
-    expect(privacy).toMatch(/dikirim ke server/);
-    expect(privacy).toMatch(/Google Gemini/);
-    expect(privacy).toMatch(/tidak dikirim ke server/); // location
+    expect(privacy).toMatch(/hanya diproses di browser/);
+    expect(privacy).toMatch(/tidak ada yang dikirim ke server/i);
+    expect(privacy).toMatch(/tidak memakai layanan AI/);
     expect(privacy).toMatch(/Google Fonts/);
-    expect(privacy).not.toMatch(/tetap di perangkat|tidak pernah (dikirim|meninggalkan)/i);
+    expect(privacy).not.toMatch(/Gemini|dikirim ke server AyoDonor/);
   });
 });
 
@@ -46,6 +45,7 @@ describe("index.html metadata", () => {
   it("does not promise eligibility checks, official status or an image that does not exist", () => {
     expect(html).not.toMatch(/cek kelayakan|resmi dari PMI|summary_large_image|og:image/i);
     expect(html).toMatch(/tidak berafiliasi dengan PMI/);
+    expect(html).not.toMatch(/asisten AI|chatbot|Gemini/i);
   });
 
   it("references a favicon that actually exists", () => {
