@@ -2,8 +2,10 @@ import express, { type Express, type RequestHandler } from "express";
 import fs from "fs";
 import path from "path";
 import rateLimit from "express-rate-limit";
+import { errorBody, errorHandler } from "./errors";
 import { buildChatFallback, buildEvaluateFallback, isGeminiQuotaError } from "./fallbacks";
 import { buildEvaluatePrompt, CHAT_SYSTEM_INSTRUCTION, EVALUATE_SYSTEM_INSTRUCTION } from "./prompts";
+import { LIMITS, validateChat, validateEvaluate } from "./validation";
 
 export const GEMINI_MODEL = "gemini-3.5-flash";
 
@@ -24,19 +26,15 @@ export interface AppOptions {
   rateLimit?: { windowMs: number; limit: number };
 }
 
-const QUIZ_ANSWER_VALUES = new Set(["safe", "unsafe", ""]);
-
 export async function createApp(options: AppOptions): Promise<Express> {
   const app = express();
   app.disable("x-powered-by");
   const getGeminiClient = options.getGeminiClient;
 
-  app.use(express.json());
-
   const aiLimiter = rateLimit({
     windowMs: options.rateLimit?.windowMs ?? 60 * 1000, // 1 menit
     limit: options.rateLimit?.limit ?? 10, // maksimal 10 request per menit per IP
-    message: { success: false, error: "Terlalu banyak permintaan, coba lagi sebentar ya." },
+    message: errorBody("rate_limited", "Terlalu banyak permintaan, coba lagi sebentar ya."),
     standardHeaders: true,
     legacyHeaders: false,
   });
@@ -49,28 +47,13 @@ export async function createApp(options: AppOptions): Promise<Express> {
   });
 
   // Evaluate donor eligibility quiz with Gemini AI
-  app.post("/api/gemini/evaluate", aiLimiter, async (req, res) => {
-    const { ageWeight, sleep, meds, recency } = req.body;
-    let { name } = req.body;
-
-    if (
-      typeof ageWeight !== "string" ||
-      typeof sleep !== "string" ||
-      typeof meds !== "string" ||
-      typeof recency !== "string" ||
-      !QUIZ_ANSWER_VALUES.has(ageWeight) ||
-      !QUIZ_ANSWER_VALUES.has(sleep) ||
-      !QUIZ_ANSWER_VALUES.has(meds) ||
-      !QUIZ_ANSWER_VALUES.has(recency)
-    ) {
-      return res.status(400).json({ success: false, error: "Data jawaban kuis tidak valid." });
+  // The limiter runs before the body parser so malformed or oversized requests count too.
+  app.post("/api/gemini/evaluate", aiLimiter, express.json({ limit: LIMITS.evaluateBodyBytes }), async (req, res) => {
+    const parsed = validateEvaluate(req.body);
+    if ("error" in parsed) {
+      return res.status(400).json(errorBody("invalid_request", parsed.error));
     }
-
-    if (typeof name === "string" && name.length > 50) {
-      name = name.substring(0, 50);
-    } else if (name != null && typeof name !== "string") {
-      name = undefined;
-    }
+    const { name, ageWeight, sleep, meds, recency } = parsed.value;
 
     const client = getGeminiClient();
 
@@ -108,32 +91,12 @@ export async function createApp(options: AppOptions): Promise<Express> {
   });
 
   // Chat/Q&A Companion
-  app.post("/api/gemini/chat", aiLimiter, async (req, res) => {
-    const { message } = req.body;
-    let history = req.body.history;
-
-    if (typeof message !== "string" || message.trim() === "") {
-      return res.status(400).json({ success: false, error: "Pesan tidak boleh kosong." });
+  app.post("/api/gemini/chat", aiLimiter, express.json({ limit: LIMITS.chatBodyBytes }), async (req, res) => {
+    const parsed = validateChat(req.body);
+    if ("error" in parsed) {
+      return res.status(400).json(errorBody("invalid_request", parsed.error));
     }
-    if (message.length > 500) {
-      return res.status(400).json({
-        success: false,
-        error: "Pesan terlalu panjang, coba dipersingkat ya (maks 500 karakter).",
-      });
-    }
-
-    if (
-      !Array.isArray(history) ||
-      !history.every(
-        (item: unknown) =>
-          item != null &&
-          typeof item === "object" &&
-          typeof (item as { role?: unknown }).role === "string" &&
-          typeof (item as { text?: unknown }).text === "string"
-      )
-    ) {
-      history = [];
-    }
+    const { message, history } = parsed.value;
 
     const client = getGeminiClient();
 
@@ -143,13 +106,11 @@ export async function createApp(options: AppOptions): Promise<Express> {
 
     try {
       const formattedContents = [];
-      if (history && Array.isArray(history)) {
-        for (const h of history) {
-          formattedContents.push({
-            role: h.role === "user" ? "user" : "model",
-            parts: [{ text: h.text }],
-          });
-        }
+      for (const h of history) {
+        formattedContents.push({
+          role: h.role,
+          parts: [{ text: h.text }],
+        });
       }
       formattedContents.push({
         role: "user",
@@ -216,10 +177,7 @@ export async function createApp(options: AppOptions): Promise<Express> {
     });
   }
 
-  app.use((err: any, req: any, res: any, next: any) => {
-    console.error("Unhandled server error:", err);
-    res.status(500).json({ success: false, error: "Terjadi kesalahan pada server." });
-  });
+  app.use(errorHandler);
 
   return app;
 }

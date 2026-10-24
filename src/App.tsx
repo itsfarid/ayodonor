@@ -77,6 +77,12 @@ function renderStyledText(text: string): React.ReactNode {
   });
 }
 
+// Must stay within the limits enforced by server/validation.ts.
+const CHAT_HISTORY_MAX_ITEMS = 10;
+const CHAT_HISTORY_ITEM_MAX_CHARS = 2000;
+const CHAT_MESSAGE_MAX_CHARS = 500;
+const VISITOR_NAME_MAX_CHARS = 50;
+
 export default function App() {
   // Navigation / Interactive Education Cards state
   const [activeEducationTab, setActiveEducationTab] = useState<string>("kesehatan");
@@ -194,7 +200,11 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: msg,
-          history: chatHistory
+          // The API bounds history size; send only recent turns, each capped in length.
+          history: chatHistory.slice(-CHAT_HISTORY_MAX_ITEMS).map((h) => ({
+            role: h.role,
+            text: h.text.slice(0, CHAT_HISTORY_ITEM_MAX_CHARS),
+          }))
         })
       });
       const data = await response.json();
@@ -772,6 +782,7 @@ export default function App() {
                   <input 
                     id="visitor-name-input"
                     type="text"
+                    maxLength={VISITOR_NAME_MAX_CHARS}
                     value={visitorName}
                     onChange={(e) => setVisitorName(e.target.value)}
                     placeholder="Contoh: Farhan / Rizki / Aurel..."
@@ -1193,6 +1204,7 @@ export default function App() {
               <input
                 id="chat-message-input"
                 type="text"
+                maxLength={CHAT_MESSAGE_MAX_CHARS}
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 placeholder="Tanyakan ketakutanmu di sini (e.g., 'sakit gak?', 'dapat biskuit apa?')..."
