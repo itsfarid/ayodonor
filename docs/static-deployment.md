@@ -38,23 +38,35 @@ metadata ada di `src/routes.ts`; menambah halaman berarti menambah baris di sana
 
 ### Cloudflare Workers (static assets)
 
-Diuji lokal dengan `wrangler dev --assets dist` (Wrangler 4 / workerd), tanpa berkas konfigurasi dan tanpa
-`not_found_handling`, pada build `dist/` yang sama:
+`wrangler.jsonc` di akar repositori mendefinisikan Worker **hanya-aset** (tanpa skrip, binding, variabel, atau secret):
+
+```jsonc
+{ "name": "ayodonor", "compatibility_date": "2026-10-24",
+  "assets": { "directory": "./dist", "not_found_handling": "404-page" } }
+```
+
+- `name` harus sama dengan nama Worker yang sudah ada di dashboard; nama lain akan membuat Worker baru.
+- `wrangler deploy` **tidak membangun situs**: jalankan `npm run build` dulu agar `dist/` terbaru.
+- `404-page` membuat alamat tak dikenal menjawab **404 dengan isi `dist/404.html`** (halaman "tidak ditemukan" bermerek,
+  `noindex`). Tanpa baris ini Workers menjawab 404 kosong; `single-page-application` sengaja tidak dipakai karena menjawab 200
+  untuk alamat apa pun (soft 404) dan lima rute sudah punya berkas sendiri.
+
+Diuji lokal dengan `wrangler dev` (Wrangler 4.152 / workerd) pada `dist/` hasil build:
 
 | Permintaan | Hasil |
 |---|---|
-| `/`, `/panduan`, `/fakta-mitos`, `/lokasi`, `/tentang` (juga dengan `?q=` atau `#anchor`) | 200, HTML halaman itu dengan judul sendiri |
+| `/`, `/panduan`, `/fakta-mitos`, `/lokasi`, `/tentang` (juga dengan `?q=` atau `#anchor`) | 200, HTML halaman itu dengan judul dan canonical sendiri |
 | `/panduan/`, `/panduan.html`, `/index.html` | 307 ke alamat kanonik (`/panduan`, `/`) |
-| `/tidak-ada`, `/assets/tidak-ada.js` | 404 tanpa isi (perilaku bawaan Workers) |
-| `/favicon.svg`, `/assets/*.js` | 200; `/assets/*` ber-cache `immutable` satu tahun |
-| header `_headers` | terpasang (`nosniff`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`) |
+| `/tidak-ada`, `/tidak-ada/dalam`, `/assets/tidak-ada.js`, `/robots.txt` | 404 dengan isi `404.html` |
+| `/favicon.svg`, `/assets/*.js\|css` | 200; `/assets/*` ber-cache `immutable` satu tahun |
+| header `_headers` | terpasang pada semua jawaban, termasuk 404 |
 
-Di peramban, perpindahan lewat menu, tombol kembali, dan buka langsung dengan `#anchor` diperiksa pada server yang sama.
-Hal yang **tidak** diuji: deployment sungguhan. Konfigurasi Worker (nama, aset, `not_found_handling`) berada di luar repositori
-ini dan tidak diubah. Alamat yang salah ketik menghasilkan 404 kosong; bila ingin halaman 404 yang ramah, atur
-`assets.not_found_handling = "404-page"` pada konfigurasi Worker (akan menyajikan `404.html`). Itu keputusan deployment, bukan
-syarat agar kelima rute berfungsi. Di Cloudflare Pages, `404.html` tingkat atas membuat Pages menyajikannya untuk alamat tak dikenal
-(bukan lagi perilaku SPA), sementara kelima rute tetap dilayani dari berkas masing-masing.
+Di peramban, perpindahan lewat menu, tombol kembali, dan buka langsung dengan `#anchor` diperiksa pada server yang sama. Hal yang
+**tidak** diuji: deployment sungguhan ke Worker `ayodonor`. Di Cloudflare Pages, `404.html` tingkat atas disajikan Pages untuk
+alamat tak dikenal (bukan lagi perilaku SPA), sementara kelima rute tetap dilayani dari berkas masing-masing.
+
+Catatan: HTML tiap halaman hanya memuat kepala dokumen yang benar dan `<div id="root">` kosong; isi dirender oleh JavaScript.
+Crawler yang tidak menjalankan JavaScript hanya melihat judul dan deskripsi.
 
 ## Header (`public/_headers`)
 

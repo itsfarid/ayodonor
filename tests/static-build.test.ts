@@ -167,6 +167,19 @@ describe("routing configuration", () => {
     expect(JSON.stringify(Object.keys(JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8")).dependencies))).not.toMatch(/router/);
   });
 
+  it("deploys as an assets-only Worker: wrangler.jsonc names the dist directory, serves 404.html for unknown addresses, and has no script, bindings or secrets", () => {
+    const raw = fs.readFileSync(path.join(ROOT, "wrangler.jsonc"), "utf8");
+    // JSONC: drop whole-line // comments (none of the values contains "//" at the start of a line).
+    const config = JSON.parse(raw.split("\n").filter((l) => !l.trim().startsWith("//")).join("\n"));
+    expect(Object.keys(config).sort()).toEqual(["assets", "compatibility_date", "name"]);
+    expect(config.name).toBe("ayodonor");
+    expect(config.compatibility_date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(config.assets).toEqual({ directory: "./dist", not_found_handling: "404-page" });
+    // "single-page-application" would answer unknown addresses with 200 (soft 404s); "none" gives an empty 404.
+    expect(raw).not.toMatch(/single-page-application/);
+    expect(fs.existsSync(path.join(ROOT, "dist", "404.html")) || files.map(rel).includes("404.html")).toBe(true);
+  });
+
   it("has no Pages Functions or worker directory", () => {
     expect(fs.existsSync(path.join(ROOT, "functions"))).toBe(false);
     expect(fs.existsSync(path.join(ROOT, "wrangler.toml"))).toBe(false);

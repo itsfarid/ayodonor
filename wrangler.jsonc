@@ -1,0 +1,11 @@
+{
+  // Assets-only Worker: serves the Vite build in dist/ with no Worker script, bindings, variables or secrets.
+  // Every page has its own HTML file (see docs/static-deployment.md); "404-page" makes unknown addresses return
+  // 404 with dist/404.html instead of an empty 404.
+  "name": "ayodonor",
+  "compatibility_date": "2026-10-24",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}
