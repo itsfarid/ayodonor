@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import PmiLocator from "./components/PmiLocator";
 import HeroCard from "./components/HeroCard";
+import PrivacyNotice from "./components/PrivacyNotice";
 import {
   allQuizAnswersSafe,
   buildChatFallback,
@@ -979,7 +980,7 @@ export default function App() {
       </section>
 
       {/* SECTION 3: AI DONOR COMPANION (CHATBOX FRONTEND) */}
-      <section className="bg-white border-t border-slate-200 py-16 px-4">
+      <section id="chat-section" className="bg-white border-t border-slate-200 py-16 px-4">
         <div className="max-w-4xl mx-auto">
           
           <div className="text-center mb-8">
@@ -1150,6 +1151,8 @@ export default function App() {
         </div>
       </section>
 
+      <PrivacyNotice />
+
       {/* DETAILED FOOTER SECTION */}
       <footer className="bg-slate-950 text-slate-400 py-12 px-6 mt-auto border-t border-slate-900">
         <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8 pb-10">
@@ -1160,17 +1163,18 @@ export default function App() {
               AyoDonor
             </h3>
             <p className="text-xs text-slate-400 leading-relaxed max-w-sm">
-              Inisiatif platform literasi dan edukasi donor darah interaktif untuk merangkul generasi muda Indonesia menjadi pahlawan nyata di dunia riil. Ditenagai oleh teknologi kecerdasan buatan demi mempercepat ketersediaan persediaan darah yang kritis di tanah air.
+              Proyek edukasi independen tentang donor darah untuk generasi muda Indonesia. AyoDonor bukan layanan medis dan tidak berafiliasi dengan PMI maupun Kemenkes.
             </p>
           </div>
 
           <div className="md:col-span-3 text-left">
             <h4 className="text-white font-bold text-xs uppercase tracking-wider mb-3">Navigasi Interaktif</h4>
             <div className="grid grid-cols-1 gap-2 text-xs">
-              <a href="#intro" className="hover:text-red-500 transition-colors">🏡 Beranda & Edukasi</a>
-              <a href="#pmi-locator-container" className="hover:text-red-500 transition-colors font-semibold">📍 Cari Lokasi PMI Terdekat</a>
-              <a href="#eligibility" className="hover:text-red-500 transition-colors">🩺 Kuis Kelayakan Sederhana</a>
-              <a href="#companion" className="hover:text-red-500 transition-colors">💬 Konsultasi Bersama Droppy</a>
+              <a href="#education" className="hover:text-red-500 transition-colors">🏡 Dasar-dasar Donor Darah</a>
+              <a href="#pmi-locator-container" className="hover:text-red-500 transition-colors">📍 Contoh Lokasi (Data Demo)</a>
+              <a href="#quiz-section" className="hover:text-red-500 transition-colors">🩺 Kuis Panduan Awal</a>
+              <a href="#chat-section" className="hover:text-red-500 transition-colors">💬 Tanya Sobat Hero AI</a>
+              <a href="#privasi" className="hover:text-red-500 transition-colors">🔒 Privasi & Data</a>
             </div>
           </div>
 
@@ -1179,7 +1183,10 @@ export default function App() {
               <span>🛡️ Informasi Medis & Disclaimer</span>
             </h4>
             <p className="text-[11px] text-slate-500 leading-relaxed">
-              Pemeriksaan kelayakan dalam aplikasi AyoDonor bersifat skrining mandiri awal edukatif dan bukan pengganti diagnosis medis formal. Sebelum melakukan donor darah, pemeriksaan fisik komprehensif (kadar Hb, tensi, serta riwayat klinis terperinci) akan dilakukan secara resmi dan aman oleh staf medis profesional PMI di lapangan.
+              Kuis dan teks di AyoDonor hanya untuk edukasi. Bukan diagnosis, bukan keputusan kelayakan, dan bukan nasihat medis. Kelayakan donor ditentukan petugas PMI lewat pemeriksaan langsung. Data lokasi dan stok di situs ini adalah contoh yang belum diverifikasi. Jawaban AI bisa keliru.
+              <span className="block mt-2">
+                Sumber utama: Permenkes No. 91 Tahun 2015 tentang Standar Pelayanan Transfusi Darah dan FAQ PMI (ayodonor.pmi.or.id). Daftar klaim dan sumbernya ada di docs/medical-claims.md.
+              </span>
             </p>
           </div>
 
@@ -1193,7 +1200,7 @@ export default function App() {
           </div>
           <div>
             <p className="text-[11px] text-slate-400 italic max-w-xs md:text-right">
-              "Setetes darahmu, nafas panjang harapan hidup bagi mereka yang membutuhkan."
+              Info resmi: ayodonor.pmi.or.id
             </p>
           </div>
         </div>
