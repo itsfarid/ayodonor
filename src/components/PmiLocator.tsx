@@ -19,9 +19,10 @@ interface PmiLocation {
   };
 }
 
-// CATATAN: Data lokasi & stok darah di bawah ini adalah CONTOH/ILUSTRASI untuk
-// keperluan demo. Belum terhubung ke sistem data PMI resmi/real-time.
-const INITIAL_PMI_DATA: PmiLocation[] = [
+// CATATAN: Data di bawah ini adalah CONTOH untuk demo. Nama unit, alamat, telepon, jam layanan,
+// koordinat, dan terutama status stok BELUM diverifikasi dan stok bersifat fiktif. Belum terhubung
+// ke sistem data PMI resmi. Jangan dipakai untuk keputusan donor.
+export const INITIAL_PMI_DATA: PmiLocation[] = [
   {
     id: "pmi-jkt",
     name: "UTD PMI DKI Jakarta",
@@ -31,7 +32,7 @@ const INITIAL_PMI_DATA: PmiLocation[] = [
     lat: -6.1844,
     lng: 106.8444,
     phone: "(021) 3906350",
-    status: "Buka 24 Jam ⏰",
+    status: "Jam layanan: belum diverifikasi",
     stocks: { A: "Aman", B: "Aman", O: "Aman", AB: "Kritis" }
   },
   {
@@ -43,7 +44,7 @@ const INITIAL_PMI_DATA: PmiLocation[] = [
     lat: -6.9103,
     lng: 107.6186,
     phone: "(022) 4207052",
-    status: "Buka 24 Jam ⏰",
+    status: "Jam layanan: belum diverifikasi",
     stocks: { A: "Cukup", B: "Aman", O: "Aman", AB: "Kritis" }
   },
   {
@@ -55,7 +56,7 @@ const INITIAL_PMI_DATA: PmiLocation[] = [
     lat: -7.2651,
     lng: 112.7423,
     phone: "(031) 5313555",
-    status: "Buka 24 Jam ⏰",
+    status: "Jam layanan: belum diverifikasi",
     stocks: { A: "Aman", B: "Kritis", O: "Aman", AB: "Aman" }
   },
   {
@@ -67,7 +68,7 @@ const INITIAL_PMI_DATA: PmiLocation[] = [
     lat: -7.8242,
     lng: 110.3956,
     phone: "(0274) 372176",
-    status: "Buka 24 Jam ⏰",
+    status: "Jam layanan: belum diverifikasi",
     stocks: { A: "Kritis", B: "Aman", O: "Aman", AB: "Cukup" }
   },
   {
@@ -79,7 +80,7 @@ const INITIAL_PMI_DATA: PmiLocation[] = [
     lat: -6.9829,
     lng: 110.4092,
     phone: "(024) 3515050",
-    status: "Buka 24 Jam ⏰",
+    status: "Jam layanan: belum diverifikasi",
     stocks: { A: "Aman", B: "Aman", O: "Kritis", AB: "Aman" }
   },
   {
@@ -91,7 +92,7 @@ const INITIAL_PMI_DATA: PmiLocation[] = [
     lat: 3.5824,
     lng: 98.6791,
     phone: "(061) 4567232",
-    status: "Buka 24 Jam ⏰",
+    status: "Jam layanan: belum diverifikasi",
     stocks: { A: "Kritis", B: "Aman", O: "Aman", AB: "Kritis" }
   },
   {
@@ -103,13 +104,13 @@ const INITIAL_PMI_DATA: PmiLocation[] = [
     lat: -5.1278,
     lng: 119.4215,
     phone: "(0411) 3612502",
-    status: "Buka 24 Jam ⏰",
+    status: "Jam layanan: belum diverifikasi",
     stocks: { A: "Aman", B: "Kritis", O: "Aman", AB: "Aman" }
   }
 ];
 
-// Helper to calculate distance in km using Haversine formula
-function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
+// Helper to calculate straight-line distance in km using the Haversine formula (not a driving route)
+export function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
   const R = 6371; // Radius of earth in km
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
@@ -156,6 +157,12 @@ export default function PmiLocator() {
 
     return result;
   }, [searchQuery, userLocation]);
+
+  // Straight-line distance to the closest demo location, used to warn when none is actually nearby.
+  const nearestDemoKm = React.useMemo(() => {
+    if (!userLocation) return null;
+    return Math.min(...INITIAL_PMI_DATA.map((p) => getDistanceKm(userLocation.lat, userLocation.lng, p.lat, p.lng)));
+  }, [userLocation]);
 
   // Keep selectedLocation up to date with search changes
   useEffect(() => {
@@ -212,7 +219,7 @@ export default function PmiLocator() {
       case "Cukup":
         return "bg-amber-100 text-amber-800 border-amber-200";
       case "Kritis":
-        return "bg-rose-100 text-rose-800 border-rose-200 text-rose-700 animate-pulse";
+        return "bg-rose-100 text-rose-800 border-rose-200 text-rose-700";
     }
   };
 
@@ -238,13 +245,25 @@ export default function PmiLocator() {
       <div className="text-center mb-10">
         <div className="inline-flex items-center gap-1.5 bg-red-100 text-red-700 text-xs font-bold px-4 py-1.5 rounded-full mb-3 uppercase tracking-wider">
           <Compass className="w-3.5 h-3.5 animate-spin" />
-          PMI Sentinel Map Locator
+          Contoh Lokasi · Data Demo
         </div>
         <h2 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">
-          Cari Unit PMI & Cek Stok Darah 📍
+          Contoh Daftar Lokasi UTD PMI 📍
         </h2>
         <p className="text-slate-500 max-w-xl mx-auto mt-2 text-sm">
-          Deteksi PMI terdekat dari posisimu untuk mendonorkan darah secara langsung. Lengkap dengan taksiran jarak real-time & peta taktis interaktif!
+          Daftar ini hanya memuat 7 kota sebagai contoh tampilan. Nama unit, alamat, telepon, jam layanan, dan status stok <strong>belum diverifikasi</strong> sebagai data resmi.
+        </p>
+        <p className="text-xs text-slate-600 max-w-xl mx-auto mt-2">
+          Untuk lokasi, jam layanan, dan stok darah yang resmi, buka{" "}
+          <a
+            href="https://ayodonor.pmi.or.id"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-bold text-red-700 underline"
+          >
+            ayodonor.pmi.or.id
+          </a>{" "}
+          atau hubungi UTD PMI setempat.
         </p>
       </div>
 
@@ -274,7 +293,7 @@ export default function PmiLocator() {
               id="btn-geolocate"
               onClick={handleDetectLocation}
               disabled={isLocating}
-              aria-label="Deteksi lokasi saya"
+              aria-label="Urutkan contoh lokasi dari posisi saya"
               className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 cursor-pointer ${
                 userLocation 
                   ? "bg-slate-900 text-emerald-400 border border-slate-800" 
@@ -282,7 +301,7 @@ export default function PmiLocator() {
               }`}
             >
               <Locate className={`w-4 h-4 ${isLocating ? "animate-spin" : ""}`} />
-              {isLocating ? "Menghubungi GPS..." : userLocation ? "Lokasimu Siaga! ✅" : "Cari PMI Terdekat Saya"}
+              {isLocating ? "Mencari lokasi..." : userLocation ? "Diurutkan dari posisimu" : "Urutkan dari posisiku"}
             </button>
           </div>
 
@@ -293,17 +312,23 @@ export default function PmiLocator() {
             </div>
           )}
 
+          {userLocation && nearestDemoKm !== null && nearestDemoKm > 100 && (
+            <div role="alert" className="bg-amber-50 border border-amber-300 rounded-xl p-3.5 text-xs text-amber-900 leading-relaxed font-semibold">
+              Contoh lokasi terdekat berjarak sekitar {Math.round(nearestDemoKm).toLocaleString("id-ID")} km dari posisimu. Daftar demo ini hanya memuat 7 kota, jadi belum tentu ada unit PMI contoh di dekatmu. Cari UTD terdekat lewat ayodonor.pmi.or.id.
+            </div>
+          )}
+
           {userLocation && (
             <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 text-xs text-emerald-800 leading-relaxed font-bold flex items-center justify-between">
               <span className="flex items-center gap-1.5">
                 <span className="w-2 h-2 bg-emerald-500 rounded-full animate-heartbeat" />
-                Peta disortir otomatis berdasarkan jarak terdekat dari koordinat fisikmu!
+                Daftar diurutkan menurut perkiraan jarak garis lurus dari posisimu (bukan rute). Lokasimu hanya diproses di browser dan tidak dikirim ke server.
               </span>
               <button
                 onClick={() => setUserLocation(null)}
                 className="text-[10px] uppercase font-mono text-slate-400 hover:text-red-650 tracking-wider font-extrabold"
               >
-                Reset GPS ✖
+                Hapus lokasi ✖
               </button>
             </div>
           )}
@@ -327,7 +352,17 @@ export default function PmiLocator() {
                   <div
                     key={pmi.id}
                     onClick={() => setSelectedLocation(pmi)}
-                    className={`p-5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden group ${
+                    role="button"
+                    tabIndex={0}
+                    aria-pressed={isSelected}
+                    aria-label={`Pilih ${pmi.name}`}
+                    onKeyDown={(e) => {
+                      if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+                        e.preventDefault();
+                        setSelectedLocation(pmi);
+                      }
+                    }}
+                    className={`p-5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden group outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
                       isSelected 
                         ? "bg-white border-red-500 shadow-md ring-1 ring-red-500/30" 
                         : "bg-white border-slate-150 hover:border-slate-300 shadow-xs"
@@ -341,7 +376,7 @@ export default function PmiLocator() {
                     {/* Proximity Tag Indicator */}
                     {distance !== null && (
                       <span className="absolute top-3.5 right-4 bg-emerald-100 text-emerald-800 text-[10.5px] font-mono font-bold px-2 rounded-full border border-emerald-200">
-                        ⚡ {distance.toFixed(1)} km dari kamu
+                        ≈ {distance.toFixed(1)} km (garis lurus)
                       </span>
                     )}
 
@@ -364,7 +399,7 @@ export default function PmiLocator() {
                         <div className="mt-4 pt-3.5 border-t border-dashed border-slate-100">
                           <div className="flex items-center justify-between gap-2 mb-2">
                             <span className="text-[10px] uppercase font-mono font-bold text-slate-400 block">
-                              🔴 Stock Darah PMI:
+                              Contoh status stok (fiktif):
                             </span>
                             <span className="text-[9px] font-mono font-bold uppercase tracking-wide text-amber-800 bg-amber-100 border border-amber-300/70 px-1.5 py-0.5 rounded whitespace-nowrap">
                               Ilustrasi Demo
@@ -384,7 +419,7 @@ export default function PmiLocator() {
                             ))}
                           </div>
                           <p className="text-[10px] text-slate-500 mt-2 leading-relaxed italic">
-                            *Status ilustratif, hubungi PMI setempat untuk info stok terkini.
+                            *Status stok di sini fiktif, hanya untuk ilustrasi tampilan. Jangan dipakai untuk keputusan donor; cek stok resmi di ayodonor.pmi.or.id.
                           </p>
                         </div>
 
@@ -434,16 +469,13 @@ export default function PmiLocator() {
                   <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
                 </span>
                 <span className="text-xs font-mono font-bold tracking-wider text-slate-400">
-                  TACTICAL BLOOD MAP RADAR
+                  PETA ILUSTRASI (BUKAN PETA SUNGGUHAN)
                 </span>
               </span>
               
               <div className="flex items-center gap-1.5 flex-wrap justify-end">
                 <span className="text-[9px] font-mono text-amber-300 font-extrabold uppercase bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
-                  Data Contoh — belum real-time
-                </span>
-                <span className="text-[10px] font-mono text-emerald-400 font-extrabold uppercase bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
-                  SENTINEL-v26 ACTIVE
+                  Data contoh · belum terverifikasi
                 </span>
               </div>
             </div>
@@ -552,13 +584,6 @@ export default function PmiLocator() {
                 })}
               </div>
 
-              {/* Coordinates details display bottom watermarks */}
-              <div className="absolute bottom-2.5 right-3 font-mono text-[9.5px] text-slate-500 leading-none select-none">
-                GRID FOCUS OVERLAY: EPSG:4326 (WGS 84)
-              </div>
-              <div className="absolute bottom-2.5 left-3 font-mono text-[9.5px] text-slate-500 leading-none select-none">
-                Lat: -6.0° S / Lng: 106.8° E
-              </div>
             </div>
 
             {/* DETAILED INFO BOX ABOUT SELECTED COMPONENT */}
@@ -567,7 +592,7 @@ export default function PmiLocator() {
                 <div className="flex justify-between items-start mb-2.5">
                   <div>
                     <span className="text-[10px] uppercase font-mono font-bold text-slate-500 block">
-                      SETERU PIN TERPILIH (PETA):
+                      LOKASI TERPILIH:
                     </span>
                     <h5 className="font-extrabold text-white text-sm">
                       {selectedLocation.name}
@@ -585,11 +610,11 @@ export default function PmiLocator() {
                 <div className="mt-3 bg-white/5 rounded-xl p-3 flex justify-between items-center border border-white/5">
                   <div className="flex gap-4">
                     <div>
-                      <span className="text-[9px] uppercase font-mono text-slate-500 block">KONTAK RESMI:</span>
+                      <span className="text-[9px] uppercase font-mono text-slate-500 block">TELEPON (BELUM DIVERIFIKASI):</span>
                       <strong className="text-slate-200 text-xs font-bold font-mono">{selectedLocation.phone}</strong>
                     </div>
                     <div>
-                      <span className="text-[9px] uppercase font-mono text-slate-500 block">WILAYAH (PROV):</span>
+                      <span className="text-[9px] uppercase font-mono text-slate-500 block">WILAYAH:</span>
                       <strong className="text-slate-200 text-xs font-bold font-mono">{selectedLocation.region}</strong>
                     </div>
                   </div>
@@ -607,7 +632,7 @@ export default function PmiLocator() {
                 <div className="mt-3 pt-3 border-t border-dashed border-slate-800">
                   <div className="flex items-center justify-between gap-2 mb-2">
                     <span className="text-[9px] uppercase font-mono font-bold text-slate-500">
-                      Status Stok (Aman / Cukup / Kritis)
+                      Contoh status stok (fiktif)
                     </span>
                     <span className="text-[9px] font-mono font-extrabold uppercase text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded">
                       Ilustrasi Demo
@@ -627,7 +652,7 @@ export default function PmiLocator() {
                     ))}
                   </div>
                   <p className="text-[10px] text-amber-400/90 mt-2 leading-relaxed italic">
-                    *Status ilustratif, hubungi PMI setempat untuk info stok terkini.
+                    *Status stok fiktif untuk ilustrasi. Cek stok resmi di ayodonor.pmi.or.id.
                   </p>
                 </div>
               </div>
