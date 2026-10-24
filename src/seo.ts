@@ -32,3 +32,12 @@ export function websiteJsonLd() {
 export function jsonLdScript(data: unknown): string {
   return `<script type="application/ld+json">${JSON.stringify(data).replace(/</g, "\\u003c")}</script>`;
 }
+
+/**
+ * What a visitor or crawler without JavaScript gets in the raw HTML: a plain link list to the five pages (the pages
+ * themselves are rendered by the app). It is a small fallback, not a substitute for prerendering the page content.
+ */
+export function noscriptNav(): string {
+  const items = ROUTES.map((r) => `<li><a href="${r.path}">${r.label.replace(/&/g, "&amp;")}</a></li>`).join("");
+  return `<noscript><p>AyoDonor menampilkan isi halaman dengan JavaScript. Aktifkan JavaScript, atau buka salah satu halaman ini:</p><nav aria-label="Halaman AyoDonor"><ul>${items}</ul></nav></noscript>`;
+}

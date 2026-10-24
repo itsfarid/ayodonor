@@ -56,7 +56,8 @@ afterAll(async () => {
 
 describe("static build output", () => {
   it("contains index.html that references only files present in the output", () => {
-    const html = text(path.join(outDir, "index.html"));
+    // The <noscript> links are page addresses, not files (they are checked in "raw HTML without JavaScript").
+    const html = text(path.join(outDir, "index.html")).replace(/<noscript>[\s\S]*?<\/noscript>/, "");
     expect(html).toContain('<div id="root">');
     const refs = [...html.matchAll(/(?:src|href)="(\/[^"]+)"/g)].map((m) => m[1]).filter((u) => !u.startsWith("//"));
     expect(refs.length).toBeGreaterThanOrEqual(3); // js, css, favicon
@@ -245,6 +246,20 @@ describe("structured data (JSON-LD)", () => {
     expect(tag.match(/<script/g)).toHaveLength(1);
     expect(tag.match(/<\/script>/g)).toHaveLength(1);
     expect(JSON.parse(tag.replace(/^<script[^>]*>|<\/script>$/g, "")).name).toBe("</script><script>alert(1)</script>");
+  });
+});
+
+describe("raw HTML without JavaScript", () => {
+  it("every page, and the 404 page, links to all five canonical pages from a <noscript> block next to the app root", () => {
+    for (const f of files.filter((x) => x.endsWith(".html"))) {
+      const html = text(f);
+      const block = html.match(/<noscript>([\s\S]*?)<\/noscript>/);
+      expect(block, rel(f)).not.toBeNull();
+      const hrefs = [...block![1].matchAll(/<a href="([^"]+)">/g)].map((m) => m[1]);
+      expect(hrefs, rel(f)).toEqual(ROUTES.map((r) => r.path));
+      expect(html.indexOf('<div id="root"></div>'), rel(f)).toBeLessThan(html.indexOf("<noscript>"));
+      expect(html.match(/<noscript>/g), rel(f)).toHaveLength(1);
+    }
   });
 });
 
