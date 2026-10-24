@@ -5,6 +5,7 @@ import { JSDOM } from "jsdom";
 import { build, preview, type PreviewServer } from "vite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { canonicalUrl, NOT_FOUND_META, ROUTES, SITE_URL } from "../src/routes";
+import { jsonLdScript } from "../src/seo";
 
 // Builds the real site into a temp directory (never touching ./dist) and inspects what a static
 // host such as Cloudflare Pages would serve. Needs no API key, server or network.
@@ -213,6 +214,37 @@ describe("sitemap.xml and robots.txt", () => {
     const sitemap = await fetch(baseUrl + "/sitemap.xml");
     expect(sitemap.status).toBe(200);
     expect(sitemap.headers.get("content-type")).toMatch(/xml/);
+  });
+});
+
+describe("structured data (JSON-LD)", () => {
+  const ldBlocks = (html: string) => [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)].map((m) => m[1]);
+
+  it("the home page has exactly one valid schema.org WebSite that matches the visible site", () => {
+    const html = text(path.join(outDir, "index.html"));
+    const blocks = ldBlocks(html);
+    expect(blocks).toHaveLength(1);
+    const data = JSON.parse(blocks[0]);
+    expect(data).toMatchObject({ "@context": "https://schema.org", "@type": "WebSite", name: "AyoDonor", url: `${SITE_URL}/`, inLanguage: "id" });
+    expect(data.url).toBe(html.match(/<link rel="canonical" href="([^"]+)"/)![1]);
+    expect(data.description).toBe(ROUTES[0].description);
+    expect(html).toContain('<meta property="og:site_name" content="AyoDonor" />');
+  });
+
+  it("claims nothing the site cannot back: no organization, medical, rating, review or location data", () => {
+    const blocks = files.filter((f) => f.endsWith(".html")).flatMap((f) => ldBlocks(text(f)));
+    expect(blocks.join("\n")).not.toMatch(/Organization|Medical|Rating|Review|Offer|Place|GeoCoordinates|PostalAddress|telephone|sameAs|logo/i);
+  });
+
+  it("every other page and the 404 page carry no JSON-LD", () => {
+    for (const f of files.filter((x) => x.endsWith(".html") && rel(x) !== "index.html")) expect(ldBlocks(text(f)), rel(f)).toEqual([]);
+  });
+
+  it("jsonLdScript cannot be broken out of by '<' in a value", () => {
+    const tag = jsonLdScript({ name: "</script><script>alert(1)</script>" });
+    expect(tag.match(/<script/g)).toHaveLength(1);
+    expect(tag.match(/<\/script>/g)).toHaveLength(1);
+    expect(JSON.parse(tag.replace(/^<script[^>]*>|<\/script>$/g, "")).name).toBe("</script><script>alert(1)</script>");
   });
 });
 

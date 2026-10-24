@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import {defineConfig, type Plugin} from 'vite';
 import {canonicalUrl, NOT_FOUND_META, ROUTES, type RouteMeta} from './src/routes';
-import {buildSitemap} from './src/seo';
+import {buildSitemap, jsonLdScript, websiteJsonLd} from './src/seo';
 
 const escapeAttr = (v: string) => v.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 const escapeText = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -29,6 +29,8 @@ function withRouteHead(html: string, meta: Pick<RouteMeta, 'title' | 'descriptio
       .replace(/\s*<meta property="og:url"[^>]*>/, '')
       .replace(/<link rel="canonical"[^>]*>/, '<meta name="robots" content="noindex" />');
   }
+  // Structured data (WebSite) belongs to the home page only; every other file stays free of JSON-LD.
+  if (urlPath === '/') out = out.replace('</head>', `    ${jsonLdScript(websiteJsonLd())}\n  </head>`);
   return out;
 }
 
