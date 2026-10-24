@@ -1030,9 +1030,7 @@ export default function App() {
                       </p>
                     </div>
 
-                    {answers.ageWeight === "safe" && answers.sleep === "safe" && answers.meds === "safe" && answers.recency === "safe" && (
-                      <HeroCard visitorName={visitorName} />
-                    )}
+                    <HeroCard visitorName={visitorName} />
 
                     {/* Quick Call-to-action cards based on result */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
