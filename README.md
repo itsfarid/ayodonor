@@ -29,6 +29,7 @@ npm run preview    # sajikan dist/ secara lokal, http://localhost:4173
 |---|---|
 | `npm run lint` | Pengecekan tipe (`tsc --noEmit`) |
 | `npm test` | Semua tes (vitest): konten, UI, FAQ, dan build statis ke direktori sementara |
+| `npm run check:seo -- <url>` | Audit SEO situs yang berjalan (status, redirect, metadata, sitemap, robots, 404); lihat [docs/seo.md](docs/seo.md) |
 | `npm run clean` | Hapus `dist` |
 
 Tes tidak butuh API key, server, atau jaringan.
@@ -37,7 +38,7 @@ Tes tidak butuh API key, server, atau jaringan.
 
 Cloudflare (Workers static assets atau Pages): build command `npm run build`, output directory `dist`, tanpa environment variable.
 Lima halaman (`/`, `/panduan`, `/fakta-mitos`, `/lokasi`, `/tentang`) masing-masing punya berkas HTML hasil build, jadi tidak perlu aturan fallback.
-Detail, header, domain, dan risiko: [docs/static-deployment.md](docs/static-deployment.md).
+Detail, header, domain, dan risiko: [docs/static-deployment.md](docs/static-deployment.md). SEO (URL kanonis, sitemap, robots, 404, JSON-LD, checklist Search Console): [docs/seo.md](docs/seo.md).
 
 ## Struktur
 
@@ -45,7 +46,7 @@ Detail, header, domain, dan risiko: [docs/static-deployment.md](docs/static-depl
 src/               aplikasi React: pages/ (lima halaman), layout/, components/, router.tsx, routes.ts (tabel rute dan metadata);
                    FAQ di data/faq.ts, pencari UDD/UTD di data/utd.ts
 shared/content.ts  teks ringkasan kuis
-public/            favicon dan _headers (Cloudflare)
+public/            favicon, robots.txt, dan _headers (Cloudflare); sitemap.xml dibuat saat build dari src/routes.ts
 tests/             vitest (node + jsdom)
 docs/              klaim medis & sumber, arah desain (design-direction.md), migrasi, deployment, bukti rate limit lama
 ```

@@ -18,7 +18,7 @@ Sumber: dokumentasi Cloudflare dan panduan pihak ketiga (output `dist` adalah ba
 pengaturan build Cloudflare saat membuat proyek.
 
 Isi `dist/` (diverifikasi oleh `tests/static-build.test.ts`): `index.html` dan satu `*.html` per halaman, `404.html`, `favicon.svg`,
-`_headers`, dan `assets/*.js|css` ber-hash. Tidak ada sourcemap, file `.env`, atau bundel server.
+`_headers`, `robots.txt`, `sitemap.xml` (dibuat saat build dari `src/routes.ts`), dan `assets/*.js|css` ber-hash. Tidak ada sourcemap, file `.env`, atau bundel server.
 
 ## Routing
 
@@ -57,7 +57,9 @@ Diuji lokal dengan `wrangler dev` (Wrangler 4.152 / workerd) pada `dist/` hasil 
 |---|---|
 | `/`, `/panduan`, `/fakta-mitos`, `/lokasi`, `/tentang` (juga dengan `?q=` atau `#anchor`) | 200, HTML halaman itu dengan judul dan canonical sendiri |
 | `/panduan/`, `/panduan.html`, `/index.html` | 307 ke alamat kanonik (`/panduan`, `/`) |
-| `/tidak-ada`, `/tidak-ada/dalam`, `/assets/tidak-ada.js`, `/robots.txt` | 404 dengan isi `404.html` |
+| `/tidak-ada`, `/tidak-ada/dalam`, `/assets/tidak-ada.js` | 404 dengan isi `404.html` |
+| `/404` (alamat aset `404.html` sendiri), `/404.html` | `/404` menjawab **200** dengan header `X-Robots-Tag: noindex` (`_headers`); `/404.html` 307 ke `/404` |
+| `/robots.txt`, `/sitemap.xml` | 200, `text/plain` dan `application/xml` |
 | `/favicon.svg`, `/assets/*.js\|css` | 200; `/assets/*` ber-cache `immutable` satu tahun |
 | header `_headers` | terpasang pada semua jawaban, termasuk 404 |
 
@@ -65,8 +67,8 @@ Di peramban, perpindahan lewat menu, tombol kembali, dan buka langsung dengan `#
 **tidak** diuji: deployment sungguhan ke Worker `ayodonor`. Di Cloudflare Pages, `404.html` tingkat atas disajikan Pages untuk
 alamat tak dikenal (bukan lagi perilaku SPA), sementara kelima rute tetap dilayani dari berkas masing-masing.
 
-Catatan: HTML tiap halaman hanya memuat kepala dokumen yang benar dan `<div id="root">` kosong; isi dirender oleh JavaScript.
-Crawler yang tidak menjalankan JavaScript hanya melihat judul dan deskripsi.
+Catatan: HTML tiap halaman memuat kepala dokumen yang benar, `<div id="root">` kosong, dan blok `<noscript>` berisi tautan ke lima halaman; isi dirender oleh JavaScript.
+Crawler yang tidak menjalankan JavaScript hanya melihat judul, deskripsi, dan tautan itu. Detail dan usulan prerender: [docs/seo.md](seo.md).
 
 ## Header (`public/_headers`)
 
