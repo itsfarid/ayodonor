@@ -148,6 +148,13 @@ describe("static build output", () => {
     expect(directives).not.toMatch(/Content-Security-Policy/i);
   });
 
+  it("marks the 404 page's own addresses noindex by header, and no public page", () => {
+    const blocks = text(path.join(outDir, "_headers")).split(/\n(?=\S)/).map((b) => b.trim()).filter((b) => b && !b.startsWith("#"));
+    const withRobots = blocks.filter((b) => /X-Robots-Tag/i.test(b)).map((b) => b.split("\n")[0]);
+    expect(withRobots.sort()).toEqual(["/404", "/404.html"]);
+    for (const r of ROUTES) expect(withRobots, r.path).not.toContain(r.path);
+  });
+
   it("keeps the disclaimer and demo-data warnings in the shipped bundle", () => {
     const js = files.filter((x) => x.endsWith(".js")).map(text).join("\n");
     expect(js).toContain("Ini bukan diagnosis atau keputusan medis");
