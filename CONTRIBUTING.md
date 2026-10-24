@@ -3,8 +3,8 @@
 Terima kasih sudah mau membantu. AyoDonor adalah proyek pribadi yang menerima kontribusi dari luar, dan proyek edukasi donor darah yang dibuat hati-hati: kesalahan kecil pada konten
 medis atau data lokasi bisa menyesatkan orang. Karena itu aturan di bawah lebih ketat untuk **konten dan data** daripada untuk kode.
 
-> Status: lisensi proyek belum ditetapkan (lihat [README](README.md#lisensi)). Sebelum ada berkas `LICENSE`, tanyakan pemelihara lewat Issue
-> sebelum mengirim kontribusi besar, supaya hak atas kontribusimu jelas.
+> Status: kode proyek berlisensi MIT ([LICENSE](LICENSE)); data UDD/UTD dan materi pihak ketiga tidak dicakup (lihat [README](README.md#lisensi)). Tanyakan pemelihara lewat Issue
+> sebelum mengirim kontribusi besar.
 
 ## Ruang lingkup
 
@@ -72,7 +72,7 @@ Jangan menempelkan data pribadi, kunci, atau token di Issue.
 - **Sebelum menambah data, gambar, ikon, font, atau teks dari luar**: pastikan kamu tahu sumbernya dan **berhak mendistribusikannya ulang**.
   Data yang bisa dibuka publik belum tentu boleh disebarkan ulang. Cantumkan sumber, lisensi, dan atribusi yang dibutuhkan di PR. Materi dengan lisensi tidak jelas tidak akan diterima.
 - Jangan menambah data pribadi individu (nama, telepon, alamat orang).
-- Dengan mengirim kontribusi kamu menyatakan bahwa kamu berhak menyumbangkannya; lisensi kontribusi mengikuti lisensi proyek setelah ditetapkan.
+- Dengan mengirim kontribusi kamu menyatakan bahwa kamu berhak menyumbangkannya; kontribusi kode dilisensikan di bawah lisensi MIT proyek ([LICENSE](LICENSE)).
 
 ## Perilaku
 

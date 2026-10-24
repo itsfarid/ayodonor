@@ -85,10 +85,15 @@ docs/              klaim medis & sumber, arah desain, migrasi, deployment, SEO, 
 
 ## Lisensi
 
-**Belum ditetapkan.** Sampai ada berkas `LICENSE`, semua hak cipta dicadangkan secara default dan repositori ini belum open source.
-Lisensi kode dan hak atas data pihak ketiga diputuskan **terpisah**: lisensi kode (rencana: permisif, hanya untuk kode proyek) menunggu
-konfirmasi pemegang hak cipta dan asal-usul kode; data UDD/UTD tetap milik sumbernya (PMI) dan tidak dicakup lisensi kode.
-Teks edukasi ditangani terpisah. Lihat [docs/open-source-readiness-audit.md](docs/open-source-readiness-audit.md).
+Kode proyek ini berlisensi **MIT** ([LICENSE](LICENSE), hak cipta 2026 Farid). Lisensi itu mencakup kode sumber, tes, skrip, dan konfigurasi karya proyek ini,
+**bukan** materi pihak ketiga:
+
+- **Data UDD/UTD** (`src/data/utd.ts`) milik sumbernya (PMI) dan tidak dicakup lisensi MIT; status redistribusinya belum dipastikan (lihat di atas).
+- **Teks edukasi** dan tautan sumber: lisensi teks belum diputuskan terpisah; isi sumber yang dirujuk tetap milik penerbitnya.
+- **Dependensi** tetap di bawah lisensinya masing-masing.
+
+Catatan: asal-usul kode (sebagian dihasilkan dengan bantuan alat AI, termasuk kode awal dari Google AI Studio) dan kepemilikannya belum diverifikasi sepenuhnya;
+lihat [docs/ai-terms-review.md](docs/ai-terms-review.md) dan [docs/open-source-readiness-audit.md](docs/open-source-readiness-audit.md). Repositori ini belum dipublikasikan.
 
 ## Kontribusi, keamanan, perilaku
 

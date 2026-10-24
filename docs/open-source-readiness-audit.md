@@ -10,6 +10,8 @@ yang dipublikasikan PMI **tidak otomatis dianggap data pribadi (PII) atau terlar
 selama izin menunggu; tidak ada publikasi atau perubahan visibilitas tanpa persetujuan eksplisit. Status "proyek pribadi" adalah pernyataan
 pemelihara, bukan sesuatu yang bisa diverifikasi dari repositori. Pertanyaan kepemilikan kode 3-9 di bagian 11.3 **tetap terbuka**.
 
+**Pembaruan 24 Okt 2026:** atas instruksi pemelihara, berkas `LICENSE` (MIT, "Copyright (c) 2026 Farid") ditambahkan dan README/CONTRIBUTING/`package.json` diselaraskan. Ini **tidak** menyelesaikan kriteria C1-C3 di bagian 12: nama pemegang hak ("Farid" diambil dari nama penulis commit, bukan nama hukum terverifikasi), syarat alat AI, dan klaim pihak lain tetap belum terverifikasi. Data UDD/UTD dikecualikan dari lisensi di README.
+
 **Kesimpulan:** repositori **belum boleh dinyatakan siap publikasi**. Tidak ditemukan rahasia yang bocor, tetapi ada dua
 blocker kritis yang butuh keputusan atau bukti dari pemelihara (hak redistribusi data UDD/UTD, dan kepemilikan/lisensi kode),
 serta satu pengaturan yang belum ada (jalur pelaporan kerentanan privat). Lihat bagian 8. **Pembaruan lanjutan** (bagian 10-12):
