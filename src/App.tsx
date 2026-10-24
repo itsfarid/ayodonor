@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
 import PmiLocator from "./components/PmiLocator";
 import HeroCard from "./components/HeroCard";
+import {
+  allQuizAnswersSafe,
+  buildChatFallback,
+  buildQuizSummary,
+  MEDICAL_DISCLAIMER,
+  OFFLINE_NOTICE,
+} from "../shared/content";
 
 // --- Custom Simple Markdown Parser for beautiful styled responses ---
 function parseMarkdown(text: string): React.ReactNode[] {
@@ -34,7 +41,8 @@ function parseMarkdown(text: string): React.ReactNode[] {
       );
     }
     // Listed Items
-    if (cleanLine.startsWith("*") || cleanLine.startsWith("-")) {
+    // A bullet needs whitespace after the marker; a line starting with **bold** is a paragraph.
+    if (/^[*-]\s/.test(cleanLine)) {
       const content = cleanLine.substring(1).trim();
       return (
         <li key={lineIdx} className="list-disc list-inside ml-4 text-slate-700 my-1.5 leading-relaxed">
@@ -77,6 +85,13 @@ function renderStyledText(text: string): React.ReactNode {
   });
 }
 
+type ChatMessage = {
+  role: "user" | "model";
+  text: string;
+  /** ai = live model answer; fallback = automatic reply; error = system notice (e.g. rate limit). */
+  source?: "ai" | "fallback" | "error";
+};
+
 // Must stay within the limits enforced by server/validation.ts.
 const CHAT_HISTORY_MAX_ITEMS = 10;
 const CHAT_HISTORY_ITEM_MAX_CHARS = 2000;
@@ -100,17 +115,22 @@ export default function App() {
     recency: "" as "safe" | "unsafe" | ""
   });
   const [quizResult, setQuizResult] = useState<string>("");
+  // Where the explanation came from: live AI or the built-in automatic summary.
+  const [quizSource, setQuizSource] = useState<"ai" | "fallback">("fallback");
+  const [quizNotice, setQuizNotice] = useState<string>("");
   const [isQuizEvaluating, setIsQuizEvaluating] = useState<boolean>(false);
 
   // Chatbot State
   const [chatOpened, setChatOpened] = useState<boolean>(false);
   const [chatInput, setChatInput] = useState<string>("");
-  const [chatHistory, setChatHistory] = useState<Array<{ role: "user" | "model"; text: string }>>([
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([
     {
       role: "model",
-      text: "Halo Kak! 😎 Aku **AyoDonor Buddy**. Takut jarum suntik? Takut gemuk? Atau bingung syarat PMI? Tanyain aja semuanya ke aku, bakal aku jawab dengan bahasa santuy bin menghibur!"
+      text: "Halo Kak! 😎 Aku **Sobat Hero AI**. Tanya aja hal umum soal donor darah. Jawabanku bisa keliru dan bukan nasihat medis; untuk syarat resmi, tanya PMI ya."
     }
   ]);
+  // Honest connection state: unknown until the first reply tells us where it came from.
+  const [aiStatus, setAiStatus] = useState<"unknown" | "ai" | "fallback">("unknown");
   const [isChatSending, setIsChatSending] = useState<boolean>(false);
   const chatBottomRef = useRef<HTMLDivElement>(null);
 
@@ -120,15 +140,6 @@ export default function App() {
       chatBottomRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatHistory, chatOpened]);
-
-  // Initial welcome message or local checking
-  useEffect(() => {
-    // Check connection with api
-    fetch("/api/health")
-      .then((res) => res.json())
-      .then((data) => console.log("Server Health:", data))
-      .catch((err) => console.warn("API disconnect warning, using fallbacks:", err));
-  }, []);
 
   // Handle Quiz Step Progression
   const answerQuizQuestion = (questionKey: "ageWeight" | "sleep" | "meds" | "recency", val: "safe" | "unsafe") => {
@@ -140,53 +151,49 @@ export default function App() {
     }
   };
 
-  // Trigger Gemini API evaluation
+  // Ask the server for an explanation of the quiz summary. Falls back to the built-in summary.
   const evaluateEligibility = async (finalAnswers: typeof answers) => {
     setIsQuizEvaluating(true);
     setQuizResult("");
+    setQuizNotice("");
+    const name = visitorName.trim() || undefined;
     try {
       const response = await fetch("/api/gemini/evaluate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: visitorName || "Sobat Hero",
-          ageWeight: finalAnswers.ageWeight,
-          sleep: finalAnswers.sleep,
-          meds: finalAnswers.meds,
-          recency: finalAnswers.recency
-        }),
+        body: JSON.stringify({ name, ...finalAnswers }),
       });
-      const data = await response.json();
-      if (data.success) {
+      const data = await response.json().catch(() => null);
+      if (response.ok && data?.success && typeof data.text === "string") {
         setQuizResult(data.text);
+        setQuizSource(data.source === "ai" ? "ai" : "fallback");
+        if (data.source !== "ai") setQuizNotice(OFFLINE_NOTICE);
       } else {
-        throw new Error(data.error || "Gagal mendapat evaluasi");
+        throw new Error(data?.code || `http_${response.status}`);
       }
     } catch (err) {
-      // Graceful local evaluation fallback in case of no server
-      console.error(err);
-      const isEligible = finalAnswers.ageWeight === "safe" && finalAnswers.sleep === "safe" && finalAnswers.meds === "safe" && finalAnswers.recency === "safe";
-      if (isEligible) {
-        setQuizResult(`### 🎉 Mantap Jiwa, **${visitorName || "Sobat Hero"}**! \n\nBerdasarkan 4 pertanyaan ini, kamu **KEMUNGKINAN BESAR** memenuhi syarat awal — tapi keputusan akhir tetap ditentukan lewat pemeriksaan medis langsung di PMI (cek Hb, tensi, riwayat kesehatan lengkap).\n\n*   **Umur & Badan:** Sip banget!\n*   **Tidur:** Cukup dan bugar!\n*   **Kondisi medis:** Fit luar dalam!\n*   **Jeda Jarak:** Aman tentram!\n\nYuk, datang ke unit PMI terdekat buat screening resmi. Satu kantong darah darimu bisa jadi mukjizat buat 3 nyawa. Jangan lupa minum air yang cukup sebelum datang ya, gaes! 🩸🚀`);
-      } else {
-        const adviceList = [];
-        if (finalAnswers.ageWeight !== "safe") adviceList.push("*   **Umur / BB Belum Pas:** Minimal umur 17 tahun dan berat badan 45 kg ya, sob. Tubuh butuh sirkulasi darah yang stabil agar darahmu aman didonor.");
-        if (finalAnswers.sleep !== "safe") adviceList.push("*   **Begadang Mania:** Tidur semalam kurang dari 5 jam bisa bikin tensimu berantakan! Tidur dulu yuk sekarang.");
-        if (finalAnswers.meds !== "safe") adviceList.push("*   **Detoks Obat / Menstruasi:** Obat-obatan bertahan beberapa hari di darah, dan saat haid tubuh wanita kehilangan zat besi gila-gilaan. Sembuh & bugar dulu ya!");
-        if (finalAnswers.recency !== "safe") adviceList.push("*   **Jarak Terlalu Kilat:** Butuh 2 bulan jeda antar donor, biar sel darah merahmu recover seutuhnya. Tato baru perlu jeda 6 bulan.");
-
-        setQuizResult(`### 💊 Selangkah Lagi Jadi Hero, **${visitorName || "Sobat"}**! \n\nNiat muliamu patut diacungi jempol, tapi tubuhmu hari ini ngasih sinyal untuk re-charge dulu. Berikut catatan kecil buatmu:\n\n${adviceList.join("\n")}\n\n**Solusi Santuy:** Jangan berkecil hati! Minum air putih hangat yang banyak hari ini, tidur pules 7-8 jam nanti malam, dan yuk coba cek kelayakan lagi lain hari! Sobat tetap calon pahlawan sejati! 🌟`);
-      }
+      console.warn("Quiz explanation unavailable, using built-in summary.");
+      setQuizResult(buildQuizSummary(name, finalAnswers));
+      setQuizSource("fallback");
+      setQuizNotice(OFFLINE_NOTICE);
     } finally {
       setIsQuizEvaluating(false);
     }
   };
 
-  // Send message to Gemini chatbox
+  const finishQuiz = async (recency: "safe" | "unsafe") => {
+    if (isQuizEvaluating) return;
+    const finalAnswers = { ...answers, recency };
+    setAnswers(finalAnswers);
+    setQuizStep(5);
+    await evaluateEligibility(finalAnswers);
+  };
+
+  // Send message to the chat assistant
   const sendChatMessage = async (msg: string) => {
     if (!msg.trim() || isChatSending) return;
-    
-    const userMsg = { role: "user" as const, text: msg };
+
+    const userMsg: ChatMessage = { role: "user", text: msg };
     setChatHistory((prev) => [...prev, userMsg]);
     setChatInput("");
     setIsChatSending(true);
@@ -197,38 +204,28 @@ export default function App() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           message: msg,
-          // The API bounds history size; send only recent turns, each capped in length.
-          history: chatHistory.slice(-CHAT_HISTORY_MAX_ITEMS).map((h) => ({
-            role: h.role,
-            text: h.text.slice(0, CHAT_HISTORY_ITEM_MAX_CHARS),
-          }))
-        })
+          // The API bounds history size; send only recent live turns, each capped in length.
+          history: chatHistory
+            .filter((h) => h.source !== "error" && h.source !== "fallback")
+            .slice(-CHAT_HISTORY_MAX_ITEMS)
+            .map((h) => ({ role: h.role, text: h.text.slice(0, CHAT_HISTORY_ITEM_MAX_CHARS) })),
+        }),
       });
-      const data = await response.json();
-      if (data.success) {
-        setChatHistory((prev) => [...prev, { role: "model", text: data.text }]);
+      const data = await response.json().catch(() => null);
+      if (response.ok && data?.success && typeof data.text === "string") {
+        const source = data.source === "ai" ? "ai" : "fallback";
+        setAiStatus(source);
+        setChatHistory((prev) => [...prev, { role: "model", text: data.text, source }]);
+      } else if (data?.code === "rate_limited" || data?.code === "invalid_request" || data?.code === "payload_too_large") {
+        // The server refused this request: tell the user why instead of faking an answer.
+        setChatHistory((prev) => [...prev, { role: "model", text: String(data.error || "Permintaan ditolak."), source: "error" }]);
       } else {
-        throw new Error(data.error);
+        throw new Error(data?.code || `http_${response.status}`);
       }
     } catch (err) {
-      console.error(err);
-      // Friendly local answer context
-      const lower = msg.toLowerCase();
-      const keywords = ["donor", "darah", "jarum", "sakit", "lemas", "lemes", "pusing", "haid", "obat", "tato", "tindik", "tensi", "hb", "gemuk", "berat", "kelayakan", "tidur", "pmi", "kesehatan", "tubuh", "nyawa", "pahlawan", "hero", "manfaat", "syarat", "plasma", "trombosit", "kantong"];
-      const isRelated = keywords.some(kw => lower.includes(kw));
-
-      let localReply = "Duh hampura, AI Buddy lagi rada lemot jaringannya. Tapi intinya donor darah itu aman & menyehatkan kok, kuy!";
-
-      if (!isRelated) {
-        localReply = "### 🥤 Waduh, OOT (Out of Topic) Nih, Sob! \n\nTopik itu menarik banget (kayak manis-gurihnya es cendol, atau hal seru lainnya!), tapi **AyoDonor Buddy** ini khusus dilatih untuk membahas seputar donor darah, mitos medis, serta info kelayakan kesehatan tubuh demi aksi heroik menyelamatkan 3 nyawa! \n\nDaripada ngomongin yang lain, yuk tanyain hal seputar donor darah aja. Contohnya: \n* 'Apakah donor darah bikin gemuk?' \n* 'Takut jarum suntik, gimana dong?' \n* 'Kenapa gak boleh begadang sebelum donor?'";
-      } else if (lower.includes("gemuk")) {
-        localReply = "### Mitos Gedenya: 'Donor Bikin Gemuk'\n\n**Faktanya:** Donor darah gak bikin badan melar. Tubuh memang memakai energi ekstra untuk regenerasi darah yang disumbangkan — tapi itu **efek samping regenerasi**, bukan alasan utama buat donor, apalagi bukan program diet.\n\nMotivasi utamanya tetap **menyelamatkan nyawa**. Yang bikin melar biasanya porsi balas dendam makan geprek double nasi setelahnya! 🍔";
-      } else if (lower.includes("jarum") || lower.includes("takut") || lower.includes("sakit")) {
-        localReply = "### Tips Usir Takut Jarum\n\n1. Tangkup mata kalian atau buang muka pas ditusuk.\n2. Tarik napas dalem 3 detik, gak lebih sakit dari digigit semut buduk!\n3. Bayangin habis donor dapet mie instan cup dan biskuit hangat PMI. Kenikmatan hakiki!";
-      } else if (lower.includes("lemas") || lower.includes("pusing")) {
-        localReply = "### Kenapa Ada yang Lemes?\n\nItu biasanya karena begadang semalemnya atau belum sarapan air putih dan karbo. Asal persiapan sobat matang, habis donor malah ngerasa fressh bertenaga!";
-      }
-      setChatHistory((prev) => [...prev, { role: "model", text: localReply }]);
+      console.warn("Chat AI unavailable, using automatic reply.");
+      setAiStatus("fallback");
+      setChatHistory((prev) => [...prev, { role: "model", text: buildChatFallback(msg), source: "fallback" }]);
     } finally {
       setIsChatSending(false);
     }
@@ -244,6 +241,7 @@ export default function App() {
       recency: ""
     });
     setQuizResult("");
+    setQuizNotice("");
   };
 
   return (
@@ -656,13 +654,13 @@ export default function App() {
           <div className="bg-gradient-to-r from-slate-900 to-red-800 text-white p-6 md:p-8 flex items-center justify-between">
             <div>
               <div className="inline-block bg-red-600 text-white text-[10px] font-mono font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-2">
-                🎮 LOCAL INTERACTIVE STORYBOARD
+                🎮 KUIS EDUKASI · 4 PERTANYAAN
               </div>
               <h2 className="text-2xl md:text-3xl font-black text-white leading-none">
-                Game Simulator Kelayakan 🩺
+                Kuis Panduan Awal Donor Darah 🩺
               </h2>
               <p className="text-slate-300 text-xs md:text-sm mt-1">
-                Gak perlu baca regulasi PMI yang kaku & panjang. Cukup mainkan kuis taktil interaktif ini seketika!
+                Kuis singkat untuk belajar apa yang biasanya ditanyakan sebelum donor. Hasilnya bukan keputusan medis.
               </p>
             </div>
             
@@ -682,7 +680,7 @@ export default function App() {
                   Siapa Nama Pahlawan Kita Hari Ini?
                 </h3>
                 <p className="text-slate-500 text-xs md:text-sm mt-1 max-w-sm mx-auto">
-                  Tulis panggilan akrabmu agar Droppy AI Buddy bisa nge-review fisikmu secara personal & akurat!
+                  Tulis nama panggilan (boleh nama samaran). Nama dan jawaban kuismu dikirim ke server untuk menyusun ringkasan; lihat bagian Privasi di bawah.
                 </p>
 
                 <div className="mt-6 max-w-sm mx-auto">
@@ -752,10 +750,10 @@ export default function App() {
                         KATEGORI 1: USIA & BERAT BADAN
                       </div>
                       <h3 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
-                        Halo <span className="text-red-600 underline font-black">{visitorName}</span>, apakah umurmu di kisaran 17 sampai 60 tahun dengan Berat Badan minimal mencapai 45 Kg?
+                        Halo <span className="text-red-600 underline font-black">{visitorName}</span>, apakah umurmu minimal 17 tahun dan berat badanmu minimal 45 kg?
                       </h3>
                       <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                        PMI mewajibkan BB minimal 45kg agar volume sirkulasi darah luar aman tersuplai tanpa kerasa pening.
+                        Batas berat badan bisa lebih tinggi untuk kantong 450 mL (mis. 55 kg menurut Permenkes 91/2015). Petugas PMI yang menimbang dan memutuskan.
                       </p>
                       
                       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -764,14 +762,14 @@ export default function App() {
                           onClick={() => answerQuizQuestion("ageWeight", "safe")}
                           className="min-h-[52px] p-4 rounded-2xl font-bold text-sm bg-white hover:bg-red-50 border-2 border-slate-200 hover:border-red-500 text-slate-700 hover:text-red-600 shadow-sm active:scale-95 transition-all text-center flex items-center justify-center gap-2"
                         >
-                          🟢 Ya, Umur & BB-ku Masuk Kategori Sip!
+                          🟢 Ya, kurasa sudah memenuhi
                         </button>
                         <button
                           id="btn-q1-unsafe"
                           onClick={() => answerQuizQuestion("ageWeight", "unsafe")}
                           className="min-h-[52px] p-4 rounded-2xl font-bold text-sm bg-white hover:bg-slate-100 border-2 border-slate-200 hover:border-slate-400 text-slate-750 shadow-sm active:scale-95 transition-all text-center flex items-center justify-center gap-2"
                         >
-                          ❌ Wah, BB-ku Dibawah 45 Kg / Usia Belum Pas
+                          ❌ Belum, atau aku tidak yakin
                         </button>
                       </div>
                     </div>
@@ -784,10 +782,10 @@ export default function App() {
                         KATEGORI 2: KUALITAS TIDUR
                       </div>
                       <h3 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
-                        Tidur semalam cukup gak, {visitorName}? Dapat minimal 5 jam tidur nyenyak sebelum hari ini?
+                        Apakah kamu cukup istirahat dan merasa sehat hari ini, {visitorName}?
                       </h3>
                       <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                        Begadang ekstrem bisa mengacaukan pembacaan tensi darah di atas rata-rata normal medis. Kami peduli fisikmu!
+                        PMI menganjurkan tidur cukup sebelum donor. Kami tidak menetapkan jumlah jam tidur tertentu.
                       </p>
 
                       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -796,14 +794,14 @@ export default function App() {
                           onClick={() => answerQuizQuestion("sleep", "safe")}
                           className="min-h-[52px] p-4 rounded-2xl font-bold text-sm bg-white hover:bg-red-50 border-2 border-slate-200 hover:border-red-500 text-slate-700 hover:text-red-600 shadow-sm active:scale-95 transition-all text-center flex items-center justify-center gap-2"
                         >
-                          🟢 Cukup Banget, Terlelap Nyenyak!
+                          🟢 Ya, cukup istirahat dan merasa sehat
                         </button>
                         <button
                           id="btn-q2-unsafe"
                           onClick={() => answerQuizQuestion("sleep", "unsafe")}
                           className="min-h-[52px] p-4 rounded-2xl font-bold text-sm bg-white hover:bg-slate-100 border-2 border-slate-200 hover:border-slate-400 text-slate-750 shadow-sm active:scale-95 transition-all text-center flex items-center justify-center gap-2"
                         >
-                          ❌ Begadang Kurang Tidur nih / Sulit Rekam Jam
+                          ❌ Kurang istirahat atau kurang fit
                         </button>
                       </div>
                     </div>
@@ -813,13 +811,13 @@ export default function App() {
                   {quizStep === 3 && (
                     <div id="question-3" className="text-center md:text-left">
                       <div className="inline-block bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full mb-3">
-                        KATEGORI 3: OBAT, ANTIBIOTIK & HAID
+                        KATEGORI 3: SAKIT & PENGOBATAN
                       </div>
                       <h3 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
-                        Apakah sobat sedang konsumsi obat antibiotik dalam 3 hari terakhir, atau sedang Masa Haid (Khusus Wanita)?
+                        Apakah kamu sedang sakit, atau sedang menjalani pengobatan / minum obat tertentu (termasuk antibiotik)?
                       </h3>
                       <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                        Obat penawar di darah menyaring beberapa hari. Wanita haid juga berisiko pening pudar hemoglobin saat mendonor.
+                        Petugas menilai penyakit dan jenis obatnya satu per satu. Sebutkan semua obat yang kamu minum saat pemeriksaan.
                       </p>
 
                       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -828,14 +826,14 @@ export default function App() {
                           onClick={() => answerQuizQuestion("meds", "safe")}
                           className="min-h-[52px] p-4 rounded-2xl font-bold text-sm bg-white hover:bg-red-50 border-2 border-slate-200 hover:border-red-500 text-slate-700 hover:text-red-600 shadow-sm active:scale-95 transition-all text-center flex items-center justify-center gap-2"
                         >
-                          🟢 Aman, Gak Ada Konsumsi Obat / Haid!
+                          🟢 Tidak sedang sakit atau berobat
                         </button>
                         <button
                           id="btn-q3-unsafe"
                           onClick={() => answerQuizQuestion("meds", "unsafe")}
                           className="min-h-[52px] p-4 rounded-2xl font-bold text-sm bg-white hover:bg-slate-100 border-2 border-slate-200 hover:border-slate-400 text-slate-750 shadow-sm active:scale-95 transition-all text-center flex items-center justify-center gap-2"
                         >
-                          ❌ Iya, Sedang Minum Obat / Haid
+                          ❌ Ya, sedang sakit atau berobat
                         </button>
                       </div>
                     </div>
@@ -845,37 +843,29 @@ export default function App() {
                   {quizStep === 4 && (
                     <div id="question-4" className="text-center md:text-left">
                       <div className="inline-block bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full mb-3">
-                        KATEGORI 4: JEDA WAKTU & SENI TATO
+                        KATEGORI 4: JEDA WAKTU
                       </div>
                       <h3 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
-                        Pertanyaan terakhir: Baru donor dalam 2 bulan terkahir atau bikin seni tato/tindik baru dalam 6 bulan kemarin?
+                        Pertanyaan terakhir: apakah kamu baru-baru ini donor darah (dalam 3 bulan terakhir), atau membuat tato, tindik, atau akupunktur (dalam 1 tahun terakhir)?
                       </h3>
                       <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                        Sel darah butuh 56 hari buat regenerasi penuh. Tato baru butuh sterilisasi antibodi hepatitis luar demi higienitas ketat.
+                        Jeda minimal berbeda antar sumber resmi (donor: 2-3 bulan; tato/tindik: beberapa bulan hingga 1 tahun), jadi kami memakai rentang yang paling hati-hati. Petugas PMI yang memutuskan.
                       </p>
 
                       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <button
                           id="btn-q4-safe"
-                          onClick={async () => {
-                            setAnswers(prev => ({ ...prev, recency: "safe" }));
-                            await evaluateEligibility({ ...answers, recency: "safe" });
-                            setQuizStep(5);
-                          }}
+                          onClick={() => finishQuiz("safe")}
                           className="min-h-[52px] p-4 rounded-2xl font-bold text-sm bg-white hover:bg-red-50 border-2 border-slate-200 hover:border-red-500 text-slate-700 hover:text-red-600 shadow-sm active:scale-95 transition-all text-center flex items-center justify-center gap-2"
                         >
-                          🟢 Gak Pernah, Aman Terkendali!
+                          🟢 Tidak, sudah lewat atau tidak pernah
                         </button>
                         <button
                           id="btn-q4-unsafe"
-                          onClick={async () => {
-                            setAnswers(prev => ({ ...prev, recency: "unsafe" }));
-                            await evaluateEligibility({ ...answers, recency: "unsafe" });
-                            setQuizStep(5);
-                          }}
+                          onClick={() => finishQuiz("unsafe")}
                           className="min-h-[52px] p-4 rounded-2xl font-bold text-sm bg-white hover:bg-slate-100 border-2 border-slate-200 hover:border-slate-400 text-slate-755 shadow-sm active:scale-95 transition-all text-center flex items-center justify-center gap-2"
                         >
-                          ❌ Iya, Baru Saja Donor / Pasang Tato
+                          ❌ Ya, baru-baru ini
                         </button>
                       </div>
                     </div>
@@ -905,28 +895,33 @@ export default function App() {
                     {/* Pulsing Loading Spinner */}
                     <div className="w-16 h-16 border-4 border-red-200 border-t-red-600 rounded-full animate-spin mb-4" />
                     <h3 className="text-lg font-bold text-slate-800">
-                      Droppy AI Buddy Sedang Menganalisis Sel Darahmu...
+                      Menyiapkan penjelasan hasil kuis...
                     </h3>
                     <p className="text-slate-500 text-xs mt-1">
-                      Menghubungi jembatan pintar Gemini 3 Flash server-side. Sabar 1 detik ya!
+                      Menghubungi AI untuk menulis penjelasan. Jika tidak tersedia, kami tampilkan ringkasan otomatis.
                     </p>
                   </div>
                 ) : (
                   <div>
                     {/* Real Evaluation Box Layout */}
                     <div className={`p-6 md:p-8 rounded-3xl border ${
-                      answers.ageWeight === "safe" && answers.sleep === "safe" && answers.meds === "safe" && answers.recency === "safe"
-                        ? "bg-emerald-50/60 border-emerald-200 text-emerald-900"
+                      allQuizAnswersSafe(answers)
+                        ? "bg-sky-50/60 border-sky-200 text-sky-900"
                         : "bg-amber-50/60 border-amber-200 text-amber-900"
                     } shadow-sm overflow-hidden relative`}>
                       
                       {/* Check badge background decoration */}
                       <span className="absolute -top-10 -right-10 text-9xl opacity-10 select-none">
-                        {answers.ageWeight === "safe" && answers.sleep === "safe" && answers.meds === "safe" && answers.recency === "safe" ? "❇️" : "⚠️"}
+                        {allQuizAnswersSafe(answers) ? "🩸" : "ℹ️"}
                       </span>
 
                       <div className="relative z-10">
                         {parseMarkdown(quizResult)}
+                        <p className="mt-4 text-[11px] font-semibold text-slate-600">
+                          {quizSource === "ai"
+                            ? "Penjelasan ditulis AI dan bisa keliru. Ini bukan nasihat medis."
+                            : quizNotice || OFFLINE_NOTICE}
+                        </p>
                       </div>
                     </div>
 
@@ -936,7 +931,7 @@ export default function App() {
                     >
                       <span className="text-xl leading-none shrink-0" aria-hidden="true">⚠️</span>
                       <p className="text-sm font-semibold leading-relaxed">
-                        Ini bukan diagnosis medis. Kriteria lengkap dan pemeriksaan resmi hanya dilakukan oleh petugas PMI saat kamu datang langsung.
+                        {MEDICAL_DISCLAIMER}
                       </p>
                     </div>
 
@@ -966,10 +961,10 @@ export default function App() {
                       <button
                         id="btn-reset-quiz"
                         onClick={resetQuiz}
-                        aria-label="Ulangi kuis kelayakan"
+                        aria-label="Ulangi kuis"
                         className="bg-slate-900 text-white px-6 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-slate-800 active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
                       >
-                        🔄 Check Kelayakan Lagi
+                        🔄 Ulangi Kuis
                       </button>
                     </div>
 
@@ -989,13 +984,13 @@ export default function App() {
           
           <div className="text-center mb-8">
             <span className="text-xs font-mono font-bold text-red-600 bg-red-50 py-1.5 px-4 rounded-full uppercase tracking-wider">
-              💬 REAL INTEGRATION DEMO
+              💬 ASISTEN AI · BETA
             </span>
             <h2 className="text-3xl font-black text-slate-800 mt-3">
               Chat Sobat Hero AI 🤖
             </h2>
             <p className="text-slate-500 text-sm mt-1">
-              Punya keluh kesah, ketakutan terpendam, atau mitos aneh seputar donor? Tanya Droppy AI seketika!
+              Tanya hal umum seputar donor darah. Jawaban AI bisa keliru dan bukan nasihat medis; syarat resmi tetap ditentukan PMI.
             </p>
           </div>
 
@@ -1008,16 +1003,24 @@ export default function App() {
                   💧
                 </div>
                 <div>
-                  <h4 className="font-extrabold text-sm leading-tight">Droppy, AyoDonor Buddy AI</h4>
-                  <p className="text-[10px] text-red-200 flex items-center gap-1 mt-0.5">
-                    <span className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-heartbeat" />
-                    Online & Selalu Humoris
+                  <h4 className="font-extrabold text-sm leading-tight">Sobat Hero AI</h4>
+                  <p className="text-[10px] text-red-100 flex items-center gap-1 mt-0.5" role="status">
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        aiStatus === "ai" ? "bg-emerald-400" : aiStatus === "fallback" ? "bg-amber-400" : "bg-slate-300"
+                      }`}
+                    />
+                    {aiStatus === "ai"
+                      ? "Terhubung ke AI"
+                      : aiStatus === "fallback"
+                        ? "Mode offline: balasan otomatis"
+                        : "Siap menjawab (AI bila tersedia)"}
                   </p>
                 </div>
               </div>
 
               <div className="text-[10px] font-mono bg-red-900/30 px-3 py-1 rounded-full text-red-100">
-                ⚡ models/gemini-3.5-flash
+                {aiStatus === "ai" ? "AI aktif" : aiStatus === "fallback" ? "AI tidak tersedia" : "Beta"}
               </div>
             </div>
 
@@ -1045,6 +1048,15 @@ export default function App() {
                       : "bg-white text-slate-800 rounded-tl-none border border-slate-200 shadow-sm text-sm"
                   }`}>
                     {chat.role === "user" ? chat.text : parseMarkdown(chat.text)}
+                    {chat.role === "model" && chat.source && (
+                      <p className="mt-2 text-[10px] font-semibold text-slate-500">
+                        {chat.source === "ai"
+                          ? "Dijawab AI · bisa keliru, bukan nasihat medis"
+                          : chat.source === "fallback"
+                            ? "⚠️ Balasan otomatis, bukan dari AI"
+                            : "Pesan sistem"}
+                      </p>
+                    )}
                   </div>
                 </div>
               ))}
@@ -1060,7 +1072,7 @@ export default function App() {
                       <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-bounce [animation-delay:-0.15s]" />
                       <span className="w-1.5 h-1.5 bg-red-600 rounded-full animate-bounce" />
                     </span>
-                    Droppy lagi mikir jawaban lawak...
+                    Sobat Hero AI lagi menyiapkan jawaban...
                   </div>
                 </div>
               )}
@@ -1107,7 +1119,7 @@ export default function App() {
             {/* Message input layout */}
             <div className="p-3 bg-white border-t border-slate-200 flex gap-2">
               <label htmlFor="chat-message-input" className="sr-only">
-                Tulis pertanyaan untuk Droppy
+                Tulis pertanyaan untuk Sobat Hero AI
               </label>
               <input
                 id="chat-message-input"
@@ -1115,7 +1127,7 @@ export default function App() {
                 maxLength={CHAT_MESSAGE_MAX_CHARS}
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Tanyakan ketakutanmu di sini (e.g., 'sakit gak?', 'dapat biskuit apa?')..."
+                placeholder="Tanya hal umum soal donor darah..."
                 className="flex-1 p-3.5 border border-slate-200 focus:border-red-500 focus:outline-none rounded-xl text-sm"
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -1126,7 +1138,7 @@ export default function App() {
               <button
                 id="btn-send-message"
                 onClick={() => sendChatMessage(chatInput)}
-                aria-label="Kirim pesan ke Droppy"
+                aria-label="Kirim pesan ke Sobat Hero AI"
                 className="bg-red-600 hover:bg-red-700 text-white rounded-xl px-5 font-extrabold text-sm shadow-md active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 cursor-pointer flex items-center justify-center gap-1"
               >
                 Kirim
