@@ -82,6 +82,13 @@ try {
       check("GET built JS asset", false, "no JS asset found in dist/public/assets");
     }
 
+    // The built artifacts must not contain any AI provider code or key names.
+    const { readFileSync } = await import("node:fs");
+    const bundles = [join(root, "dist", "server", "index.cjs")];
+    if (jsAsset) bundles.push(join(assetDir, jsAsset));
+    const leaked = bundles.filter((f) => /gemini|genai|GEMINI_API_KEY/i.test(readFileSync(f, "utf8")));
+    check("built bundles contain no AI provider references", leaked.length === 0, leaked.join(", "));
+
     for (const p of [
       "/server/index.cjs",
       "/server/index.cjs.map",

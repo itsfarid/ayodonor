@@ -67,7 +67,7 @@ export async function createApp(options: AppOptions): Promise<Express> {
     res.json({ status: "ok", message: "AyoDonor server running gracefully!" });
   });
 
-  // Anything else under /api does not exist (the former /api/gemini/* endpoints were removed).
+  // Anything else under /api does not exist (the former AI endpoints were removed, see docs/ai-removal.md).
   app.use("/api", (req, res) => {
     res.status(404).json(errorBody("not_found", "Endpoint tidak ditemukan."));
   });
