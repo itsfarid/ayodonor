@@ -85,7 +85,7 @@ export default function ComponentsFigure() {
         </ul>
         <p style={{ margin: 0 }}>
           Skema sederhana, tidak berskala. Darah lengkap dapat diolah menjadi komponen darah sehingga satu donasi dapat melayani lebih dari satu pasien. Komponen mana yang diberikan kepada pasien diputuskan dokter sesuai kebutuhan medisnya.{" "}
-          <SourceLinks refs={[{ id: "who-safety" }, { id: "permenkes", locator: "hal. 54" }]} />
+          <SourceLinks refs={[{ id: "who-safety" }, { id: "permenkes", locator: "hal. 53" }]} />
         </p>
       </figcaption>
     </figure>

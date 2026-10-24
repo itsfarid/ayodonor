@@ -20,6 +20,8 @@ export interface Source {
   supports: string;
   /** Known limits of the source. */
   limits: string;
+  /** A copy of the same document that was used to re-check wording and page numbers, when the main URL cannot be opened by everyone. */
+  readCopy?: { label: string; url: string };
 }
 
 export const SOURCES: Source[] = [
@@ -35,7 +37,11 @@ export const SOURCES: Source[] = [
     supports:
       "Kriteria seleksi donor (usia, berat badan, tekanan darah, nadi, suhu, Hb), jeda dan frekuensi donor, penolakan sementara (tato/tindik, kehamilan, demam, pengobatan), skrining IMLTD, volume kantong, komponen darah.",
     limits:
-      "Terbitan 2015. Halaman JDIH tidak mencantumkan perubahan atau pencabutan, tetapi kami tidak memeriksa regulasi yang lebih baru. Tidak menyebut haid atau menyusui.",
+      "Terbitan 2015. Status \"Berlaku\" dibaca di JDIH, tetapi kami tidak memeriksa regulasi yang lebih baru. Kriteria seleksi donor (hal. 55-63) tidak menyebut haid atau menyusui. Nomor halaman mengacu pada nomor cetak \"-N-\" di Berita Negara RI 2016 No. 36; penampil PDF di JDIH bisa menunjukkan nomor lain.",
+    readCopy: {
+      label: "Berita Negara RI 2016 No. 36 (salinan PDF, kemhan.go.id; berkas besar, sebagian halaman berupa gambar)",
+      url: "https://www.kemhan.go.id/itjen/wp-content/uploads/2017/03/bn36-2016.pdf",
+    },
   },
   {
     id: "pmi-faq",
@@ -46,9 +52,9 @@ export const SOURCES: Source[] = [
     url: "https://ayodonor.pmi.or.id/?page=faq",
     published: "Tidak ada tanggal pada halaman",
     accessed: ACCESSED_ON,
-    supports: "Persiapan sebelum dan sesudah donor, pemulihan darah, pemeriksaan sebelum donor, penundaan setelah tato/tindik, menyusui, demam.",
+    supports: "Persyaratan umum (usia, berat badan, tekanan darah, Hb, jeda 2 bulan), persiapan sebelum dan sesudah donor, pemulihan darah, pemeriksaan sebelum donor, penundaan setelah tato/tindik, kehamilan, menyusui, demam, syarat donor trombosit apheresis.",
     limits:
-      "Tanpa tanggal. Angkanya berbeda dari Permenkes pada beberapa hal (lihat tabel perbedaan). Satuan waktu untuk kehamilan tidak tertulis.",
+      "Tanpa tanggal. Angkanya berbeda dari Permenkes pada beberapa hal (lihat tabel perbedaan). Satuan waktu untuk kehamilan tidak tertulis. Memuat klaim kesehatan donor (\"menyehatkan\") tanpa rujukan studi, yang tidak kami ulang.",
   },
   {
     id: "pmi-stok",
@@ -85,7 +91,7 @@ export const SOURCES: Source[] = [
     published: "Halaman bertanggal 12 Juni 2026",
     accessed: ACCESSED_ON,
     supports:
-      "Donor sukarela tanpa bayaran sebagai dasar pasokan yang aman; skrining semua donasi untuk HIV, hepatitis B, hepatitis C, dan sifilis; pemisahan darah lengkap menjadi komponen sehingga dapat melayani lebih dari satu pasien.",
+      "Donor sukarela tanpa bayaran sebagai dasar pasokan yang aman; WHO merekomendasikan semua donasi diskrining dan skrining HIV, hepatitis B, hepatitis C, dan sifilis semestinya wajib; pemrosesan darah lengkap menjadi komponen sehingga dapat melayani lebih dari satu pasien.",
     limits: "Tidak memuat kriteria pendonor (usia, berat badan, Hb) dan tidak menyebut manfaat kesehatan bagi pendonor.",
   },
   {
@@ -177,63 +183,63 @@ export interface CriteriaRow {
 export const CRITERIA_COMPARISON: CriteriaRow[] = [
   {
     criterion: "Usia",
-    permenkes: "Minimal 17 tahun. Donor pertama >60 tahun atau donor ulang >65 tahun: perhatian khusus berdasarkan pertimbangan medis (hal. 56).",
+    permenkes: "Minimal 17 tahun. Donor pertama >60 tahun atau donor ulang >65 tahun: perhatian khusus berdasarkan pertimbangan medis (hal. 55).",
     pmi: "17 sampai 60 tahun; sampai 65 tahun untuk donor rutin yang berhenti atas pertimbangan dokter.",
     who: "Umumnya 18 sampai 65 tahun; sebagian negara membolehkan 16-17 tahun dengan persetujuan, sebagian membatasi 60 tahun.",
     kemkes: "Minimal 17 tahun; donor pertama maks. 60 tahun; >60 (pertama) dan >65 (ulang) dengan perhatian khusus.",
   },
   {
     criterion: "Berat badan",
-    permenkes: "45 kg untuk kantong 350 mL; 55 kg untuk kantong 450 mL dan donor apheresis (hal. 56-57).",
+    permenkes: "45 kg untuk kantong 350 mL; 55 kg untuk kantong 450 mL dan donor apheresis (hal. 55-56).",
     pmi: "Minimal 45 kg (donor darah); 55 kg untuk donor trombosit apheresis.",
     who: "Umumnya minimal 50 kg; sebagian negara menerima 45 kg untuk kantong 350 mL.",
     kemkes: "Minimal 45 kg.",
   },
   {
     criterion: "Hemoglobin",
-    permenkes: "12,5 sampai 17 g/dL (hal. 57).",
+    permenkes: "12,5 sampai 17 g/dL (hal. 56).",
     pmi: "12,5 sampai 17,0 g/dL.",
     who: "Banyak negara memakai minimal 12,0 g/dL (perempuan) dan 13,0 g/dL (laki-laki).",
     kemkes: "Sekitar 12,5 sampai 17 g/dL (artikel juga menyebut batas atas 20, tidak konsisten).",
   },
   {
     criterion: "Tekanan darah",
-    permenkes: "Sistolik 90-160 dan diastolik 60-100 mmHg, selisih lebih dari 20 mmHg (hal. 57).",
+    permenkes: "Sistolik 90-160 dan diastolik 60-100 mmHg, selisih lebih dari 20 mmHg (hal. 56).",
     pmi: "Sistolik 100-180 dan diastolik 70-100 mmHg (donor darah).",
     who: "Tidak disebut.",
     kemkes: "\"Normal\", sekitar 90/60 sampai 150/80 mmHg.",
   },
   {
     criterion: "Jeda antar donor darah lengkap",
-    permenkes: "Minimal 2 bulan (laki-laki dan perempuan); maks. 6 kali/tahun (laki-laki) dan 4 kali/tahun (perempuan) (hal. 64).",
+    permenkes: "Minimal 2 bulan (laki-laki dan perempuan); maks. 6 kali/tahun (laki-laki) dan 4 kali/tahun (perempuan) (hal. 63).",
     pmi: "Minimal 2 bulan, mengutip Permenkes 91/2015.",
     who: "Tidak disebut.",
     kemkes: "Minimal 3 bulan (12 minggu) untuk donor ulang.",
   },
   {
     criterion: "Tato, tindik, akupunktur",
-    permenkes: "6 bulan tanpa pemeriksaan NAT hepatitis C; 4 bulan jika NAT pada bulan ke-4 negatif (hal. 59).",
+    permenkes: "6 bulan tanpa pemeriksaan NAT hepatitis C; 4 bulan jika NAT pada bulan ke-4 negatif (hal. 58).",
     pmi: "Tunggu 1 tahun.",
     who: "Penolakan 6 bulan untuk tato atau tindik baru.",
     kemkes: "Tidak disebut.",
   },
   {
     criterion: "Kehamilan dan menyusui",
-    permenkes: "Kehamilan: 6 bulan setelah melahirkan atau penghentian kehamilan (hal. 60). Menyusui tidak disebut.",
+    permenkes: "Kehamilan: 6 bulan setelah melahirkan atau penghentian kehamilan (hal. 59). Menyusui tidak disebut.",
     pmi: "Hamil: tunggu setelah melahirkan (satuan waktu tidak tertulis). Menyusui: tunggu 3 bulan setelah berhenti.",
     who: "Sebanyak bulan lamanya kehamilan; tidak dianjurkan saat menyusui, dengan jeda panjang setelah melahirkan.",
     kemkes: "Tidak boleh saat hamil atau menyusui.",
   },
   {
     criterion: "Demam dan flu",
-    permenkes: "Demam >38 C dan flu-like illness: 2 minggu setelah gejala hilang (hal. 60).",
+    permenkes: "Demam >38 C dan flu-like illness: 2 minggu setelah gejala hilang (hal. 59).",
     pmi: "Tunggu 1 minggu setelah sembuh.",
     who: "Infeksi seperti flu atau pilek menyebabkan penolakan; lama tidak disebut.",
     kemkes: "Tidak disebut.",
   },
   {
     criterion: "Haid",
-    permenkes: "Tidak disebut (kata haid/menstruasi tidak ada di teks).",
+    permenkes: "Tidak disebut di kriteria seleksi donor (hal. 55-63).",
     pmi: "Tidak disebut.",
     who: "Tidak disebut.",
     kemkes: "Tidak ditemukan di artikel.",

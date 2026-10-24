@@ -58,6 +58,15 @@ export default function SourcesSection() {
                         <p className="ref__meta">
                           {s.publisher} · Terbit: {s.published}
                         </p>
+                        {s.readCopy && (
+                          <p className="ref__meta">
+                            Salinan yang dibaca untuk memeriksa halaman:{" "}
+                            <a href={s.readCopy.url} target="_blank" rel="noopener noreferrer">
+                              {s.readCopy.label}
+                              <span className="sr-only"> (membuka tab baru)</span>
+                            </a>
+                          </p>
+                        )}
                         <dl>
                           <div>
                             <dt>Diakses</dt>
@@ -122,7 +131,7 @@ export default function SourcesSection() {
             <p>
               Dua artikel Kemenkes (2023 dan 2025) menyebut manfaat seperti penurunan kolesterol, kesehatan jantung, risiko kanker, dan
               pembakaran kalori tanpa merujuk studi untuk tiap klaim. Lembar fakta WHO di atas tidak menyebut manfaat kesehatan bagi
-              pendonor. Karena itu AyoDonor tidak menjanjikan manfaat kesehatan pribadi. Alasan utama donor adalah membantu pasien.
+              pendonor. FAQ PMI memang menyatakan donor menyehatkan, tetapi juga tanpa rujukan studi. Karena itu AyoDonor tidak menjanjikan manfaat kesehatan pribadi. Alasan utama donor adalah membantu pasien.
             </p>
           </div>
         </div>

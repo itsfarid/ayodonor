@@ -72,7 +72,7 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
     category: "Usia dan berat badan",
     text: (name) => `Halo ${name}, apakah umurmu minimal 17 tahun dan berat badanmu minimal 45 kg?`,
     help: "Batas berat badan berbeda antar sumber: 45 kg atau 55 kg menurut Permenkes (tergantung volume), umumnya 50 kg menurut WHO. Petugas PMI yang menimbang dan memutuskan.",
-    refs: [{ id: "permenkes", locator: "hal. 56-57" }, { id: "who-eligibility" }],
+    refs: [{ id: "permenkes", locator: "hal. 55-56" }, { id: "who-eligibility" }],
     safe: "Ya, kurasa sudah memenuhi",
     unsafe: "Belum, atau aku tidak yakin",
   },
@@ -90,7 +90,7 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
     category: "Sakit dan pengobatan",
     text: () => "Apakah kamu sedang sakit, atau sedang menjalani pengobatan / minum obat tertentu (termasuk antibiotik)?",
     help: "Petugas menilai penyakit dan jenis obatnya satu per satu. Sebutkan semua obat yang kamu minum saat pemeriksaan.",
-    refs: [{ id: "permenkes", locator: "hal. 60, 277" }],
+    refs: [{ id: "permenkes", locator: "hal. 59, formulir 3.2 hal. 276" }],
     safe: "Tidak sedang sakit atau berobat",
     unsafe: "Ya, sedang sakit atau berobat",
   },
@@ -100,7 +100,7 @@ const QUIZ_QUESTIONS: QuizQuestion[] = [
     text: () =>
       "Pertanyaan terakhir: apakah kamu baru-baru ini donor darah (dalam 3 bulan terakhir), atau membuat tato, tindik, atau akupunktur (dalam 1 tahun terakhir)?",
     help: "Jeda minimal berbeda antar sumber resmi (donor: 2-3 bulan; tato/tindik: beberapa bulan hingga 1 tahun), jadi kami memakai rentang yang paling hati-hati. Petugas PMI yang memutuskan.",
-    refs: [{ id: "permenkes", locator: "hal. 59, 64" }, { id: "pmi-faq" }, { id: "who-eligibility" }],
+    refs: [{ id: "permenkes", locator: "hal. 58, 63" }, { id: "pmi-faq" }, { id: "who-eligibility" }],
     safe: "Tidak, sudah lewat atau tidak pernah",
     unsafe: "Ya, baru-baru ini",
   },
@@ -244,14 +244,14 @@ export default function App() {
                 <p className="kicker">02</p>
                 <h3>Satu kantong bisa dipisah menjadi beberapa komponen</h3>
                 <p>Satu kantong bisa dipisah untuk pasien berbeda.</p>
-                <SourceLinks refs={[{ id: "who-safety" }, { id: "permenkes", locator: "hal. 54" }]} />
+                <SourceLinks refs={[{ id: "who-safety" }, { id: "permenkes", locator: "hal. 53" }]} />
               </div>
 
               <div className="glance__item">
                 <p className="kicker">03</p>
                 <h3>Diperiksa petugas sebelum donor</h3>
                 <p>Hb, tekanan darah, dan riwayat kesehatan dicek sebelum donor.</p>
-                <SourceLinks refs={[{ id: "pmi-faq" }, { id: "permenkes", locator: "hal. 56-57" }]} />
+                <SourceLinks refs={[{ id: "pmi-faq" }, { id: "permenkes", locator: "hal. 55-56" }]} />
               </div>
             </div>
           </div>
@@ -277,12 +277,12 @@ export default function App() {
                 <div className="prose">
                   <p>
                     Saat donor, sebagian darahmu diambil. Standar pelayanan transfusi darah menyebut kantong donor berisi sekitar <strong>350 mL atau 450 mL</strong>. Setelah itu tubuh mengganti darah yang diambil. Menurut FAQ PMI, volume darah diganti dalam 48 jam dan sel darah merah pengganti terbentuk dalam sekitar 4-8 minggu.{" "}
-                    <SourceLinks refs={[{ id: "permenkes", locator: "hal. 64" }, { id: "pmi-faq" }]} />
+                    <SourceLinks refs={[{ id: "permenkes", locator: "hal. 63" }, { id: "pmi-faq" }]} />
                   </p>
 
                   <ul className="ruled">
                     <li>
-                      <strong>Ada jeda antar donor.</strong> Permenkes 91/2015 menyebut minimal 2 bulan antar donor darah lengkap agar tubuh sempat pulih. Sumber lain menyebut 3 bulan, jadi petugas PMI yang memastikan jedamu.
+                      <strong>Ada jeda antar donor.</strong> Permenkes 91/2015 menyebut minimal 2 bulan antar donor darah lengkap; FAQ PMI menyebut jeda itu demi keamanan dan keselamatan pendonor. Sumber lain menyebut 3 bulan, jadi petugas PMI yang memastikan jedamu.
                     </li>
                     <li>
                       <strong>Ada pemeriksaan dulu.</strong> Hemoglobin, tekanan darah, dan riwayat kesehatanmu dinilai sebelum donor demi keselamatan pendonor dan penerima.
@@ -311,7 +311,7 @@ export default function App() {
                   <div className="prose">
                     <p>
                       Darah lengkap dapat diolah menjadi komponen darah sehingga satu donasi dapat melayani lebih dari satu pasien. Pejabat Kemenkes pernah menyebut satu kantong dapat menyelamatkan setidaknya 3 nyawa (pernyataan dalam acara, 2022); jumlah sebenarnya bergantung pada kebutuhan pasien.{" "}
-                      <SourceLinks refs={[{ id: "who-safety" }, { id: "permenkes", locator: "hal. 54" }, { id: "kemkes-pers" }]} />
+                      <SourceLinks refs={[{ id: "who-safety" }, { id: "permenkes", locator: "hal. 53" }, { id: "kemkes-pers" }]} />
                     </p>
                     <p>
                       Komponen yang dapat dipisahkan dari darah lengkap antara lain sel darah merah (PRC), plasma (FFP), dan trombosit (TC); lihat skema di bagian atas halaman. Komponen mana yang diberikan kepada pasien diputuskan dokter sesuai kebutuhan medisnya.
@@ -324,7 +324,7 @@ export default function App() {
                       Standar pelayanan transfusi darah menyebut kantong donor berisi sekitar 350 mL atau 450 mL. Batas berat badan pendonor bergantung pada volume yang diambil (45 kg atau 55 kg menurut Permenkes; WHO menyebut umumnya 50 kg), dan petugas PMI yang menentukan.
                     </p>
                     <p className="small" style={{ margin: 0 }}>
-                      <SourceLinks refs={[{ id: "permenkes", locator: "hal. 56-57, 64" }, { id: "who-eligibility" }]} />
+                      <SourceLinks refs={[{ id: "permenkes", locator: "hal. 55-56, 63" }, { id: "who-eligibility" }]} />
                     </p>
                   </aside>
                 </div>
@@ -362,7 +362,7 @@ export default function App() {
 
                     <p className="small">
                       Skrining ini untuk keamanan darah yang diberikan ke pasien. AyoDonor tidak menyarankannya sebagai pengganti pemeriksaan kesehatan pribadi. Jika ada hasil yang reaktif, UTD menyampaikannya lewat konseling.{" "}
-                      <SourceLinks refs={[{ id: "permenkes", locator: "hal. 28, 55" }, { id: "who-safety" }]} />
+                      <SourceLinks refs={[{ id: "permenkes", locator: "hal. 27, 54" }, { id: "who-safety" }]} />
                     </p>
                   </div>
 

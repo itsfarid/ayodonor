@@ -89,6 +89,34 @@ describe("accessibility landmarks", () => {
   });
 });
 
+describe("no stale text about the removed demo locator", () => {
+  it("the page and FAQ no longer call locations or stock 'demo', 'contoh' or unverified examples", () => {
+    const { container } = render(<App />);
+    const text = container.textContent ?? "";
+    expect(text).not.toMatch(/data demo|data contoh|contoh (lokasi|yang belum diverifikasi)|lokasi demo|status stok|stok.{0,20}fiktif/i);
+    expect(text).toMatch(/disalin dari halaman Kontak PMI/);
+  });
+});
+
+describe("Permenkes page references", () => {
+  it("point at printed page numbers of the verified gazette copy and the source names that copy", async () => {
+    const { SOURCES } = await import("../src/data/sources");
+    const { FAQ_ITEMS } = await import("../src/data/faq");
+    const permenkes = SOURCES.find((s) => s.id === "permenkes")!;
+    expect(permenkes.readCopy?.url).toMatch(/^https:\/\/www\.kemhan\.go\.id\/.*bn36-2016\.pdf$/);
+    expect(permenkes.limits).toMatch(/nomor cetak/);
+    for (const item of FAQ_ITEMS) {
+      for (const ref of item.refs.filter((r) => r.id === "permenkes" && r.locator)) {
+        // Selection criteria and standards sit on printed pages 22-63 and the forms near 276; never page 0 or beyond the 289-page file.
+        for (const n of ref.locator!.match(/\d+/g)!.map(Number)) {
+          if (n !== 3 && n !== 2) expect(n, `${item.id}: ${ref.locator}`).toBeGreaterThan(20);
+          expect(n).toBeLessThanOrEqual(289);
+        }
+      }
+    }
+  });
+});
+
 describe("claims documentation", () => {
   it("exists and lists sources and open gaps", () => {
     const doc = fs.readFileSync(path.join(ROOT, "docs", "medical-claims.md"), "utf8");

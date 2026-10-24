@@ -27,7 +27,7 @@ describe("FAQ data", () => {
     expect(get("tato")).toMatch(/6 bulan/);
     expect(get("berat")).toMatch(/45 kg/);
     expect(get("berat")).toMatch(/50 kg/);
-    expect(get("haid")).toMatch(/tidak ada di Permenkes/);
+    expect(get("haid")).toMatch(/tidak ada di kriteria seleksi donor Permenkes/);
   });
 
   it("searches case-insensitively over questions and answers", () => {
