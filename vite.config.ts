@@ -6,9 +6,11 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
+    // The site is served from the root of its own domain (ayodonor.web.id).
+    base: '/',
     build: {
-      // Only this directory is ever served publicly; the server bundle lives in dist/server.
-      outDir: 'dist/public',
+      // Complete standalone static site; deploy this directory as-is (Cloudflare Pages: output dir "dist").
+      outDir: 'dist',
       emptyOutDir: true,
       // Production source maps would expose application source to every visitor.
       sourcemap: false,
