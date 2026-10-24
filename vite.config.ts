@@ -6,6 +6,13 @@ import {defineConfig} from 'vite';
 export default defineConfig(() => {
   return {
     plugins: [react(), tailwindcss()],
+    build: {
+      // Only this directory is ever served publicly; the server bundle lives in dist/server.
+      outDir: 'dist/public',
+      emptyOutDir: true,
+      // Production source maps would expose application source to every visitor.
+      sourcemap: false,
+    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

@@ -1,4 +1,5 @@
 import express, { type Express, type RequestHandler } from "express";
+import fs from "fs";
 import path from "path";
 import rateLimit from "express-rate-limit";
 import { buildChatFallback, buildEvaluateFallback, isGeminiQuotaError } from "./fallbacks";
@@ -27,6 +28,7 @@ const QUIZ_ANSWER_VALUES = new Set(["safe", "unsafe", ""]);
 
 export async function createApp(options: AppOptions): Promise<Express> {
   const app = express();
+  app.disable("x-powered-by");
   const getGeminiClient = options.getGeminiClient;
 
   app.use(express.json());
@@ -181,10 +183,36 @@ export async function createApp(options: AppOptions): Promise<Express> {
     }
     app.use(await options.createDevMiddleware());
   } else {
-    const distPath = options.staticDir ?? path.join(process.cwd(), "dist");
-    app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
+    const staticDir = options.staticDir ?? path.join(process.cwd(), "dist", "public");
+    const indexFile = path.join(staticDir, "index.html");
+    if (!fs.existsSync(indexFile)) {
+      throw new Error(
+        `Production build not found: ${indexFile} is missing. Run "npm run build" before starting in production mode.`
+      );
+    }
+
+    // Defense in depth: never serve dotfiles (.env*) or source maps, even if one
+    // ends up inside the public directory by mistake.
+    app.use((req, res, next) => {
+      if (/(^|\/)\./.test(req.path) || /\.map$/i.test(req.path)) {
+        return res.status(404).type("text/plain").send("Not found");
+      }
+      next();
+    });
+    app.use(express.static(staticDir, { index: false, dotfiles: "ignore" }));
+
+    // Unknown API routes must not fall through to the SPA shell.
+    app.use("/api", (req, res) => {
+      res.status(404).json({ success: false, error: "Endpoint tidak ditemukan." });
+    });
+
+    // SPA routes only: extension-less GET paths get index.html; missing files get a real 404.
+    app.get("*", (req, res, next) => {
+      if (path.extname(req.path)) return next();
+      res.sendFile(indexFile);
+    });
+    app.use((req, res) => {
+      res.status(404).type("text/plain").send("Not found");
     });
   }
 

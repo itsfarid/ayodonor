@@ -1,11 +1,10 @@
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { createApp, type GeminiClientLike } from "./server/app";
+import { loadConfig } from "./server/config";
 
 dotenv.config({ path: ".env.local", quiet: true });
 dotenv.config({ quiet: true });
-
-const PORT = 3000;
 
 // Lazily initialize Gemini to prevent start crashes if GEMINI_API_KEY is not defined yet
 let aiClient: GoogleGenAI | null = null;
@@ -29,10 +28,13 @@ function getGeminiClient(): GeminiClientLike | null {
 }
 
 async function startServer() {
-  const mode = process.env.NODE_ENV !== "production" ? "development" : "production";
+  // NODE_ENV is passed explicitly so the build-time `--define:process.env.NODE_ENV` in
+  // `npm run build` pins the bundled server to production regardless of the runtime environment.
+  const config = loadConfig({ ...process.env, NODE_ENV: process.env.NODE_ENV });
 
   const app = await createApp({
-    mode,
+    mode: config.mode,
+    staticDir: config.staticDir,
     getGeminiClient,
     createDevMiddleware: async () => {
       const { createServer: createViteServer } = await import("vite");
@@ -44,13 +46,14 @@ async function startServer() {
       return vite.middlewares;
     },
   });
-  if (mode === "production") console.log("Serving production static assets from dist.");
+  if (config.mode === "production") console.log(`Serving production static assets from ${config.staticDir}.`);
 
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`AyoDonor application server runs on: http://localhost:${PORT}`);
+  app.listen(config.port, config.host, () => {
+    console.log(`AyoDonor server (${config.mode}) listening on http://${config.host}:${config.port}`);
   });
 }
 
 startServer().catch((error) => {
-  console.error("Critical server starting error:", error);
+  console.error("Critical server starting error:", error instanceof Error ? error.message : error);
+  process.exit(1);
 });
