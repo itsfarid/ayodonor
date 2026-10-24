@@ -5,6 +5,9 @@ import App from "../src/App";
 import Faq from "../src/components/Faq";
 import { CRITERIA_COMPARISON, getSource, SOURCES } from "../src/data/sources";
 import { FAQ_ITEMS } from "../src/data/faq";
+import fs from "fs";
+import path from "path";
+import { INITIAL_PMI_DATA } from "../src/components/PmiLocator";
 
 beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn();
@@ -163,5 +166,32 @@ describe("claims that must stay out", () => {
     expect(text).not.toMatch(/menurunkan kolesterol|mencegah kanker|mencegah penyakit jantung|kulit cerah|membakar kalori|menambah stamina|meningkatkan stamina/i);
     expect(text).not.toMatch(/sertifikat kelayakan|100\s?%\s?lolos|real-?time|kontak resmi/i);
     expect(text).toMatch(/belum diverifikasi/);
+  });
+});
+
+describe("docs/medical-claims.md stays in sync with the app", () => {
+  const doc = fs.readFileSync(path.join(__dirname, "..", "docs", "medical-claims.md"), "utf8");
+
+  it("records every source URL, the access date and the review status", () => {
+    for (const s of SOURCES) expect(doc, s.id).toContain(s.url);
+    expect(doc).toContain("24 Oktober 2026");
+    expect(doc).toMatch(/belum ditinjau oleh tenaga medis atau pihak PMI/);
+    expect(doc).toMatch(/Celah verifikasi yang masih terbuka/);
+  });
+
+  it("covers every FAQ topic's sources and the unresolved differences", () => {
+    for (const keyword of ["Usia", "Berat badan", "Hb", "Tekanan darah", "Jeda donor", "Tato/tindik", "Hamil/menyusui", "Demam/flu", "Haid"]) {
+      expect(doc, keyword).toContain(keyword);
+    }
+    expect(CRITERIA_COMPARISON).toHaveLength(9);
+    expect(doc).toMatch(/Perbedaan antar sumber yang belum terselesaikan/);
+  });
+
+  it("lists each demo PMI location as unverified, so none is presented as real data", () => {
+    for (const loc of INITIAL_PMI_DATA) {
+      const row = doc.split("\n").find((l) => l.startsWith(`| ${loc.name} |`));
+      expect(row, loc.name).toBeDefined();
+      expect(row, loc.name).toMatch(/Tidak terverifikasi/);
+    }
   });
 });

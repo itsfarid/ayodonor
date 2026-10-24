@@ -21,6 +21,8 @@ interface PmiLocation {
 // CATATAN: Data di bawah ini adalah CONTOH untuk demo. Nama unit, alamat, telepon, jam layanan,
 // koordinat, dan terutama status stok BELUM diverifikasi dan stok bersifat fiktif. Belum terhubung
 // ke sistem data PMI resmi. Jangan dipakai untuk keputusan donor.
+// Upaya verifikasi per lokasi pada 24 Oktober 2026 tidak berhasil memastikan satu pun alamat, telepon, atau
+// jam layanan dari sumber resmi (lihat docs/medical-claims.md, bagian 5); label "demo" harus dipertahankan.
 export const INITIAL_PMI_DATA: PmiLocation[] = [
   {
     id: "pmi-jkt",

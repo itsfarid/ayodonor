@@ -1,78 +1,124 @@
-# Daftar klaim kesehatan dan sumbernya
+# Daftar klaim kesehatan, sumber, dan status verifikasi
 
-AyoDonor adalah proyek edukasi independen. Ia **bukan** layanan medis, **tidak** berafiliasi dengan PMI/Kemenkes,
-dan **tidak** menyatakan seseorang layak donor. Dokumen ini mencatat klaim kesehatan yang masih ada di aplikasi,
-dasarnya, dan celah verifikasinya. Terakhir diperbarui: 24 Oktober 2026.
+AyoDonor adalah proyek edukasi independen. Ia **bukan** layanan medis, **tidak** berafiliasi dengan PMI/Kemenkes, dan **tidak**
+menyatakan seseorang layak donor. Dokumen ini mencatat klaim kesehatan yang benar-benar tampil di situs, dasarnya, dan celahnya.
+Audit terakhir: **24 Oktober 2026** (tanggal akses semua sumber).
 
-> **Status verifikasi:** sumber di bawah dikumpulkan lewat riset web otomatis (halaman dibuka dan dibaca oleh
-> asisten AI), **belum ditinjau oleh tenaga medis atau pihak PMI**. Nomor halaman Permenkes adalah nomor cetak pada
-> Lampiran menurut pembacaan teks hasil ekstraksi PDF dan bisa meleset satu halaman. Sebelum peluncuran publik,
-> sebaiknya klaim di tabel "Dipertahankan" ditinjau oleh pihak yang berwenang.
+> **Status tinjauan:** isi situs ini **belum ditinjau oleh tenaga medis atau pihak PMI**. Verifikasi di bawah hanya
+> mencocokkan teks situs dengan sumber yang tertulis; itu bukan sertifikasi medis.
 
-## Sumber yang dibuka
+## 1. Sumber dan cara dibuka
 
-| # | Sumber | Penerbit | Tanggal | Jenis |
+Laporan lama tidak dianggap benar; semua sumber dibuka ulang pada 24 Oktober 2026. Kolom "Cara dibaca" menyatakan seberapa
+langsung bacaannya.
+
+| ID | Sumber, penerbit, URL | Terbit | Cara dibaca | Keterbatasan |
 |---|---|---|---|---|
-| S1 | Permenkes No. 91 Tahun 2015 tentang Standar Pelayanan Transfusi Darah ([PDF BPK](https://peraturan.bpk.go.id/Download/107583/Permenkes%20Nomor%2091%20Tahun%202015.pdf), [halaman JDIH](https://peraturan.bpk.go.id/Details/116661/permenkes-no-91-tahun-2015)) | Kemenkes RI | ditetapkan 31 Des 2015, diundangkan 13 Jan 2016 | Regulasi (utama). Status "Berlaku"; tidak ditemukan perubahan/pencabutan, tetapi itu **belum terbukti** |
-| S2 | FAQ Donor Darah, PMI AyoDonor (https://ayodonor.pmi.or.id/?page=faq) | PMI | tanpa tanggal | Portal resmi PMI |
-| S3 | Stok Darah, PMI AyoDonor (https://ayodonor.pmi.or.id/?page=stok) | PMI | tanpa tanggal | Portal resmi PMI. Memuat disclaimer bahwa stok dapat berubah sewaktu-waktu |
-| S4 | [Syarat dan Manfaat Donor Darah](https://keslan.kemkes.go.id/view_artikel/4115/syarat-dan-manfaat-donor-darah) | Kemenkes (Keslan) | 21 Mei 2025 | Artikel edukasi |
-| S5 | [Apa Saja Keuntungan Donor Darah](https://keslan.kemkes.go.id/view_artikel/2637/apa-saja-keuntungan-donor-darah-yuk-kita-cek) | Kemenkes (Keslan) | 24 Jul 2023 | Artikel edukasi, tanpa rujukan studi spesifik |
-| S6 | [Kemenkes ajak masyarakat bantu sesama lewat donor darah](https://kemkes.go.id/id/kemenkes-ajak-masyarakat-bantu-sesama-lewat-kegiatan-donor-darah) | Kemenkes | 15 Jun 2022 | Siaran pers |
+| `permenkes` | Permenkes No. 91 Tahun 2015 tentang Standar Pelayanan Transfusi Darah. Kemenkes RI. <https://jdih.kemkes.go.id/documents/peraturan-menteri-kesehatan-nomor-91-tahun-2015> | Ditetapkan 31 Des 2015, diundangkan 13 Jan 2016; status JDIH "Berlaku", tanpa relasi mengubah/dicabut | Halaman JDIH dibuka; **PDF lengkap (290 hlm) diunduh dari JDIH dan dibaca sebagai teks**, nomor halaman dicocokkan dengan nomor cetak di bagian atas halaman | Terbitan 2015. Regulasi yang lebih baru tidak diperiksa. Tidak menyebut haid atau menyusui |
+| `pmi-faq` | FAQ Donor Darah, PMI AyoDonor. <https://ayodonor.pmi.or.id/?page=faq> | Tanpa tanggal | HTML mentah diunduh dan dibaca | Tanpa tanggal; berbeda dari Permenkes di beberapa angka; satuan waktu kehamilan tidak tertulis |
+| `pmi-stok` | Stok Darah, PMI AyoDonor. <https://ayodonor.pmi.or.id/?page=stok> | Tanpa tanggal; kolom "Update" kosong | HTML mentah diunduh dan dibaca | Tabel dimuat dinamis dan kosong; tidak ada angka stok yang disalin. Memuat disclaimer bahwa stok dapat berubah sewaktu-waktu |
+| `who-safety` | WHO, Blood safety and availability (lembar fakta). <https://www.who.int/news-room/fact-sheets/detail/blood-safety-and-availability> | Halaman bertanggal 12 Jun 2026 | Dibuka lewat alat pengambil halaman (isi diringkas oleh alat) | Tidak memuat kriteria pendonor dan tidak menyebut manfaat bagi pendonor |
+| `who-guidelines` | WHO, Blood donor selection: guidelines on assessing donor suitability for blood donation. <https://www.who.int/publications/i/item/blood-donor-selection-guidelines-on-assessing-donor-suitability-for-blood-donation> | 1 Jan 2012 (118 hlm, ISBN 9789241548519) | Halaman ringkasan dibuka lewat alat pengambil halaman | **PDF lengkap tidak dibuka**; halaman ringkasan tidak memuat angka kriteria |
+| `who-eligibility` | WHO, Who can give blood? <https://www.who.int/campaigns/world-blood-donor-day/who-can-give-blood> | Tanpa tanggal (hanya © 2026) | Dibuka lewat alat pengambil halaman | Angka umum dan bervariasi antar negara; tidak membahas obat, haid, atau jeda antar donor |
+| `kemkes-benefit` | Kemenkes, Apa Saja Keuntungan Donor Darah, Yuk Kita Cek! <https://keslan.kemkes.go.id/view_artikel/2637/apa-saja-keuntungan-donor-darah-yuk-kita-cek> | 24 Jul 2023 (penulis RSUP Prof. dr. I.G.N.G. Ngoerah; terbit di Ditjen Kesehatan Lanjutan) | Dibuka lewat alat pengambil halaman | Klaim manfaat tanpa rujukan studi per klaim; daftar pustaka umum |
+| `kemkes-syarat` | Kemenkes, Syarat dan Manfaat Donor Darah. <https://keslan.kemkes.go.id/view_artikel/4115/syarat-dan-manfaat-donor-darah> | 21 Mei 2025 (penulis RSUP dr. Soeradji Tirtonegoro Klaten) | Dibuka lewat alat pengambil halaman | Ketidakkonsistenan internal (tekanan darah, batas Hb); klaim manfaat tanpa rujukan per klaim |
+| `kemkes-pers` | Kemenkes, Kemenkes Ajak Masyarakat Bantu Sesama Lewat Kegiatan Donor Darah. <https://kemkes.go.id/id/kemenkes-ajak-masyarakat-bantu-sesama-lewat-kegiatan-donor-darah> | 15 Jun 2022 | Dibuka lewat alat pengambil halaman | Pernyataan lisan pejabat, bukan standar atau penelitian |
 
-Tidak diverifikasi: teks UU 17/2023 dan PP 28/2024 (hanya terlihat lewat kutipan sekunder).
+"Dibuka lewat alat pengambil halaman" berarti isi diringkas oleh alat; angka penting dari halaman itu sebaiknya dibaca ulang
+di sumbernya sebelum peluncuran. Kesembilan URL dijawab HTTP 2xx pada tanggal akses (`npm run check:links`).
 
-## Klaim yang dipertahankan
+## 2. Inventaris klaim yang tampil di situs
 
-| Klaim di aplikasi | Dasar | Catatan / celah |
-|---|---|---|
-| Kantong donor sekitar 350 mL atau 450 mL | S1 (volume 450 mL ±10% atau 350 mL ±10%) | - |
-| Sel darah merah pengganti terbentuk dalam sekitar 4-8 minggu | S2 | Hanya satu sumber, tanpa tanggal |
-| Jeda minimal antar donor darah lengkap 2 bulan; sumber lain menyebut 3 bulan | S1 (2 bulan, laki-laki dan perempuan); S4 (3 bulan / 12 minggu) | **Sumber berbeda.** UI menyebut keduanya dan menyuruh bertanya ke petugas |
-| Umur minimal 17 tahun | S1, S2 | Batas atas **tidak** dinyatakan (S1: tanpa batas tegas, perhatian khusus bila >60 pertama kali / >65 ulang; S2: 17-60; S4: 17-60). Persetujuan orang tua untuk usia 17 tidak ditemukan di sumber resmi |
-| Berat badan minimal 45 kg, dan bisa 55 kg untuk 450 mL | S1 (≥55 kg untuk 450 mL, ≥45 kg untuk 350 mL); S2, S4 (45 kg) | Bergantung volume dan jenis donor |
-| Hemoglobin umumnya 12,5-17 g/dL | S1, S2, S4 | Konsisten di tiga sumber |
-| Tekanan darah, nadi, suhu "diukur/diperiksa petugas" (tanpa angka) | S1 | Angka **sengaja tidak ditampilkan**: S1 (90-160 / 60-100 mmHg), S2 (100-180 / 70-100) dan S4 berbeda |
-| PMI menganjurkan tidur cukup sebelum donor (tanpa jam) | S2 | Tidak ada syarat jam tidur resmi yang ditemukan |
-| Sakit/obat dinilai petugas satu per satu | S1 (pengobatan dinilai menurut penyakit, jenis obat, dampak ke penerima) | Antibiotik tidak disebut di S1; durasi tidak disebut untuk donor darah lengkap |
-| Ada jeda setelah tato/tindik/akupunktur; lama berbeda antar sumber | S1 (6 bulan, atau 4 bulan dengan hasil NAT hepatitis C negatif); S2 (1 tahun) | **Sumber berbeda.** Kuis memakai rentang paling hati-hati (1 tahun) |
-| Setiap kantong diskrining HIV, hepatitis B, hepatitis C, sifilis; hasil reaktif disampaikan lewat konseling | S1 (skrining minimal dan ketentuan pemberitahuan) | - |
-| Skrining itu "bukan pengganti pemeriksaan kesehatan pribadi" | **Rumusan kami sendiri** | S1 tidak menyatakannya; S2/S4 menyebut donor sebagai bentuk pemeriksaan. Perlu ditinjau ahli |
-| "Hingga 3 nyawa per kantong" | S6 (pejabat Kemenkes: "setidaknya 3 nyawa"); S5 mengaitkan "hingga tiga nyawa" dengan American Red Cross | Pernyataan PMI sendiri tidak ditemukan |
-| Komponen darah (PRC, plasma, trombosit) dan contoh penggunaannya | S1 menyebut komponen dan standar mutunya | **Contoh penggunaan adalah pengetahuan umum, tidak bersumber ke halaman resmi.** Perlu ditinjau |
-| Sebagian orang bisa pusing/lemas setelah donor; istirahat dan ikuti petugas (FAQ) | Pengetahuan umum; S2 menganjurkan menghindari aktivitas berat | Tidak bersumber resmi. Perlu ditinjau |
-| Rasa jarum berbeda-beda | Pengetahuan umum | Bukan klaim medis |
-| Stok dan lokasi resmi ada di ayodonor.pmi.or.id | S2, S3 | Hanya mengarahkan; tidak menyalin data |
+Status: **Didukung** = sesuai teks sumber yang dibaca; **Sebagian** = sebagian didukung atau sumber berbeda; **Editorial** =
+rumusan/sikap AyoDonor, bukan klaim sumber; **Tidak ditemukan** = sumber yang dibaca tidak menyebutnya.
 
-## Klaim yang dihapus
+| # | Klaim/topik (lokasi) | Sumber dan lokasi | Status | Tindakan |
+|---|---|---|---|---|
+| C1 | Kantong donor sekitar 350 atau 450 mL (tab Setelah Donor, Kenapa Dibutuhkan) | `permenkes` hal. 64 (450 ±10%, 350 ±10%) | Didukung | Tautan sumber ditambahkan |
+| C2 | Volume diganti 48 jam; sel darah merah 4-8 minggu (tab Setelah Donor, FAQ) | `pmi-faq` | Didukung (satu sumber, tanpa tanggal) | Tautan ditambahkan |
+| C3 | Jeda donor: 2 bulan (Permenkes) vs 3 bulan (Kemenkes 2025); maks 6/4 kali setahun (FAQ, tab, kuis) | `permenkes` hal. 64; `pmi-faq`; `kemkes-syarat` | Sebagian (sumber berbeda) | Kedua angka ditampilkan; tidak memilih |
+| C4 | Umur minimal 17 tahun; batas atas berbeda (FAQ, kuis, tabel) | `permenkes` hal. 56; `pmi-faq`; `who-eligibility`; `kemkes-syarat` | Sebagian (batas atas berbeda) | Perbedaan ditampilkan |
+| C5 | Berat badan 45/55 kg (Permenkes), 45 kg (PMI), ~50 kg (WHO) (FAQ, kuis, tab) | `permenkes` hal. 56-57; `pmi-faq`; `who-eligibility` | Sebagian | Perbedaan ditampilkan |
+| C6 | Hb 12,5-17 g/dL (Permenkes, PMI); WHO: banyak negara min. 12,0 (P)/13,0 (L) (FAQ, tab) | `permenkes` hal. 57; `pmi-faq`; `who-eligibility` | Sebagian | Perbedaan ditampilkan; "umumnya" dihapus |
+| C7 | Tekanan darah, nadi, suhu diperiksa petugas (tab, FAQ) | `permenkes` hal. 57; `pmi-faq` | Didukung; **angka tekanan darah sengaja tidak jadi aturan** karena tiga sumber berbeda | Hanya ada di tabel perbandingan |
+| C8 | Tato/tindik/akupunktur: 6 bulan (4 bulan bila NAT negatif) vs 1 tahun vs WHO 6 bulan (FAQ, kuis, tabel) | `permenkes` hal. 59; `pmi-faq`; `who-eligibility` | Sebagian | Perbedaan ditampilkan; kuis memakai rentang "beberapa bulan hingga 1 tahun" |
+| C9 | Kehamilan: 6 bulan setelah melahirkan (Permenkes); menyusui: 3 bulan setelah berhenti (PMI), tidak dianjurkan (WHO) (FAQ, tabel) | `permenkes` hal. 60; `pmi-faq`; `who-eligibility` | Sebagian | Perbedaan ditampilkan |
+| C10 | Demam/flu: 2 minggu (Permenkes) vs 1 minggu (PMI) (FAQ, tabel) | `permenkes` hal. 60; `pmi-faq` | Sebagian | Perbedaan ditampilkan |
+| C11 | Haid: tidak disebut (FAQ, tabel) | Teks Permenkes dicari ("haid", "menstru": 0 hasil); `pmi-faq`; `who-eligibility` | Tidak ditemukan | Dinyatakan "tidak ditemukan", bukan larangan atau izin |
+| C12 | Obat/antibiotik dinilai petugas; formulir kuesioner menanyakan antibiotik, obat infeksi lain, aspirin; donor trombosit: tanpa aspirin/antibiotik 1 minggu (FAQ, kuis) | `permenkes` hal. 60 dan formulir 3.2 hal. 277; `pmi-faq` | Didukung (jendela waktu pada formulir tidak dikutip karena tata letak teks ambigu) | Tautan ditambahkan |
+| C13 | Persiapan: tidur nyenyak, makan, banyak minum, hindari aktivitas berat (PMI); hindari olahraga berat dan alkohol 1 hari sebelum (Kemenkes 2025) (FAQ, kuis) | `pmi-faq`; `kemkes-syarat` | Didukung; **tanpa angka jam tidur** (tidak ada angka resmi) | Tautan ditambahkan |
+| C14 | Seleksi donor bertujuan melindungi pendonor dan pasien (tab, FAQ) | `permenkes` hal. 23; `who-guidelines` | Didukung | Tautan ditambahkan |
+| C15 | Setiap kantong diuji saring HBsAg, anti-HIV, anti-HCV, sifilis; hasil reaktif lewat konseling (tab, FAQ) | `permenkes` hal. 28, 55; `who-safety` | Didukung | Tautan ditambahkan |
+| C16 | Skrining bukan pengganti pemeriksaan kesehatan pribadi (tab, FAQ) | Rumusan AyoDonor; `pmi-faq` justru menyebut pemeriksaan sebelum donor sebagai "pemeriksaan kesehatan gratis" | Editorial | Dilabeli; tidak pernah menyatakan donor sebagai pengganti cek pribadi |
+| C17 | Darah lengkap dapat diolah menjadi komponen; satu donasi dapat melayani lebih dari satu pasien (stats, tab, FAQ) | `permenkes` hal. 54; `who-safety` | Didukung | Tautan ditambahkan |
+| C18 | Keputusan transfusi dibuat dokter (tab, FAQ) | Pengetahuan umum | Editorial | Dilabeli |
+| C19 | "Setidaknya 3 nyawa per kantong" (stats, FAQ) | `kemkes-pers` (ucapan pejabat, 2022); WHO tanpa angka; PMI: tidak ditemukan | Sebagian | Diubah dari "hingga 3 nyawa" ke kata-kata pejabat; ditandai bukan hasil penelitian |
+| C20 | Tanpa janji manfaat kesehatan pribadi (tab, FAQ, sumber) | `who-safety` (tidak menyebut manfaat); `kemkes-benefit`/`kemkes-syarat` memuatnya tanpa rujukan per klaim | Editorial (penilaian atas bukti) | Dijelaskan terbuka; klaim tidak diulang |
+| C21 | Donor bukan program diet | Pengetahuan umum; `kemkes-benefit`/`kemkes-syarat` menyebut pembakaran kalori tanpa rujukan studi | Editorial | Dilabeli; konflik dengan artikel Kemenkes dicatat |
+| C22 | Takut jarum / pusing atau lemas setelah donor: saran umum | `permenkes` hal. 54 (UTD wajib menginformasikan risiko); `pmi-faq` (hindari aktivitas berat) | Editorial / saran umum | Dilabeli "saran umum, bukan nasihat medis pribadi" |
+| C23 | Lokasi dan stok resmi ada di ayodonor.pmi.or.id | `pmi-stok`, `pmi-faq` | Didukung | Tautan ditambahkan |
 
-| Klaim lama | Alasan |
-|---|---|
-| "Sertifikat Kelayakan Digital", "100% Lolos", "berstandar aman mendonorkan", Platinum, Premium Compliant, Health Sentinel, kode verifikasi | Tidak ada dasar; menyiratkan izin medis dan status resmi |
-| "PMI READY PARTNER", "STANDAR REKOMENDASI PMI", "2026 UPDATE" | Menyiratkan afiliasi/endorsement yang tidak ada |
-| "Fit luar dalam", "Mantap Jiwa... memenuhi syarat awal" | Kesimpulan medis dari satu jawaban |
-| Menurunkan kolesterol, mencegah plak arteri | S5 memuatnya, tetapi tanpa rujukan studi dan bukan standar klinis; tidak diulang |
-| "Darah kotor tersaring", kulit cerah/glow-up, stamina bertambah, bakar kalori/diet | Tidak ada dukungan; S1 tidak menjanjikan manfaat pribadi |
-| "Mini medical check-up gratis", "terproteksi dari HIV/hepatitis", "gratis" | Skrining ditujukan bagi keamanan penerima; klaim gratis tidak bersumber |
-| Simulator komposisi 45% / 50% / 5% | Persentase karangan. S1 memberi volume PRC (mis. 280 ±50 mL dari 450 mL) dan TC (>40 mL per kantong tunggal); tidak ada pembagian persentase |
-| 17-60 tahun, tidur 5 jam, haid sebagai penghalang, jeda tato 6 bulan, "56 hari regenerasi", suhu/tensi rentang tunggal | Tidak didukung atau bertentangan antar sumber resmi |
-| "Real-time", "Kontak resmi", "Buka 24 jam", "SENTINEL ACTIVE", watermark koordinat | Data lokasi demo tidak diverifikasi |
+## 3. Klaim yang dihapus atau ditulis ulang
 
-## Celah verifikasi yang masih terbuka
+Pada putaran ini:
+- "Hingga 3 nyawa" menjadi "setidaknya 3 nyawa menurut pejabat Kemenkes (2022), bukan hasil penelitian".
+- Deskripsi kegunaan tiap komponen darah (anemia berat, gangguan pembekuan, trombosit rendah) dihapus: tidak ada di sumber yang dibaca.
+- "Hb umumnya 12,5-17 g/dL" menjadi "Permenkes: 12,5-17 g/dL" disertai angka WHO.
+- "Skrining bukan pengganti cek kesehatan" tidak lagi dinyatakan sebagai fakta; kini sikap AyoDonor.
 
-1. Batas atas usia dan persetujuan orang tua untuk usia 17 tahun.
-2. Haid dan menyusui sebagai kriteria (tidak ditemukan di sumber resmi mana pun yang dibuka).
-3. Antibiotik/obat tertentu untuk donor darah lengkap (durasi).
-4. Hubungan S1 dengan regulasi yang lebih baru (UU 17/2023 dan turunannya) belum diperiksa teksnya.
+Sebelumnya (tetap berlaku): sertifikat/"100% lolos"/Platinum/kode verifikasi; "PMI READY PARTNER"; kolesterol, plak arteri, "darah kotor", kulit cerah,
+stamina, kalori/diet; "mini medical check-up gratis" dan "terproteksi dari HIV"; simulator komposisi 45/50/5%; 17-60 tahun, tidur 5 jam, haid sebagai penghalang,
+dan angka tunggal untuk tato/tekanan darah yang diperselisihkan; label "real-time", "kontak resmi", "Buka 24 jam" pada data demo.
+
+## 4. Perbedaan antar sumber yang belum terselesaikan
+
+Ditampilkan apa adanya di bagian "Sumber informasi" situs. AyoDonor tidak memilih angka.
+
+| Kriteria | Permenkes 91/2015 | FAQ PMI | WHO (Who can give blood) | Kemenkes 2025 |
+|---|---|---|---|---|
+| Usia | min. 17; >60 (pertama)/>65 (ulang) perhatian khusus | 17-60; sampai 65 donor rutin | umumnya 18-65, bervariasi | min. 17; maks. 60 donor pertama |
+| Berat badan | 45 kg (350 mL), 55 kg (450 mL, apheresis) | 45 kg; 55 kg apheresis trombosit | umumnya 50 kg; sebagian 45 kg (350 mL) | 45 kg |
+| Hb | 12,5-17 g/dL | 12,5-17,0 g/dL | banyak negara min. 12,0 (P)/13,0 (L) | sekitar 12,5-17 (juga menyebut 20) |
+| Tekanan darah | 90-160 / 60-100 mmHg | 100-180 / 70-100 mmHg | tidak disebut | "normal", sekitar 90/60-150/80 |
+| Jeda donor | 2 bulan; 6x (L), 4x (P) per tahun | 2 bulan | tidak disebut | 3 bulan |
+| Tato/tindik | 6 bulan (4 bulan bila NAT negatif) | 1 tahun | 6 bulan | tidak disebut |
+| Hamil/menyusui | hamil 6 bulan setelah melahirkan; menyusui tidak disebut | hamil (satuan tak tertulis); menyusui 3 bulan | sebanyak lama kehamilan; menyusui tidak dianjurkan | tidak boleh |
+| Demam/flu | 2 minggu setelah gejala hilang | 1 minggu setelah sembuh | penolakan (lama tak disebut) | tidak disebut |
+| Haid | tidak disebut | tidak disebut | tidak disebut | tidak ditemukan |
+
+## 5. Lokasi PMI contoh (`PmiLocator.tsx`)
+
+Tujuh lokasi dicari satu per satu (alamat, telepon, jam layanan, stok) di sumber resmi pada 24 Oktober 2026. **Tidak satu pun dapat
+diverifikasi** dari situs resmi PMI; pencarian hanya menemukan dokumen akademik, daftar pihak ketiga, atau tidak menemukan apa pun.
+Karena itu **semuanya tetap berlabel data demo/belum diverifikasi**, stok tetap fiktif, dan tidak dipresentasikan sebagai real-time.
+
+| Lokasi contoh | Alamat/telepon di aplikasi | Hasil pencarian | Status |
+|---|---|---|---|
+| UTD PMI DKI Jakarta | Jl. Kramat Raya No. 47; (021) 3906350 | Menurut ringkasan hasil pencarian (dokumennya tidak dibuka), surat keputusan gubernur 2021 mengaitkan alamat itu dengan pengurus PMI DKI (bukan unit donor aktif). Ringkasan hasil pencarian menyebut unit donor baru di Jl. Pacenongan No. 82 dan pernyataan bahwa warga tidak perlu lagi ke Kramat Raya; halaman itu **gagal dibuka** (domain tidak terjangkau), jadi ini petunjuk, bukan fakta terverifikasi | **Tidak terverifikasi**; kemungkinan sudah tidak aktif sebagai unit donor |
+| UDD PMI Kota Bandung | Jl. Aceh No. 79; (022) 4207052 | Tidak ada hasil relevan | Tidak terverifikasi |
+| UTD PMI Kota Surabaya | Jl. Embong Ploso No. 7-15; (031) 5313555 | Jurnal akademik lama menyebut Embong Ploso 7-9; berita menyebut markas PMI di Jl. Sumatera; daftar pihak ketiga menyebut (031) 99443899 | Tidak terverifikasi; ada sumber yang berbeda |
+| UTD PMI Kota Yogyakarta | Jl. Tegalgendu No. 25; (0274) 372176 | Skripsi menyebut Jl. Tegal Gendu No. 25; berita Lebaran 2024 mencantumkan 0274 372176 sebagai posko, bukan jalur UTD | Tidak terverifikasi (sumber bukan resmi) |
+| UTD PMI Kota Semarang | Jl. Sugiopranoto No. 31; (024) 3515050 | Tidak ada hasil relevan | Tidak terverifikasi |
+| UTD PMI Kota Medan | Jl. Palang Merah No. 17; (061) 4567232 | Satu direktori pihak ketiga menyebut alamat serupa, tanpa telepon | Tidak terverifikasi |
+| UTD PMI Kota Makassar | Jl. Kandea No. 16; (0411) 3612502 | Tidak ada hasil relevan | Tidak terverifikasi |
+
+Jam layanan "24 jam" sudah dihapus dari data. Stok tidak dapat disalin: halaman stok PMI memuat tabel dinamis yang kosong saat dibuka.
+
+## 6. Celah verifikasi yang masih terbuka
+
+1. Tinjauan oleh tenaga medis/PMI atas seluruh teks, kuis, dan FAQ **belum dilakukan**.
+2. Regulasi yang lebih baru dari Permenkes 91/2015 (termasuk turunan UU 17/2023) tidak diperiksa; JDIH hanya menyatakan "Berlaku".
+3. PDF lengkap pedoman WHO (Blood donor selection, 2012) tidak dibuka; halaman WHO lain dibaca lewat alat yang meringkas isi.
+4. Batas atas usia, persetujuan orang tua untuk usia 17, haid, menyusui menurut Permenkes, durasi obat untuk donor darah lengkap.
 5. Pernyataan "3 nyawa" dari PMI sendiri.
-6. Alamat, telepon, jam layanan, dan koordinat 7 lokasi contoh di `PmiLocator.tsx`: **tidak diverifikasi** (dan stoknya fiktif).
-7. Tinjauan oleh tenaga medis/PMI atas seluruh teks edukasi dan FAQ.
+6. Klaim editorial C16, C18, C20-C22 adalah penilaian AyoDonor, bukan kutipan sumber.
+7. Alamat, telepon, jam layanan, dan stok ketujuh lokasi contoh.
 
-## Aliran data pribadi (ringkas)
+## 7. Aliran data pribadi
 
 - Nama panggilan dan 4 jawaban kuis hanya diproses di browser; tidak dikirim ke server mana pun. Tidak ada layanan AI.
 - Situs statis: tidak ada server aplikasi atau basis data. Penyedia hosting dapat mencatat metadata teknis permintaan.
 - Lokasi pengguna hanya diproses di browser.
 - Browser memuat font dari Google Fonts.
 
-Catatan riwayat: versi sebelumnya mengirim nama, jawaban kuis, dan pesan chat ke Google Gemini API. Fitur itu telah dihapus.
+Catatan riwayat: versi awal mengirim nama, jawaban kuis, dan pesan chat ke Google Gemini API. Fitur itu telah dihapus.
