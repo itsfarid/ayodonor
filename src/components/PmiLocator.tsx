@@ -132,27 +132,9 @@ export default function PmiLocator({ units = UTD_RECORDS }: PmiLocatorProps) {
 
   return (
     <div id="pmi-locator" className="locator" role="group" aria-labelledby="locator-title">
-      <h2 id="locator-title" className="chapter__title">
+      <h2 id="locator-title" className="sr-only">
         Cari berdasarkan kota atau provinsi
       </h2>
-      <p className="prose">
-        Ketik nama kota, kabupaten, atau provinsi untuk melihat alamat dan telepon unit donor darah PMI (UDD/UTD) yang tercantum di situs resmi PMI.
-      </p>
-
-      <div className="callout callout--note">
-        <p className="kicker">Asal data</p>
-        <p>
-          {units.length} unit, disalin apa adanya dari halaman Kontak PMI, diakses {UTD_RETRIEVED_ON}.{" "}
-          <SourceLinks refs={[{ id: "pmi-kontak" }]} />
-        </p>
-        <p>
-          Daftar ini bisa belum lengkap atau sudah berubah, dan halaman sumbernya tidak mencantumkan jam layanan. Hubungi unit untuk memastikan alamat dan jam layanan sebelum datang. Info resmi:{" "}
-          <a href="https://ayodonor.pmi.or.id" target="_blank" rel="noopener noreferrer">
-            ayodonor.pmi.or.id
-          </a>
-          .
-        </p>
-      </div>
 
       <div className="tool">
         <div className="locator__bar">
@@ -192,10 +174,15 @@ export default function PmiLocator({ units = UTD_RECORDS }: PmiLocatorProps) {
           </div>
         ) : (
           <p className="hint locator__geo">
-            Jarak dari posisimu belum ditampilkan: daftar PMI tidak menyertakan koordinat unit, dan AyoDonor tidak memakai koordinat yang belum terverifikasi. Pencarian kota di atas tetap berlaku.
+            Jarak dari posisimu belum ditampilkan: daftar PMI tidak menyertakan koordinat unit, dan AyoDonor tidak memakai koordinat yang belum terverifikasi.
           </p>
         )}
       </div>
+
+      <p className="locator__origin small muted">
+        {units.length} unit dari halaman Kontak PMI (diakses {UTD_RETRIEVED_ON}); bisa belum lengkap atau sudah berubah.{" "}
+        <a href="#asal-data">Asal data</a>
+      </p>
 
       {/* Location outcome: one distinct state at a time */}
       <div aria-live="polite">
@@ -318,6 +305,21 @@ export default function PmiLocator({ units = UTD_RECORDS }: PmiLocatorProps) {
             )}
           </>
         )}
+      </div>
+
+      <div className="callout callout--note" id="asal-data">
+        <p className="kicker">Asal data</p>
+        <p>
+          {units.length} unit, disalin apa adanya dari halaman Kontak PMI, diakses {UTD_RETRIEVED_ON}.{" "}
+          <SourceLinks refs={[{ id: "pmi-kontak" }]} />
+        </p>
+        <p>
+          Daftar ini bisa belum lengkap atau sudah berubah, dan halaman sumbernya tidak mencantumkan jam layanan. Hubungi unit untuk memastikan alamat dan jam layanan sebelum datang. Info resmi:{" "}
+          <a href="https://ayodonor.pmi.or.id" target="_blank" rel="noopener noreferrer">
+            ayodonor.pmi.or.id
+          </a>
+          .
+        </p>
       </div>
 
       <div className="callout callout--note">
