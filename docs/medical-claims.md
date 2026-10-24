@@ -119,6 +119,6 @@ Jam layanan "24 jam" sudah dihapus dari data. Stok tidak dapat disalin: halaman 
 - Nama panggilan dan 4 jawaban kuis hanya diproses di browser; tidak dikirim ke server mana pun. Tidak ada layanan AI.
 - Situs statis: tidak ada server aplikasi atau basis data. Penyedia hosting dapat mencatat metadata teknis permintaan.
 - Lokasi pengguna hanya diproses di browser.
-- Browser memuat font dari Google Fonts.
+- Situs memakai font bawaan perangkat; tidak ada font yang dimuat dari pihak ketiga. Tautan peta membuka Google Maps hanya saat diklik.
 
 Catatan riwayat: versi awal mengirim nama, jawaban kuis, dan pesan chat ke Google Gemini API. Fitur itu telah dihapus.

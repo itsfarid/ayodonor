@@ -36,13 +36,13 @@ Dipasang: `X-Content-Type-Options: nosniff`, `Referrer-Policy: strict-origin-whe
 `Content-Security-Policy-Report-Only`):
 
 ```
-default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com;
-style-src-attr 'unsafe-inline'; font-src https://fonts.gstatic.com; img-src 'self' data:;
+default-src 'self'; script-src 'self'; style-src 'self';
+style-src-attr 'unsafe-inline'; font-src 'self'; img-src 'self' data:;
 connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'none'
 ```
 
-`style-src-attr 'unsafe-inline'` dibutuhkan karena React memakai atribut `style`. Menghosting font sendiri
-menghilangkan kebutuhan dua host Google dan permintaan IP pengunjung ke Google Fonts.
+`style-src-attr 'unsafe-inline'` dibutuhkan karena React memakai atribut `style`. Sejak redesain, situs memakai font
+sistem (tanpa host font pihak ketiga), sehingga CSP tidak perlu mengizinkan host Google. Rekomendasi ini belum diuji di browser.
 HSTS sebaiknya diatur di Cloudflare (SSL/TLS > Edge Certificates) setelah HTTPS stabil.
 
 ## Domain `ayodonor.web.id`
@@ -66,5 +66,5 @@ Situs statis mengurangi permukaan serangan sisi server, tetapi bukan jaminan kea
 - Teks edukasi, FAQ, dan kuis belum ditinjau tenaga medis/PMI (lihat `docs/medical-claims.md`).
 - Data 7 lokasi PMI (alamat, telepon, koordinat) tidak terverifikasi; status stok fiktif.
 - Pembatasan laju dan log aplikasi tidak ada lagi; bila diperlukan, atur di Cloudflare.
-- Google Fonts dimuat dari pihak ketiga (alamat IP pengunjung terlihat oleh Google); CSP belum dipasang.
+- Situs memakai font sistem dan tidak memuat font pihak ketiga; CSP belum dipasang.
 - Tautan keluar ke Google Maps/LinkedIn hanya terbuka saat diklik.

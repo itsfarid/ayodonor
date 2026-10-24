@@ -45,5 +45,5 @@ src/               aplikasi React (kuis, FAQ di src/data/faq.ts, lokasi demo)
 shared/content.ts  teks ringkasan kuis
 public/            favicon dan _headers (Cloudflare Pages)
 tests/             vitest (node + jsdom)
-docs/              klaim medis & sumber, migrasi, deployment, bukti rate limit lama
+docs/              klaim medis & sumber, arah desain (design-direction.md), migrasi, deployment, bukti rate limit lama
 ```
