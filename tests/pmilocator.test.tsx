@@ -40,11 +40,13 @@ describe("PmiLocator labelling", () => {
     expect(link.getAttribute("rel")).toContain("noopener");
   });
 
-  it("lets keyboard users select a location card", () => {
+  it("lets keyboard users select a location: each row is a native button that holds no other interactive element", () => {
     render(<PmiLocator />);
     const card = screen.getByRole("button", { name: `Pilih ${INITIAL_PMI_DATA[1].name}` });
+    expect(card.tagName).toBe("BUTTON");
+    expect(card.querySelector("a, button, input")).toBeNull();
     expect(card.getAttribute("aria-pressed")).toBe("false");
-    fireEvent.keyDown(card, { key: "Enter" });
+    fireEvent.click(card); // Enter and Space on a native button dispatch click
     expect(card.getAttribute("aria-pressed")).toBe("true");
   });
 });
@@ -65,7 +67,7 @@ describe("PmiLocator geolocation behaviour", () => {
     const { container } = render(<PmiLocator />);
     await act(async () => fireEvent.click(screen.getByRole("button", { name: /urutkan contoh lokasi/i })));
     expect(screen.queryByRole("alert")).toBeNull();
-    const firstCard = container.querySelector('[role="button"][aria-label^="Pilih "]')!;
+    const firstCard = container.querySelector('button[aria-label^="Pilih "]')!;
     expect(firstCard.getAttribute("aria-label")).toBe("Pilih UDD PMI Kota Bandung");
     expect(container.textContent).toMatch(/garis lurus/);
   });
@@ -94,7 +96,7 @@ describe("getDistanceKm (Haversine)", () => {
   });
 });
 
-describe("stock badge classification (type fix keeps behaviour)", () => {
+describe("stock status display", () => {
   it("every demo location has all four blood types with a valid status", () => {
     for (const loc of INITIAL_PMI_DATA) {
       expect(Object.keys(loc.stocks).sort()).toEqual([...BLOOD_TYPES].sort());
@@ -105,20 +107,18 @@ describe("stock badge classification (type fix keeps behaviour)", () => {
   it("renders blood types in A, B, O, AB order with the matching colour classes", () => {
     const { container } = render(<PmiLocator />);
     // First (selected) location is Jakarta: A Aman, B Aman, O Aman, AB Kritis.
-    const panel = [...container.querySelectorAll("h5")].find((h) => h.textContent === INITIAL_PMI_DATA[0].name)!.closest("div.relative")!;
-    const badges = [...panel.querySelectorAll(".grid-cols-4 > div")];
+    const panel = [...container.querySelectorAll("h4")].find((h) => h.textContent === INITIAL_PMI_DATA[0].name)!.closest(".detail")!;
+    const badges = [...panel.querySelectorAll(".stock-grid > div")];
     // Each badge is two adjacent spans: "Gol <type>" then the status.
     expect(badges.map((b) => b.textContent)).toEqual(["Gol AAman", "Gol BAman", "Gol OAman", "Gol ABKritis"]);
-    expect(badges[0].className).toContain("bg-emerald-100");
-    expect(badges[3].className).toContain("bg-rose-100");
-    expect(badges[3].className).not.toContain("animate-pulse");
+    expect(badges.map((b) => b.getAttribute("data-status"))).toEqual(["Aman", "Aman", "Aman", "Kritis"]);
   });
 
-  it("uses the amber class for 'Cukup'", () => {
+  it("marks 'Cukup' with its own status (the word is always shown, never colour alone)", () => {
     const { container } = render(<PmiLocator />);
     const bandung = INITIAL_PMI_DATA.find((l) => l.stocks.A === "Cukup")!;
     fireEvent.change(screen.getByLabelText(/cari lokasi pmi/i), { target: { value: bandung.city } });
-    const cukup = [...container.querySelectorAll(".grid-cols-4 > div")].find((b) => /^Gol A.*Cukup/.test(b.textContent ?? ""))!;
-    expect(cukup.className).toContain("bg-amber-100");
+    const cukup = [...container.querySelectorAll(".stock-grid > div")].find((b) => /^Gol A.*Cukup/.test(b.textContent ?? ""))!;
+    expect(cukup.getAttribute("data-status")).toBe("Cukup");
   });
 });

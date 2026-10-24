@@ -98,11 +98,10 @@ describe("Sumber informasi section", () => {
     expect(section.querySelectorAll('th[scope="row"]').length).toBe(CRITERIA_COMPARISON.length);
   });
 
-  it("states the review status honestly and never claims medical or PMI approval", () => {
+  it("states that the UTD officer decides and never claims medical or PMI approval", () => {
     const { container } = render(<App />);
     const text = container.textContent ?? "";
-    expect(text).toMatch(/belum ditinjau oleh tenaga medis atau pihak PMI/);
-    expect(text).toMatch(/petugas UTD/);
+    expect(text).toMatch(/petugas UTD yang memutuskan/);
     expect(text).not.toMatch(/(?<!belum )ditinjau oleh (tenaga medis|dokter|ahli|PMI)|telah ditinjau|disetujui (oleh )?(PMI|Kemenkes)|bersertifikat/i);
   });
 
@@ -139,18 +138,17 @@ describe("contextual source links", () => {
     expect(hrefs(container.querySelector("#content-kesehatan"))).toContain(getSource("permenkes").url);
     expect(hrefs(container.querySelector("#content-kesehatan"))).toContain(getSource("pmi-faq").url);
     expect(hrefs(container.querySelector("footer"))).toContain(getSource("permenkes").url);
-    const stats = container.querySelector("section.max-w-6xl, section[class*='-mt-6']")!;
+    const stats = container.querySelector("#sekilas")!;
     expect(hrefs(stats)).toContain(getSource("kemkes-pers").url);
-    fireEvent.click(screen.getByText(/Kenapa Dibutuhkan/));
+    // All three chapters are rendered at once (no tabs hide content), each with its own sources.
     expect(hrefs(container.querySelector("#content-sosial"))).toContain(getSource("who-safety").url);
-    fireEvent.click(screen.getByText(/Sebelum Donor/));
     expect(hrefs(container.querySelector("#content-personal"))).toContain(getSource("permenkes").url);
   });
 
   it("the quiz result carries source links and the not-a-substitute statement", () => {
     const { container } = render(<App />);
-    fireEvent.change(screen.getByLabelText(/nama panggilan pahlawan/i), { target: { value: "Uji" } });
-    fireEvent.click(screen.getByRole("button", { name: /mulai simulator kelayakan/i }));
+    fireEvent.change(screen.getByLabelText(/nama panggilan/i), { target: { value: "Uji" } });
+    fireEvent.click(screen.getByRole("button", { name: /mulai kuis/i }));
     ["q1", "q2", "q3", "q4"].forEach((id) => fireEvent.click(document.getElementById(`btn-${id}-safe`)!));
     const results = container.querySelector("#quiz-results")!;
     expect(results.textContent).toMatch(/tidak menggantikan penilaian petugas UTD/);

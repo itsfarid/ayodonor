@@ -1,86 +1,131 @@
-import { CRITERIA_COMPARISON, SOURCES } from "../data/sources";
+import { CRITERIA_COMPARISON, SOURCES, type SourceKind } from "../data/sources";
+
+// Order and one-line explanation for each kind of source, so readers can tell regulation from guidance from
+// press statements. AyoDonor's own explanations are not sources and are labelled as such elsewhere.
+const KIND_ORDER: { kind: SourceKind; note: string }[] = [
+  { kind: "Regulasi Indonesia", note: "Dasar hukum standar pelayanan transfusi darah di Indonesia." },
+  { kind: "Panduan praktis PMI", note: "Panduan dari PMI. Tidak selalu bertanggal, dan angkanya bisa berbeda dari regulasi." },
+  { kind: "Pedoman internasional", note: "Pedoman umum WHO. Angkanya bervariasi antar negara dan bukan aturan Indonesia." },
+  { kind: "Artikel edukasi Kemenkes", note: "Artikel rumah sakit di situs Kemenkes. Dipakai sebagai pembanding, bukan standar." },
+  { kind: "Siaran pers Kemenkes", note: "Pernyataan pejabat dalam acara, bukan standar atau penelitian." },
+];
 
 export default function SourcesSection() {
+  // Running number across groups so a source keeps one number wherever it is listed.
+  const numbered = KIND_ORDER.flatMap(({ kind }) => SOURCES.filter((s) => s.kind === kind));
+  const numberOf = (id: string) => numbered.findIndex((s) => s.id === id) + 1;
+
   return (
-    <section id="sumber-informasi" aria-labelledby="sumber-title" className="bg-white border-t border-slate-200 py-14 px-4">
-      <div className="max-w-5xl mx-auto">
-        <h2 id="sumber-title" className="text-2xl font-black text-slate-800">
-          Sumber informasi 📚
-        </h2>
-        <p className="text-sm text-slate-700 mt-2 leading-relaxed">
-          Rujukan regulasi Indonesia adalah Permenkes No. 91 Tahun 2015. WHO dipakai sebagai pedoman umum internasional, dan PMI
-          untuk panduan praktis. Semua sumber di bawah dibuka dan dibaca pada tanggal akses yang tertera. Isi situs ini
-          <strong> belum ditinjau oleh tenaga medis atau pihak PMI</strong> dan bukan keputusan kelayakan: petugas UTD yang
-          memutuskan saat pemeriksaan langsung.
-        </p>
-
-        <ol className="mt-6 space-y-4">
-          {SOURCES.map((s) => (
-            <li key={s.id} id={`sumber-${s.id}`} className="bg-slate-50 border border-slate-200 rounded-xl p-4 text-sm">
-              <a
-                href={s.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-bold text-red-800 underline hover:text-red-900 focus-visible:ring-2 focus-visible:ring-red-500 rounded"
-              >
-                {s.title}
-                <span className="sr-only"> (membuka tab baru)</span>
-              </a>
-              <dl className="mt-2 grid grid-cols-1 sm:grid-cols-[9rem_1fr] gap-x-3 gap-y-1 text-slate-700">
-                <dt className="font-semibold">Jenis</dt>
-                <dd>{s.kind}</dd>
-                <dt className="font-semibold">Penerbit</dt>
-                <dd>{s.publisher}</dd>
-                <dt className="font-semibold">Terbit</dt>
-                <dd>{s.published}</dd>
-                <dt className="font-semibold">Diakses</dt>
-                <dd>{s.accessed}</dd>
-                <dt className="font-semibold">Dipakai untuk</dt>
-                <dd>{s.supports}</dd>
-                <dt className="font-semibold">Keterbatasan</dt>
-                <dd>{s.limits}</dd>
-              </dl>
-            </li>
-          ))}
-        </ol>
-
-        <h3 className="text-lg font-extrabold text-slate-800 mt-10">Perbedaan antar sumber</h3>
-        <p className="text-sm text-slate-700 mt-1 leading-relaxed">
-          Sumber-sumber di atas tidak selalu sepakat. AyoDonor tidak memilih salah satu angka sebagai yang benar; tabel ini
-          menampilkan apa adanya. Tanyakan ke petugas UTD PMI untuk ketentuan yang berlaku.
-        </p>
-        <div className="mt-4 overflow-x-auto" tabIndex={0} role="region" aria-label="Tabel perbedaan kriteria antar sumber">
-          <table className="min-w-[56rem] w-full text-xs text-left border-collapse">
-            <caption className="sr-only">Perbandingan kriteria donor darah menurut Permenkes 91/2015, FAQ PMI, WHO, dan artikel Kemenkes</caption>
-            <thead>
-              <tr className="bg-slate-100">
-                <th scope="col" className="border border-slate-300 p-2">Kriteria</th>
-                <th scope="col" className="border border-slate-300 p-2">Permenkes 91/2015</th>
-                <th scope="col" className="border border-slate-300 p-2">FAQ PMI</th>
-                <th scope="col" className="border border-slate-300 p-2">WHO (Who can give blood)</th>
-                <th scope="col" className="border border-slate-300 p-2">Kemenkes (2025)</th>
-              </tr>
-            </thead>
-            <tbody>
-              {CRITERIA_COMPARISON.map((row) => (
-                <tr key={row.criterion} className="align-top">
-                  <th scope="row" className="border border-slate-300 p-2 bg-slate-50">{row.criterion}</th>
-                  <td className="border border-slate-300 p-2">{row.permenkes}</td>
-                  <td className="border border-slate-300 p-2">{row.pmi}</td>
-                  <td className="border border-slate-300 p-2">{row.who}</td>
-                  <td className="border border-slate-300 p-2">{row.kemkes}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <section id="sumber-informasi" aria-labelledby="sumber-title" className="section">
+      <div className="wrap section__inner">
+        <div className="section__head">
+          <p className="kicker">05 · Rujukan</p>
+          <h2 id="sumber-title">Sumber informasi</h2>
+          <p className="deck">Daftar rujukan menurut jenisnya, perbedaan antar sumber, dan batas masing-masing.</p>
         </div>
 
-        <h3 className="text-lg font-extrabold text-slate-800 mt-10">Klaim manfaat yang tidak kami ulang</h3>
-        <p className="text-sm text-slate-700 mt-1 leading-relaxed">
-          Dua artikel Kemenkes (2023 dan 2025) menyebut manfaat seperti penurunan kolesterol, kesehatan jantung, risiko kanker, dan
-          pembakaran kalori tanpa merujuk studi untuk tiap klaim. Lembar fakta WHO di atas tidak menyebut manfaat kesehatan bagi
-          pendonor. Karena itu AyoDonor tidak menjanjikan manfaat kesehatan pribadi. Alasan utama donor adalah membantu pasien.
-        </p>
+        <div className="section__body">
+          <div className="prose">
+            <p>
+              Rujukan regulasi Indonesia adalah Permenkes No. 91 Tahun 2015. WHO dipakai sebagai pedoman umum internasional, dan PMI
+              untuk panduan praktis. Semua sumber di bawah dibuka dan dibaca pada tanggal akses yang tertera. Keputusan kelayakan:
+              petugas UTD yang memutuskan saat pemeriksaan langsung.
+            </p>
+            <p className="small muted">
+              Penjelasan di situs ini ditulis AyoDonor sendiri berdasarkan sumber-sumber di bawah. Penjelasan itu bukan sumber;
+              tautan sumber diletakkan di dekat klaim yang didukungnya.
+            </p>
+          </div>
+
+          {KIND_ORDER.map(({ kind, note }) => {
+            const group = SOURCES.filter((s) => s.kind === kind);
+            if (group.length === 0) return null;
+            return (
+              <div key={kind} className="refs-group">
+                <h3>{kind}</h3>
+                <p>{note}</p>
+                <ol className="refs-list">
+                  {group.map((s) => (
+                    <li key={s.id} id={`sumber-${s.id}`} className="ref">
+                      <span className="ref__no" aria-hidden="true">
+                        [{numberOf(s.id)}]
+                      </span>
+                      <div>
+                        <a href={s.url} target="_blank" rel="noopener noreferrer" className="ref__title">
+                          {s.title}
+                          <span className="sr-only"> (membuka tab baru)</span>
+                        </a>
+                        <p className="ref__meta">
+                          {s.publisher} · Terbit: {s.published}
+                        </p>
+                        <dl>
+                          <div>
+                            <dt>Diakses</dt>
+                            <dd>{s.accessed}</dd>
+                          </div>
+                          <div>
+                            <dt>Dipakai untuk</dt>
+                            <dd>{s.supports}</dd>
+                          </div>
+                          <div className="limits">
+                            <dt>Keterbatasan</dt>
+                            <dd>{s.limits}</dd>
+                          </div>
+                        </dl>
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+              </div>
+            );
+          })}
+
+          <div className="refs-group">
+            <h3>Perbedaan antar sumber</h3>
+            <div className="prose" style={{ marginTop: "var(--s-3)" }}>
+              <p>
+                Sumber-sumber di atas tidak selalu sepakat. AyoDonor tidak memilih salah satu angka sebagai yang benar; tabel ini
+                menampilkan apa adanya. Tanyakan ke petugas UTD PMI untuk ketentuan yang berlaku.
+              </p>
+            </div>
+            <div className="table-wrap" tabIndex={0} role="region" aria-label="Tabel perbedaan kriteria antar sumber">
+              <table className="compare">
+                <caption className="sr-only">Perbandingan kriteria donor darah menurut Permenkes 91/2015, FAQ PMI, WHO, dan artikel Kemenkes</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Kriteria</th>
+                    <th scope="col">Permenkes 91/2015</th>
+                    <th scope="col">FAQ PMI</th>
+                    <th scope="col">WHO (Who can give blood)</th>
+                    <th scope="col">Kemenkes (2025)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {CRITERIA_COMPARISON.map((row) => (
+                    <tr key={row.criterion}>
+                      <th scope="row">{row.criterion}</th>
+                      <td>{row.permenkes}</td>
+                      <td>{row.pmi}</td>
+                      <td>{row.who}</td>
+                      <td>{row.kemkes}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="table-hint">Tabel ini bisa digeser ke samping; kolom Kriteria tetap terlihat.</p>
+          </div>
+
+          <div className="callout callout--note" style={{ marginTop: "var(--s-6)" }}>
+            <p className="kicker">Catatan redaksi</p>
+            <h3 style={{ fontSize: "var(--text-base)", marginBottom: "var(--s-2)" }}>Klaim manfaat yang tidak kami ulang</h3>
+            <p>
+              Dua artikel Kemenkes (2023 dan 2025) menyebut manfaat seperti penurunan kolesterol, kesehatan jantung, risiko kanker, dan
+              pembakaran kalori tanpa merujuk studi untuk tiap klaim. Lembar fakta WHO di atas tidak menyebut manfaat kesehatan bagi
+              pendonor. Karena itu AyoDonor tidak menjanjikan manfaat kesehatan pribadi. Alasan utama donor adalah membantu pasien.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   );

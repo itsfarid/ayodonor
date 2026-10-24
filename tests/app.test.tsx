@@ -22,8 +22,8 @@ afterEach(() => {
 });
 
 function runQuiz(answers: Array<"safe" | "unsafe"> = ["safe", "safe", "safe", "safe"]) {
-  fireEvent.change(screen.getByLabelText(/nama panggilan pahlawan/i), { target: { value: "Rizki" } });
-  fireEvent.click(screen.getByRole("button", { name: /mulai simulator kelayakan/i }));
+  fireEvent.change(screen.getByLabelText(/nama panggilan/i), { target: { value: "Rizki" } });
+  fireEvent.click(screen.getByRole("button", { name: /mulai kuis/i }));
   ["q1", "q2", "q3", "q4"].forEach((id, i) => fireEvent.click(document.getElementById(`btn-${id}-${answers[i]}`)!));
 }
 
@@ -68,8 +68,8 @@ describe("quiz (client-side only)", () => {
 
   it("questions do not assert unverified criteria", () => {
     render(<App />);
-    fireEvent.change(screen.getByLabelText(/nama panggilan pahlawan/i), { target: { value: "Tes" } });
-    fireEvent.click(screen.getByRole("button", { name: /mulai simulator kelayakan/i }));
+    fireEvent.change(screen.getByLabelText(/nama panggilan/i), { target: { value: "Tes" } });
+    fireEvent.click(screen.getByRole("button", { name: /mulai kuis/i }));
     const seen: string[] = [];
     for (const id of ["q1", "q2", "q3", "q4"]) {
       seen.push(document.getElementById(`question-${id.slice(1)}`)!.textContent ?? "");

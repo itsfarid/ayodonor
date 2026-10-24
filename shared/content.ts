@@ -29,7 +29,7 @@ export function buildQuizSummary(name: string | undefined, answers: QuizAnswers)
   const who = name || "Sobat";
 
   if (allQuizAnswersSafe(answers)) {
-    return `### 🩸 Terima kasih sudah mencoba, **${who}**!
+    return `### Terima kasih sudah mencoba, **${who}**!
 
 Dari 4 pertanyaan singkat ini, belum ada jawabanmu yang jelas menjadi penghalang. **Tapi ini bukan keputusan kelayakan** — empat pertanyaan tidak mencakup semua kriteria (misalnya riwayat penyakit, kehamilan atau menyusui, dan faktor risiko lain).
 
@@ -60,7 +60,7 @@ Dari 4 pertanyaan singkat ini, belum ada jawabanmu yang jelas menjadi penghalang
     );
   }
 
-  return `### 🩸 Catatan untuk **${who}**
+  return `### Catatan untuk **${who}**
 
 Dari jawabanmu, ada hal yang sebaiknya kamu tanyakan dulu ke petugas PMI sebelum datang:
 

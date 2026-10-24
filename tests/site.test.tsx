@@ -34,7 +34,8 @@ describe("page structure and footer", () => {
     expect(privacy).toMatch(/hanya diproses di browser/);
     expect(privacy).toMatch(/tidak ada yang dikirim ke server/i);
     expect(privacy).toMatch(/tidak memakai layanan AI/);
-    expect(privacy).toMatch(/Google Fonts/);
+    expect(privacy).toMatch(/Google Maps/);
+    expect(privacy).toMatch(/tidak memuat font dari layanan lain/);
     expect(privacy).not.toMatch(/Gemini|dikirim ke server AyoDonor/);
   });
 });
@@ -51,6 +52,39 @@ describe("index.html metadata", () => {
   it("references a favicon that actually exists", () => {
     expect(html).toContain('href="/favicon.svg"');
     expect(fs.existsSync(path.join(ROOT, "public", "favicon.svg"))).toBe(true);
+  });
+});
+
+describe("no third-party font or script requests", () => {
+  it("loads no external font or stylesheet: the CSS uses system font stacks only", () => {
+    const css = fs.readFileSync(path.join(ROOT, "src", "index.css"), "utf8");
+    expect(css).not.toMatch(/fonts\.googleapis|fonts\.gstatic|@import url\(/i);
+    const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
+    expect(html).not.toMatch(/<link[^>]+(fonts\.|stylesheet)|<script[^>]+src="https?:/i);
+  });
+});
+
+describe("accessibility landmarks", () => {
+  it("has a skip link, one h1, a main landmark, and labelled navigation", () => {
+    const { container } = render(<App />);
+    expect(container.querySelector('a.skip-link[href="#konten"]')).not.toBeNull();
+    expect(container.querySelector("main#konten")).not.toBeNull();
+    expect(container.querySelectorAll("h1")).toHaveLength(1);
+    for (const nav of container.querySelectorAll("nav")) expect(nav.getAttribute("aria-label"), nav.outerHTML.slice(0, 60)).toBeTruthy();
+  });
+
+  it("never nests interactive elements inside role=button and has no emoji-only controls", () => {
+    const { container } = render(<App />);
+    expect(container.querySelectorAll('[role="button"]')).toHaveLength(0);
+    for (const b of container.querySelectorAll("button")) {
+      expect((b.textContent ?? "").replace(/\s/g, "") || b.getAttribute("aria-label"), b.outerHTML.slice(0, 80)).toBeTruthy();
+    }
+  });
+
+  it("does not use emoji as interface decoration", () => {
+    const { container } = render(<App />);
+    const text = container.textContent ?? "";
+    expect(text).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
   });
 });
 

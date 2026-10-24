@@ -28,22 +28,22 @@ export function safeFileName(name: string): string {
 export function buildCardSvg(visitorName: string, dateText: string): string {
   const name = escapeXml(visitorName.trim().slice(0, 50) || "Sobat");
   const date = escapeXml(dateText);
+  const serif = "'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif";
+  const sans = "system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif";
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" width="800" height="450" role="img" aria-label="Kartu Niat Donor untuk ${name}">
-  <rect width="800" height="450" rx="36" fill="#B91C1C" stroke="#FECACA" stroke-width="6"/>
-  <g transform="translate(100, 95) scale(0.6)">
-    <path d="M0,-40 C0,-40 40,15 40,45 A40,40 0 0 1 -40,45 C-40,15 0,-40 0,-40 Z" fill="#ffffff"/>
-    <circle cx="-12" cy="15" r="5" fill="#B91C1C"/>
-    <circle cx="12" cy="15" r="5" fill="#B91C1C"/>
-    <path d="M-6,25 Q0,31 6,25" stroke="#B91C1C" stroke-width="4" stroke-linecap="round" fill="none"/>
-  </g>
-  <text x="170" y="80" font-family="system-ui, sans-serif" font-weight="800" font-size="30" fill="#ffffff">KARTU NIAT DONOR</text>
-  <text x="170" y="110" font-family="system-ui, sans-serif" font-size="14" fill="#FECACA">AyoDonor · edukasi donor darah</text>
-  <line x1="60" y1="160" x2="740" y2="160" stroke="#FCA5A5" stroke-width="2" opacity="0.4"/>
-  <text x="100" y="205" font-family="system-ui, sans-serif" font-weight="700" font-size="14" fill="#FDBA74">DIBUAT UNTUK</text>
-  <text x="100" y="260" font-family="system-ui, sans-serif" font-weight="800" font-size="42" fill="#ffffff">${name}</text>
-  <text x="100" y="305" font-family="system-ui, sans-serif" font-size="15" fill="#ffffff">Saya berniat ikut donor darah di PMI setelah pemeriksaan oleh petugas.</text>
-  <text x="100" y="350" font-family="system-ui, sans-serif" font-size="12" fill="#FECACA">${escapeXml(CARD_DISCLAIMER)}</text>
-  <text x="100" y="400" font-family="system-ui, sans-serif" font-size="12" fill="#FDBA74">Dibuat pada ${date}</text>
+  <rect width="800" height="450" fill="#F8F4ED"/>
+  <rect x="0.5" y="0.5" width="799" height="449" fill="none" stroke="#231E1C"/>
+  <rect width="800" height="12" fill="#7B1428"/>
+  <path d="M60,58 C60,58 78,82 78,94 A18,18 0 0 1 42,94 C42,82 60,58 60,58 Z" fill="#7B1428"/>
+  <text x="96" y="86" font-family="${serif}" font-weight="700" font-size="28" fill="#231E1C">AyoDonor</text>
+  <text x="740" y="86" text-anchor="end" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="14" fill="#1D5360" letter-spacing="1">KARTU NIAT DONOR</text>
+  <line x1="40" y1="120" x2="760" y2="120" stroke="#231E1C" stroke-width="1.5"/>
+  <text x="60" y="175" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="14" fill="#675E58" letter-spacing="1">DIBUAT UNTUK</text>
+  <text x="60" y="235" font-family="${serif}" font-weight="600" font-size="44" fill="#231E1C">${name}</text>
+  <text x="60" y="285" font-family="${sans}" font-size="18" fill="#4A423E">Saya berniat ikut donor darah di PMI setelah pemeriksaan oleh petugas.</text>
+  <line x1="40" y1="330" x2="760" y2="330" stroke="#D8CFC0"/>
+  <text x="60" y="362" font-family="${sans}" font-size="13" fill="#7A4D00">${escapeXml(CARD_DISCLAIMER)}</text>
+  <text x="60" y="400" font-family="ui-monospace, Menlo, Consolas, monospace" font-size="13" fill="#675E58">Dibuat pada ${date}</text>
 </svg>
 `;
 }

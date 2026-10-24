@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { MapPin, Navigation, Phone, Search, Compass, Locate, HelpCircle } from "lucide-react";
 
 export type StockStatus = "Aman" | "Cukup" | "Kritis";
 export const BLOOD_TYPES = ["A", "B", "O", "AB"] as const;
@@ -131,7 +130,6 @@ export default function PmiLocator() {
   const [isLocating, setIsLocating] = useState(false);
   const [locateError, setLocateError] = useState<string | null>(null);
   const [selectedLocation, setSelectedLocation] = useState<PmiLocation | null>(INITIAL_PMI_DATA[0]);
-  const [animateRadar, setAnimateRadar] = useState(false);
 
   // Directly derive filtered and sorted locations using useMemo for bulletproof live reactive updates!
   const filteredLocations = React.useMemo(() => {
@@ -185,7 +183,6 @@ export default function PmiLocator() {
     }
 
     setIsLocating(true);
-    setAnimateRadar(true);
     setLocateError(null);
 
     navigator.geolocation.getCurrentPosition(
@@ -196,7 +193,6 @@ export default function PmiLocator() {
         };
         setUserLocation(coords);
         setIsLocating(false);
-        setTimeout(() => setAnimateRadar(false), 2500);
       },
       (error) => {
         console.error("Geolocation error", error);
@@ -206,469 +202,236 @@ export default function PmiLocator() {
         }
         setLocateError(errorMsg);
         setIsLocating(false);
-        setAnimateRadar(false);
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
   };
 
-  // Get localized stocks style
-  const getStockBadgeColor = (status: StockStatus) => {
-    switch (status) {
-      case "Aman":
-        return "bg-emerald-100 text-emerald-800 border-emerald-200";
-      case "Cukup":
-        return "bg-amber-100 text-amber-800 border-amber-200";
-      case "Kritis":
-        return "bg-rose-100 text-rose-800 border-rose-200 text-rose-700";
-    }
-  };
-
-  // Coordinates used to render the stylized coordinates map
-  // Mini map visualization coordinates calculated based on Indonesian central perspective bounds
+  // Coordinates for the rough latitude/longitude diagram (not a map): Indonesia spans about lng 95-141, lat -11 to 6.
   const getMapCoords = (lat: number, lng: number) => {
-    // Relative positioning to fit inside a nice 100% responsive SVG container representing Indonesia coordinates
-    // Indonesia bounds roughly: Lng 95 to 141, Lat -11 to 6
     const minLng = 95;
     const maxLng = 141;
     const minLat = -11;
     const maxLat = 6;
 
     const x = ((lng - minLng) / (maxLng - minLng)) * 100;
-    // Latitude is inverted in SVG coordinates
+    // Latitude is inverted in screen coordinates
     const y = (1 - (lat - minLat) / (maxLat - minLat)) * 100;
 
-    return { x: `${Math.max(5, Math.min(95, x))}%`, y: `${Math.max(5, Math.min(95, y))}%` };
+    return { x: `${Math.max(5, Math.min(95, x))}%`, y: `${Math.max(8, Math.min(92, y))}%` };
   };
 
+  const routeUrl = (pmi: PmiLocation) =>
+    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(pmi.name + ", " + pmi.address)}`;
+
   return (
-    <section id="pmi-locator" className="max-w-6xl mx-auto w-full px-4 py-8 relative transition-all">
-      <div className="text-center mb-10">
-        <div className="inline-flex items-center gap-1.5 bg-red-100 text-red-700 text-xs font-bold px-4 py-1.5 rounded-full mb-3 uppercase tracking-wider">
-          <Compass className="w-3.5 h-3.5 animate-spin" />
-          Contoh Lokasi · Data Demo
-        </div>
-        <h2 className="text-3xl md:text-4xl font-black text-slate-800 tracking-tight">
-          Contoh Daftar Lokasi UTD PMI 📍
-        </h2>
-        <p className="text-slate-500 max-w-xl mx-auto mt-2 text-sm">
-          Daftar ini hanya memuat 7 kota sebagai contoh tampilan. Nama unit, alamat, telepon, jam layanan, dan status stok <strong>belum diverifikasi</strong> sebagai data resmi.
+    <div id="pmi-locator" className="locator" role="group" aria-labelledby="locator-title">
+      <h3 id="locator-title" className="chapter__title">
+        Contoh daftar lokasi UTD PMI
+      </h3>
+
+      <div className="callout callout--caution">
+        <p className="kicker">Data demo · belum terverifikasi</p>
+        <p>
+          Daftar ini hanya memuat {INITIAL_PMI_DATA.length} kota sebagai contoh tampilan. Nama unit, alamat, telepon, jam layanan, dan status stok <strong>belum diverifikasi</strong> sebagai data resmi.
         </p>
-        <p className="text-xs text-slate-600 max-w-xl mx-auto mt-2">
+        <p>
           Untuk lokasi, jam layanan, dan stok darah yang resmi, buka{" "}
-          <a
-            href="https://ayodonor.pmi.or.id"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="font-bold text-red-700 underline"
-          >
+          <a href="https://ayodonor.pmi.or.id" target="_blank" rel="noopener noreferrer">
             ayodonor.pmi.or.id
           </a>{" "}
           atau hubungi UTD PMI setempat.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-        
-        {/* LEFT COLUMN: FILTERS & CARD LISTING (Lg: 7 cols) */}
-        <div className="lg:col-span-7 flex flex-col gap-4">
-          
-          {/* SEARCH & GEOLOCATE CONTROL BAR */}
-          <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex flex-col sm:flex-row gap-3">
-            <div className="relative flex-1">
-              <label htmlFor="pmi-search-input" className="sr-only">
-                Cari lokasi PMI
-              </label>
-              <Search className="w-5 h-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                id="pmi-search-input"
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Cari Kota, Jalan, atau Nama UDD PMI..."
-                className="w-full pl-11 pr-4 py-2.5 rounded-xl border border-slate-200 focus:border-red-500 focus:outline-none text-sm placeholder-slate-400 bg-slate-50/50"
-              />
+      <div className="locator__bar">
+        <div className="field">
+          <label htmlFor="pmi-search-input">Cari lokasi PMI</label>
+          <input
+            id="pmi-search-input"
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Kota, jalan, atau nama UDD PMI"
+            className="input"
+            autoComplete="off"
+          />
+        </div>
+
+        <button id="btn-geolocate" onClick={handleDetectLocation} disabled={isLocating} className="btn btn--quiet">
+          {isLocating ? "Mencari lokasi..." : userLocation ? "Diurutkan dari posisimu" : "Urutkan contoh lokasi dari posisiku"}
+        </button>
+      </div>
+
+      {locateError && (
+        <div role="alert" className="callout callout--caution">
+          <p>{locateError}</p>
+        </div>
+      )}
+
+      {userLocation && nearestDemoKm !== null && nearestDemoKm > 100 && (
+        <div role="alert" className="callout callout--caution">
+          <p>
+            Contoh lokasi terdekat berjarak sekitar {Math.round(nearestDemoKm).toLocaleString("id-ID")} km dari posisimu. Daftar demo ini hanya memuat {INITIAL_PMI_DATA.length} kota, jadi belum tentu ada unit PMI contoh di dekatmu. Cari UTD terdekat lewat ayodonor.pmi.or.id.
+          </p>
+        </div>
+      )}
+
+      {userLocation && (
+        <div className="callout callout--note">
+          <p>
+            Daftar diurutkan menurut perkiraan jarak garis lurus dari posisimu (bukan rute). Lokasimu hanya diproses di browser dan tidak dikirim ke server.
+          </p>
+          <button onClick={() => setUserLocation(null)} className="linkbutton">
+            Hapus lokasi
+          </button>
+        </div>
+      )}
+
+      <div className="locator__cols">
+        <div>
+          <p className="small muted" role="status">
+            {filteredLocations.length === 0 ? "Tidak ada contoh lokasi yang cocok." : `${filteredLocations.length} contoh lokasi`}
+          </p>
+
+          {filteredLocations.length === 0 ? (
+            <div className="callout callout--note">
+              <p>Coba kata kunci kota atau jalan lain. Untuk lokasi resmi, buka ayodonor.pmi.or.id.</p>
             </div>
-
-            <button
-              id="btn-geolocate"
-              onClick={handleDetectLocation}
-              disabled={isLocating}
-              aria-label="Urutkan contoh lokasi dari posisi saya"
-              className={`flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm shadow-sm transition-all active:scale-95 outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 cursor-pointer ${
-                userLocation 
-                  ? "bg-slate-900 text-emerald-400 border border-slate-800" 
-                  : "bg-red-600 hover:bg-red-700 text-white"
-              }`}
-            >
-              <Locate className={`w-4 h-4 ${isLocating ? "animate-spin" : ""}`} />
-              {isLocating ? "Mencari lokasi..." : userLocation ? "Diurutkan dari posisimu" : "Urutkan dari posisiku"}
-            </button>
-          </div>
-
-          {/* STATUS NOTIFICATION ACCENTS */}
-          {locateError && (
-            <div className="bg-rose-50 border border-rose-200 rounded-xl p-3.5 text-xs text-rose-800 leading-relaxed font-semibold flex gap-2 items-start">
-              <span className="text-sm">⚠️</span> {locateError}
-            </div>
-          )}
-
-          {userLocation && nearestDemoKm !== null && nearestDemoKm > 100 && (
-            <div role="alert" className="bg-amber-50 border border-amber-300 rounded-xl p-3.5 text-xs text-amber-900 leading-relaxed font-semibold">
-              Contoh lokasi terdekat berjarak sekitar {Math.round(nearestDemoKm).toLocaleString("id-ID")} km dari posisimu. Daftar demo ini hanya memuat 7 kota, jadi belum tentu ada unit PMI contoh di dekatmu. Cari UTD terdekat lewat ayodonor.pmi.or.id.
-            </div>
-          )}
-
-          {userLocation && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3.5 text-xs text-emerald-800 leading-relaxed font-bold flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-heartbeat" />
-                Daftar diurutkan menurut perkiraan jarak garis lurus dari posisimu (bukan rute). Lokasimu hanya diproses di browser dan tidak dikirim ke server.
-              </span>
-              <button
-                onClick={() => setUserLocation(null)}
-                className="text-[10px] uppercase font-mono text-slate-400 hover:text-red-650 tracking-wider font-extrabold"
-              >
-                Hapus lokasi ✖
-              </button>
-            </div>
-          )}
-
-          {/* CARDS LIST CONTAINER */}
-          <div className="flex-1 overflow-y-auto pr-1 max-h-[500px] space-y-3.5">
-            {filteredLocations.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-3xl border border-slate-100 flex flex-col items-center justify-center">
-                <HelpCircle className="w-12 h-12 text-slate-350 animate-bounce mb-3" />
-                <h4 className="font-extrabold text-slate-800 text-sm">Tidak Menemukan Satupun PMI</h4>
-                <p className="text-xs text-slate-500 max-w-xs mt-1">Coba ketik kata kunci kota lain atau jalan terdekat ya, sob!</p>
-              </div>
-            ) : (
-              filteredLocations.map((pmi) => {
-                const distance = userLocation 
-                  ? getDistanceKm(userLocation.lat, userLocation.lng, pmi.lat, pmi.lng) 
-                  : null;
+          ) : (
+            <ul className="loc-list">
+              {filteredLocations.map((pmi) => {
+                const distance = userLocation ? getDistanceKm(userLocation.lat, userLocation.lng, pmi.lat, pmi.lng) : null;
                 const isSelected = selectedLocation?.id === pmi.id;
 
                 return (
-                  <div
-                    key={pmi.id}
-                    onClick={() => setSelectedLocation(pmi)}
-                    role="button"
-                    tabIndex={0}
-                    aria-pressed={isSelected}
-                    aria-label={`Pilih ${pmi.name}`}
-                    onKeyDown={(e) => {
-                      if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
-                        e.preventDefault();
-                        setSelectedLocation(pmi);
-                      }
-                    }}
-                    className={`p-5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden group outline-none focus-visible:ring-2 focus-visible:ring-red-500 ${
-                      isSelected 
-                        ? "bg-white border-red-500 shadow-md ring-1 ring-red-500/30" 
-                        : "bg-white border-slate-150 hover:border-slate-300 shadow-xs"
-                    }`}
-                  >
-                    {/* Selected Left Ribbon */}
-                    {isSelected && (
-                      <div className="absolute top-0 bottom-0 left-0 w-1.5 bg-red-600" />
-                    )}
-
-                    {/* Proximity Tag Indicator */}
-                    {distance !== null && (
-                      <span className="absolute top-3.5 right-4 bg-emerald-100 text-emerald-800 text-[10.5px] font-mono font-bold px-2 rounded-full border border-emerald-200">
-                        ≈ {distance.toFixed(1)} km (garis lurus)
-                      </span>
-                    )}
-
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider font-bold">
-                          {pmi.region} • {pmi.city}
-                        </span>
-                        
-                        <h4 className="font-extrabold text-slate-800 text-base flex items-center gap-1.5 mt-0.5 group-hover:text-red-600 transition-colors">
-                          <MapPin className={`w-4 h-4 shrink-0 ${isSelected ? "text-red-600 animate-bounce" : "text-slate-450"}`} />
-                          {pmi.name}
-                        </h4>
-
-                        <p className="text-xs text-slate-500 mt-1.5 leading-relaxed pr-6">
-                          {pmi.address}
-                        </p>
-
-                        {/* Blood Stocks Sub-Grid */}
-                        <div className="mt-4 pt-3.5 border-t border-dashed border-slate-100">
-                          <div className="flex items-center justify-between gap-2 mb-2">
-                            <span className="text-[10px] uppercase font-mono font-bold text-slate-400 block">
-                              Contoh status stok (fiktif):
-                            </span>
-                            <span className="text-[9px] font-mono font-bold uppercase tracking-wide text-amber-800 bg-amber-100 border border-amber-300/70 px-1.5 py-0.5 rounded whitespace-nowrap">
-                              Ilustrasi Demo
-                            </span>
-                          </div>
-                          <div className="grid grid-cols-4 gap-2">
-                            {BLOOD_TYPES.map((type) => {
-                              const status = pmi.stocks[type];
-                              return (
-                                <div
-                                  key={type}
-                                  className={`text-center py-1.5 px-2 rounded-xl border text-xs font-bold flex flex-col justify-center items-center gap-0.5 ${getStockBadgeColor(status)}`}
-                                >
-                                  <span className="text-[10.5px] text-slate-500">Gol {type}</span>
-                                  <span className="text-[11px] font-black uppercase text-slate-900 tracking-wider">
-                                    {status === "Aman" ? "Aman 🟢" : status === "Cukup" ? "Cukup 🟡" : "Kritis 🔴"}
-                                  </span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <p className="text-[10px] text-slate-500 mt-2 leading-relaxed italic">
-                            *Status stok di sini fiktif, hanya untuk ilustrasi tampilan. Jangan dipakai untuk keputusan donor; cek stok resmi di ayodonor.pmi.or.id.
-                          </p>
-                        </div>
-
-                        {/* Contacts & Quick Redirect Triggers */}
-                        <div className="mt-4 flex flex-wrap gap-2 pt-3 border-t border-slate-100">
-                          <a
-                            href={`tel:${pmi.phone.replace(/[() ]/g, "")}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold py-1.5 px-3 rounded-xl transition-all"
-                          >
-                            <Phone className="w-3.5 h-3.5" />
-                            {pmi.phone}
-                          </a>
-
-                          <a
-                            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(pmi.name + ", " + pmi.address)}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={(e) => e.stopPropagation()}
-                            className="inline-flex items-center gap-1.5 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-bold py-1.5 px-3.5 rounded-xl transition-all border border-red-100"
-                          >
-                            <Navigation className="w-3.5 h-3.5" />
-                            Petunjuk Arah Jalan 🧭
-                          </a>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-
-        {/* RIGHT COLUMN: HIGH-TECH TACTICAL INDIAN OCEAN MAP TRACKER (Lg: 5 cols) */}
-        <div className="lg:col-span-5 flex flex-col">
-          <div className="bg-slate-900 rounded-3xl p-5 border border-slate-800 shadow-2xl flex flex-col flex-1 relative overflow-hidden min-h-[460px]">
-            
-            {/* Grid Mesh Backdrops */}
-            <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:24px_24px] opacity-25" />
-            
-            {/* Radar Scope Header */}
-            <div className="relative z-10 flex flex-wrap justify-between items-center gap-2 border-b border-slate-800 pb-3 mb-4">
-              <span className="flex items-center gap-2">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                </span>
-                <span className="text-xs font-mono font-bold tracking-wider text-slate-400">
-                  PETA ILUSTRASI (BUKAN PETA SUNGGUHAN)
-                </span>
-              </span>
-              
-              <div className="flex items-center gap-1.5 flex-wrap justify-end">
-                <span className="text-[9px] font-mono text-amber-300 font-extrabold uppercase bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/30">
-                  Data contoh · belum terverifikasi
-                </span>
-              </div>
-            </div>
-
-            {/* INTERACTIVE COORDINATE MAP BODY */}
-            <div className="relative flex-1 bg-slate-950/80 border border-slate-800/80 rounded-2xl overflow-hidden flex items-center justify-center p-4">
-              
-              {/* RADAR SWEEP SCANNER ANIMATION */}
-              {animateRadar && (
-                <div className="absolute inset-0 pointer-events-none z-20 flex items-center justify-center">
-                  <div className="w-full h-full border border-red-500/20 rounded-full animate-ping opacity-35 scale-150" />
-                  <div className="absolute w-[350px] h-[350px] border border-emerald-400/15 rounded-full animate-pulse flex items-center justify-center">
-                    <div className="w-56 h-56 border border-emerald-400/20 rounded-full flex items-center justify-center">
-                      <div className="w-28 h-28 border border-emerald-400/30 rounded-full" />
-                    </div>
-                  </div>
-                  {/* Glowing Radar Scanning line */}
-                  <div className="absolute top-1/2 left-1/2 w-1/2 h-[2px] bg-gradient-to-r from-emerald-500/50 to-transparent origin-left rotate-0 animate-radar-sweep" style={{ transformOrigin: "0 0" }} />
-                </div>
-              )}
-
-              {/* INDONESIA vector-styled grid plane */}
-              <div className="w-full h-full relative flex items-center justify-center py-6">
-                
-                {/* Visual Mock outline of Indonesian Island clusters inside coordinates */}
-                <svg viewBox="0 0 100 100" className="w-full h-full absolute inset-0 opacity-15 pointer-events-none text-slate-700">
-                  {/* Sumatera */}
-                  <path d="M 5,20 L 25,45 L 30,40 L 10,15 Z" fill="currentColor" />
-                  {/* Jawa */}
-                  <path d="M 20,55 L 48,58 L 52,56 L 22,53 Z" fill="currentColor" />
-                  {/* Kalimantan */}
-                  <path d="M 33,22 L 48,22 L 48,38 L 33,38 Z" fill="currentColor" />
-                  {/* Sulawesi */}
-                  <path d="M 52,28 L 58,25 L 58,35 L 56,35 L 52,38 Z" fill="currentColor" />
-                  {/* Bali & Nusa Tenggara */}
-                  <path d="M 49,58 Q 55,59 60,60" stroke="currentColor" strokeWidth="2" fill="none" />
-                </svg>
-
-                {/* Grid guidelines */}
-                <div className="absolute left-1/2 top-0 bottom-0 w-[1px] border-l border-dashed border-slate-800/60 pointer-events-none" />
-                <div className="absolute top-1/2 left-0 right-0 h-[1px] border-t border-dashed border-slate-800/60 pointer-events-none" />
-
-                {/* GEOLOCATION USER EMBLEM PIN */}
-                {userLocation && (
-                  <div
-                    className="absolute z-20 -translate-x-1/2 -translate-y-1/2 transition-all duration-700"
-                    style={{
-                      left: getMapCoords(userLocation.lat, userLocation.lng).x,
-                      top: getMapCoords(userLocation.lat, userLocation.lng).y
-                    }}
-                  >
-                    <div className="relative flex items-center justify-center">
-                      <span className="animate-ping absolute inline-flex h-8 w-8 rounded-full bg-blue-500 opacity-40"></span>
-                      <div className="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg flex items-center justify-center">
-                        <div className="w-1.5 h-1.5 bg-white rounded-full" />
-                      </div>
-                      <div className="absolute top-5 bg-blue-600 font-bold text-[8.5px] uppercase text-white font-mono rounded px-1.5 py-0.5 tracking-wider shadow whitespace-nowrap">
-                        Lokasimu 🛰️
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* PMI MARKERS DYNAMIC PINS */}
-                {filteredLocations.map((pmi) => {
-                  const isSelected = selectedLocation?.id === pmi.id;
-                  const coords = getMapCoords(pmi.lat, pmi.lng);
-
-                  return (
+                  <li key={pmi.id} className="loc" data-selected={isSelected}>
                     <button
-                      key={pmi.id}
+                      type="button"
+                      className="loc__select"
+                      aria-pressed={isSelected}
+                      aria-label={`Pilih ${pmi.name}`}
                       onClick={() => setSelectedLocation(pmi)}
-                      aria-label={`Pilih lokasi ${pmi.name}`}
-                      className="absolute z-10 -translate-x-1/2 -translate-y-1/2 transition-all outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 group"
-                      style={{
-                        left: coords.x,
-                        top: coords.y
-                      }}
                     >
-                      <div className="relative flex flex-col items-center">
-                        {/* Selected halo */}
-                        {isSelected && (
-                          <span className="absolute -inset-1.5 bg-red-500/25 border border-red-500/50 rounded-full animate-ping" />
-                        )}
-                        
-                        <div className={`p-1.5 rounded-full border transition-all shadow-md relative ${
-                          isSelected
-                            ? "bg-red-500 border-white text-white scale-125 z-20"
-                            : "bg-slate-800 border-slate-700 text-slate-350 hover:bg-slate-700 hover:text-white"
-                        }`}>
-                          <MapPin className="w-3.5 h-3.5 fill-current" />
-                        </div>
-
-                        {/* Interactive marker info balloon snippet */}
-                        <div className={`absolute bottom-7 bg-slate-900 border text-[9.5px] font-extrabold uppercase rounded px-2 py-1 tracking-wider shadow-xl whitespace-nowrap flex items-center gap-1.5 transition-all w-max ${
-                          isSelected 
-                            ? "opacity-100 translate-y-0 text-white border-red-500 scale-102" 
-                            : "opacity-0 translate-y-1 hover:opacity-100 hover:translate-y-0 text-slate-400 border-slate-800 scale-95 pointer-events-none group-hover:opacity-100"
-                        }`}>
-                          <span>{pmi.city}</span>
-                          <span className="w-1 h-3 bg-red-500 rounded" />
-                        </div>
-                      </div>
+                      <span className="loc__meta">
+                        {pmi.region} · {pmi.city}
+                      </span>
+                      <span className="loc__name">{pmi.name}</span>
+                      <span className="loc__addr">{pmi.address}</span>
                     </button>
-                  );
-                })}
-              </div>
 
-            </div>
+                    {distance !== null && <span className="loc__dist">≈ {distance.toFixed(1)} km (garis lurus)</span>}
 
-            {/* DETAILED INFO BOX ABOUT SELECTED COMPONENT */}
-            {selectedLocation && (
-              <div className="relative z-10 bg-slate-950 border border-slate-800/80 rounded-2xl p-4 mt-4 text-left transition-all">
-                <div className="flex justify-between items-start mb-2.5">
-                  <div>
-                    <span className="text-[10px] uppercase font-mono font-bold text-slate-500 block">
-                      LOKASI TERPILIH:
-                    </span>
-                    <h5 className="font-extrabold text-white text-sm">
-                      {selectedLocation.name}
-                    </h5>
-                  </div>
-                  <span className="bg-red-500/10 text-red-400 border border-red-500/20 text-[10px] font-mono font-bold px-2 py-0.5 rounded">
-                    {selectedLocation.status}
-                  </span>
-                </div>
-                
-                <p className="text-slate-400 text-xs leading-relaxed">
-                  {selectedLocation.address}
-                </p>
+                    <p className="loc__stock">
+                      Contoh status stok (fiktif):{" "}
+                      {BLOOD_TYPES.map((type, i) => (
+                        <span key={type} data-blood-type={type} data-status={pmi.stocks[type]}>
+                          {i > 0 && " · "}
+                          {type} {pmi.stocks[type]}
+                        </span>
+                      ))}
+                    </p>
 
-                <div className="mt-3 bg-white/5 rounded-xl p-3 flex justify-between items-center border border-white/5">
-                  <div className="flex gap-4">
-                    <div>
-                      <span className="text-[9px] uppercase font-mono text-slate-500 block">TELEPON (BELUM DIVERIFIKASI):</span>
-                      <strong className="text-slate-200 text-xs font-bold font-mono">{selectedLocation.phone}</strong>
+                    <div className="loc__links">
+                      <a href={`tel:${pmi.phone.replace(/[() ]/g, "")}`}>{pmi.phone}</a>
+                      <a href={routeUrl(pmi)} target="_blank" rel="noopener noreferrer">
+                        Petunjuk arah
+                        <span className="sr-only"> ke {pmi.name} (membuka tab baru)</span>
+                      </a>
                     </div>
-                    <div>
-                      <span className="text-[9px] uppercase font-mono text-slate-500 block">WILAYAH:</span>
-                      <strong className="text-slate-200 text-xs font-bold font-mono">{selectedLocation.region}</strong>
-                    </div>
-                  </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
 
-                  <a
-                    href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(selectedLocation.name + ", " + selectedLocation.address)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs px-3 py-1.5 rounded-lg active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950"
-                  >
-                    Buka Rute 🧭
-                  </a>
-                </div>
-
-                <div className="mt-3 pt-3 border-t border-dashed border-slate-800">
-                  <div className="flex items-center justify-between gap-2 mb-2">
-                    <span className="text-[9px] uppercase font-mono font-bold text-slate-500">
-                      Contoh status stok (fiktif)
-                    </span>
-                    <span className="text-[9px] font-mono font-extrabold uppercase text-amber-300 bg-amber-500/10 border border-amber-500/30 px-1.5 py-0.5 rounded">
-                      Ilustrasi Demo
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-4 gap-1.5">
-                    {BLOOD_TYPES.map((type) => {
-                      const status = selectedLocation.stocks[type];
-                      return (
-                        <div
-                          key={type}
-                          className={`text-center py-1 px-1 rounded-lg border text-[10px] font-bold ${getStockBadgeColor(status)}`}
-                        >
-                          <span className="block text-slate-500 text-[9px]">Gol {type}</span>
-                          <span className="text-slate-900 font-black uppercase tracking-wider">
-                            {status}
-                          </span>
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <p className="text-[10px] text-amber-400/90 mt-2 leading-relaxed italic">
-                    *Status stok fiktif untuk ilustrasi. Cek stok resmi di ayodonor.pmi.or.id.
-                  </p>
-                </div>
+        <div className="locator__detail">
+          <p className="kicker kicker--plain">Diagram posisi kasar (lintang-bujur), bukan peta</p>
+          <div className="schematic">
+            {userLocation && (
+              <div
+                className="pin pin--you"
+                role="img"
+                aria-label="Posisimu (perkiraan)"
+                style={{ left: getMapCoords(userLocation.lat, userLocation.lng).x, top: getMapCoords(userLocation.lat, userLocation.lng).y }}
+              >
+                <span className="pin-label">Kamu</span>
               </div>
             )}
 
+            {filteredLocations.map((pmi) => {
+              const isSelected = selectedLocation?.id === pmi.id;
+              const coords = getMapCoords(pmi.lat, pmi.lng);
+              return (
+                <button
+                  key={pmi.id}
+                  type="button"
+                  className="pin"
+                  aria-pressed={isSelected}
+                  aria-label={`Pilih lokasi ${pmi.name}`}
+                  onClick={() => setSelectedLocation(pmi)}
+                  style={{ left: coords.x, top: coords.y, zIndex: isSelected ? 2 : 1 }}
+                >
+                  {isSelected && <span className="pin-label">{pmi.city}</span>}
+                </button>
+              );
+            })}
           </div>
-        </div>
 
+          {selectedLocation && (
+            <div className="detail">
+              <p className="kicker kicker--plain">Lokasi terpilih</p>
+              <h4 className="loc__name">{selectedLocation.name}</h4>
+              <p className="small" style={{ margin: "var(--s-1) 0 0" }}>
+                {selectedLocation.address}
+              </p>
+
+              <dl>
+                <div>
+                  <dt>Jam layanan</dt>
+                  <dd>{selectedLocation.status}</dd>
+                </div>
+                <div>
+                  <dt>Telepon (belum diverifikasi)</dt>
+                  <dd>{selectedLocation.phone}</dd>
+                </div>
+                <div>
+                  <dt>Wilayah</dt>
+                  <dd>{selectedLocation.region}</dd>
+                </div>
+              </dl>
+
+              <p style={{ margin: 0 }}>
+                <a href={routeUrl(selectedLocation)} target="_blank" rel="noopener noreferrer" className="btn btn--quiet">
+                  Buka rute
+                  <span className="sr-only"> ke {selectedLocation.name} (membuka tab baru)</span>
+                </a>
+              </p>
+
+              <div style={{ marginTop: "var(--s-4)" }}>
+                <p className="small" style={{ margin: 0 }}>
+                  <strong>Contoh status stok (fiktif)</strong> <span className="demo-tag">Ilustrasi demo</span>
+                </p>
+                <div className="stock-grid">
+                  {BLOOD_TYPES.map((type) => {
+                    const status = selectedLocation.stocks[type];
+                    return (
+                      <div key={type} data-blood-type={type} data-status={status}>
+                        <span className="type">Gol {type}</span>
+                        <span className="state">{status}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+                <p className="small muted" style={{ margin: 0 }}>
+                  Status stok fiktif untuk ilustrasi. Jangan dipakai untuk keputusan donor; cek stok resmi di ayodonor.pmi.or.id.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
-    </section>
+    </div>
   );
 }
