@@ -96,10 +96,13 @@ try {
       check(`not served: ${p}`, res.status === 404 && !/sourcesContent|GEMINI_API_KEY/.test(body), `status ${res.status}`);
     }
   }
-} finally {
+
+  // Graceful shutdown: SIGTERM must end the process cleanly (exit code 0) within 5 seconds.
   child.kill("SIGTERM");
   const result = await Promise.race([exited, new Promise((r) => setTimeout(() => r("timeout"), 5000))]);
-  if (result === "timeout") child.kill("SIGKILL");
+  check("graceful shutdown on SIGTERM (exit 0)", result !== "timeout" && result.code === 0, JSON.stringify(result));
+} finally {
+  if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
 }
 
 console.log(failures.length ? `\n${failures.length} check(s) failed.` : "\nAll smoke checks passed.");

@@ -30,6 +30,11 @@ export interface AppOptions {
   rateLimit?: { windowMs: number; limit: number };
   /** Hard deadline for one Gemini call. */
   geminiTimeoutMs?: number;
+  /**
+   * Reverse-proxy hops to trust when deriving the client IP (rate limiting).
+   * 0 (default) ignores X-Forwarded-For entirely. Set it to the real number of proxies in front of the app.
+   */
+  trustProxyHops?: number;
   /** Emit one structured log line per request (no bodies, no query strings). Default true. */
   logRequests?: boolean;
 }
@@ -52,6 +57,9 @@ const UPSTREAM_RESPONSES: Record<Exclude<UpstreamFailureKind, "quota">, { status
 export async function createApp(options: AppOptions): Promise<Express> {
   const app = express();
   app.disable("x-powered-by");
+  if (options.trustProxyHops && options.trustProxyHops > 0) {
+    app.set("trust proxy", options.trustProxyHops);
+  }
   const getGeminiClient = options.getGeminiClient;
   const timeoutMs = options.geminiTimeoutMs ?? DEFAULT_GEMINI_TIMEOUT_MS;
 

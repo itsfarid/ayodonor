@@ -2,6 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 import { createApp, type GeminiClientLike } from "./server/app";
 import { loadConfig } from "./server/config";
+import { createShutdown } from "./server/shutdown";
 
 dotenv.config({ path: ".env.local", quiet: true });
 dotenv.config({ quiet: true });
@@ -36,6 +37,8 @@ async function startServer() {
     mode: config.mode,
     staticDir: config.staticDir,
     getGeminiClient,
+    trustProxyHops: config.trustProxyHops,
+    geminiTimeoutMs: config.geminiTimeoutMs,
     createDevMiddleware: async () => {
       const { createServer: createViteServer } = await import("vite");
       const vite = await createViteServer({
@@ -48,9 +51,19 @@ async function startServer() {
   });
   if (config.mode === "production") console.log(`Serving production static assets from ${config.staticDir}.`);
 
-  app.listen(config.port, config.host, () => {
+  const server = app.listen(config.port, config.host, () => {
     console.log(`AyoDonor server (${config.mode}) listening on http://${config.host}:${config.port}`);
   });
+
+  server.on("error", (error: NodeJS.ErrnoException) => {
+    const hint = error.code === "EADDRINUSE" ? ` Port ${config.port} is already in use; set PORT to a free port.` : "";
+    console.error(`Server failed to start (${error.code ?? "unknown error"}).${hint}`);
+    process.exit(1);
+  });
+
+  const shutdown = createShutdown(server, { timeoutMs: 10_000, onExit: (code) => process.exit(code) });
+  process.once("SIGTERM", () => shutdown("SIGTERM"));
+  process.once("SIGINT", () => shutdown("SIGINT"));
 }
 
 startServer().catch((error) => {
