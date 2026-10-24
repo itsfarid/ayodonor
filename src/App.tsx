@@ -3,6 +3,8 @@ import PmiLocator from "./components/PmiLocator";
 import HeroCard from "./components/HeroCard";
 import Faq from "./components/Faq";
 import PrivacyNotice from "./components/PrivacyNotice";
+import SourceLinks from "./components/SourceLinks";
+import SourcesSection from "./components/SourcesSection";
 import { allQuizAnswersSafe, buildQuizSummary, MEDICAL_DISCLAIMER } from "../shared/content";
 
 // --- Custom Simple Markdown Parser for beautiful styled responses ---
@@ -172,6 +174,12 @@ export default function App() {
               >
                 Coba Kuis Panduan Awal 🔍
               </a>
+              <a
+                href="#sumber-informasi"
+                className="bg-transparent text-white border border-white/40 px-6 py-3 rounded-xl font-semibold text-sm hover:bg-white/10 active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-red-600"
+              >
+                Sumber Informasi 📚
+              </a>
             </div>
           </div>
 
@@ -220,8 +228,9 @@ export default function App() {
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-800">Hingga 3 Nyawa</div>
-              <div className="text-xs text-slate-500 font-medium">per kantong darah (perkiraan yang dikutip Kemenkes)</div>
+              <div className="text-2xl font-black text-slate-800">Setidaknya 3 Nyawa</div>
+              <div className="text-xs text-slate-600 font-medium">per kantong, kata pejabat Kemenkes (2022), bukan hasil penelitian</div>
+              <SourceLinks refs={[{ id: "kemkes-pers" }]} className="text-[11px] text-slate-600 block" />
             </div>
           </div>
 
@@ -233,7 +242,8 @@ export default function App() {
             </div>
             <div>
               <div className="text-2xl font-black text-slate-800">Beberapa Komponen</div>
-              <div className="text-xs text-slate-500 font-medium">Satu kantong bisa dipisah untuk pasien berbeda</div>
+              <div className="text-xs text-slate-600 font-medium">Satu kantong bisa dipisah untuk pasien berbeda</div>
+              <SourceLinks refs={[{ id: "who-safety" }, { id: "permenkes", locator: "hal. 54" }]} className="text-[11px] text-slate-600 block" />
             </div>
           </div>
 
@@ -245,7 +255,8 @@ export default function App() {
             </div>
             <div>
               <div className="text-2xl font-black text-slate-800">Diperiksa Petugas</div>
-              <div className="text-xs text-slate-500 font-medium">Hb, tekanan darah, dan riwayat kesehatan dicek sebelum donor</div>
+              <div className="text-xs text-slate-600 font-medium">Hb, tekanan darah, dan riwayat kesehatan dicek sebelum donor</div>
+              <SourceLinks refs={[{ id: "pmi-faq" }, { id: "permenkes", locator: "hal. 56-57" }]} className="text-[11px] text-slate-600 block" />
             </div>
           </div>
         </div>
@@ -321,7 +332,8 @@ export default function App() {
 
               <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
                 <p>
-                  Saat donor, sebagian darahmu diambil. Standar pelayanan transfusi darah menyebut kantong donor berisi sekitar <strong className="text-slate-900">350 mL atau 450 mL</strong>. Setelah itu tubuh mengganti darah yang diambil. Menurut FAQ PMI, sel darah merah pengganti terbentuk dalam sekitar 4-8 minggu.
+                  Saat donor, sebagian darahmu diambil. Standar pelayanan transfusi darah menyebut kantong donor berisi sekitar <strong className="text-slate-900">350 mL atau 450 mL</strong>. Setelah itu tubuh mengganti darah yang diambil. Menurut FAQ PMI, volume darah diganti dalam 48 jam dan sel darah merah pengganti terbentuk dalam sekitar 4-8 minggu.{" "}
+                  <SourceLinks refs={[{ id: "permenkes", locator: "hal. 64" }, { id: "pmi-faq" }]} />
                 </p>
 
                 <ul className="space-y-2">
@@ -345,7 +357,9 @@ export default function App() {
               <span className="text-6xl" aria-hidden="true">🩸</span>
               <div className="bg-white/80 p-4 rounded-xl shadow-sm max-w-sm border border-slate-100 mt-4">
                 <div className="text-sm font-bold text-slate-800">Informasi umum</div>
-                <p className="text-xs text-slate-500 mt-1">Bukan nasihat medis pribadi. Sumber: Permenkes 91/2015 dan FAQ PMI (ayodonor.pmi.or.id).</p>
+                <p className="text-xs text-slate-600 mt-1">
+                  Bukan nasihat medis pribadi. <SourceLinks refs={[{ id: "permenkes" }, { id: "pmi-faq" }]} />
+                </p>
               </div>
             </div>
           </div>
@@ -364,7 +378,8 @@ export default function App() {
 
               <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
                 <p>
-                  Darah donor biasanya dipisah di unit transfusi darah menjadi beberapa komponen, yang diberikan ke pasien berbeda sesuai kebutuhan medisnya. Kemenkes pernah menyebut satu kantong dapat membantu hingga 3 nyawa.
+                  Darah lengkap dapat diolah menjadi komponen darah sehingga satu donasi dapat melayani lebih dari satu pasien. Pejabat Kemenkes pernah menyebut satu kantong dapat menyelamatkan setidaknya 3 nyawa (pernyataan dalam acara, 2022); jumlah sebenarnya bergantung pada kebutuhan pasien.{" "}
+                  <SourceLinks refs={[{ id: "who-safety" }, { id: "permenkes", locator: "hal. 54" }, { id: "kemkes-pers" }]} />
                 </p>
 
                 <div className="grid grid-cols-1 gap-3 my-4">
@@ -372,7 +387,7 @@ export default function App() {
                     <span className="text-xl" aria-hidden="true">🎒</span>
                     <div>
                       <strong className="text-slate-800 text-sm block">Sel darah merah (PRC)</strong>
-                      <span className="text-xs text-slate-600">Untuk pasien yang kehilangan banyak darah atau mengalami anemia berat.</span>
+                      <span className="text-xs text-slate-600">Salah satu komponen yang dapat dipisahkan dari darah lengkap.</span>
                     </div>
                   </div>
 
@@ -380,7 +395,7 @@ export default function App() {
                     <span className="text-xl" aria-hidden="true">🥛</span>
                     <div>
                       <strong className="text-slate-800 text-sm block">Plasma (FFP)</strong>
-                      <span className="text-xs text-slate-600">Untuk pasien dengan gangguan pembekuan darah atau kebutuhan plasma tertentu.</span>
+                      <span className="text-xs text-slate-600">Salah satu komponen yang dapat dipisahkan dari darah lengkap.</span>
                     </div>
                   </div>
 
@@ -388,13 +403,13 @@ export default function App() {
                     <span className="text-xl" aria-hidden="true">🧪</span>
                     <div>
                       <strong className="text-slate-800 text-sm block">Trombosit (TC)</strong>
-                      <span className="text-xs text-slate-600">Untuk pasien dengan jumlah trombosit sangat rendah.</span>
+                      <span className="text-xs text-slate-600">Salah satu komponen yang dapat dipisahkan dari darah lengkap.</span>
                     </div>
                   </div>
                 </div>
 
                 <p className="text-xs text-slate-500">
-                  Contoh umum. Keputusan transfusi selalu dibuat oleh dokter.
+                  Komponen mana yang diberikan kepada pasien diputuskan dokter sesuai kebutuhan medisnya.
                 </p>
               </div>
             </div>
@@ -404,9 +419,11 @@ export default function App() {
                 Berapa banyak darah yang diambil?
               </div>
               <p className="text-sm text-slate-700 leading-relaxed">
-                Standar pelayanan transfusi darah menyebut kantong donor berisi sekitar 350 mL atau 450 mL. Batas berat badan pendonor bergantung pada volume yang diambil, dan petugas PMI yang menentukan.
+                Standar pelayanan transfusi darah menyebut kantong donor berisi sekitar 350 mL atau 450 mL. Batas berat badan pendonor bergantung pada volume yang diambil (45 kg atau 55 kg menurut Permenkes; WHO menyebut umumnya 50 kg), dan petugas PMI yang menentukan.
               </p>
-              <p className="text-xs text-slate-500">Sumber: Permenkes 91/2015, Lampiran (standar seleksi donor).</p>
+              <p className="text-xs text-slate-600">
+                <SourceLinks refs={[{ id: "permenkes", locator: "hal. 56-57, 64" }, { id: "who-eligibility" }]} />
+              </p>
             </div>
           </div>
         )}
@@ -454,7 +471,8 @@ export default function App() {
                 </div>
 
                 <p className="text-xs text-slate-600">
-                  Skrining ini untuk keamanan darah yang diberikan ke pasien. Itu bukan pengganti pemeriksaan kesehatan pribadi. Jika ada hasil yang reaktif, petugas menyampaikannya lewat konseling.
+                  Skrining ini untuk keamanan darah yang diberikan ke pasien. AyoDonor tidak menyarankannya sebagai pengganti pemeriksaan kesehatan pribadi. Jika ada hasil yang reaktif, UTD menyampaikannya lewat konseling.{" "}
+                  <SourceLinks refs={[{ id: "permenkes", locator: "hal. 28, 55" }, { id: "who-safety" }]} />
                 </p>
               </div>
             </div>
@@ -470,7 +488,7 @@ export default function App() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between border-b border-white/5 pb-2 gap-3">
                     <span className="text-sm font-semibold text-slate-300">Hemoglobin (Hb)</span>
-                    <span className="font-mono text-emerald-300 font-bold text-sm text-right">umumnya 12,5 - 17 g/dL</span>
+                    <span className="font-mono text-emerald-300 font-bold text-sm text-right">Permenkes: 12,5 - 17 g/dL</span>
                   </div>
                   <div className="flex items-center justify-between border-b border-white/5 pb-2 gap-3">
                     <span className="text-sm font-semibold text-slate-300">Tekanan darah & nadi</span>
@@ -488,7 +506,7 @@ export default function App() {
               </div>
 
               <p className="mt-8 text-[11px] text-slate-300 leading-relaxed">
-                Sumber: Permenkes 91/2015 (Lampiran) dan FAQ PMI. Angka dapat berbeda antar sumber atau berubah; selalu ikuti petugas PMI.
+                Angka berbeda antar sumber (WHO menyebut banyak negara memakai Hb minimal 12,0 untuk perempuan dan 13,0 untuk laki-laki). Lihat Sumber informasi; selalu ikuti petugas PMI.
               </p>
             </div>
           </div>
@@ -501,7 +519,7 @@ export default function App() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
             <h3 className="text-2xl font-black text-slate-800">Mitos & Fakta Umum 🤔</h3>
-            <p className="text-sm text-slate-500 mt-1">Informasi umum, bukan nasihat medis pribadi.</p>
+            <p className="text-sm text-slate-600 mt-1">Informasi umum, bukan nasihat medis pribadi. Lihat <a href="#sumber-informasi" className="underline text-red-800">Sumber informasi</a> dan FAQ.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -641,7 +659,8 @@ export default function App() {
                         Halo <span className="text-red-600 underline font-black">{visitorName}</span>, apakah umurmu minimal 17 tahun dan berat badanmu minimal 45 kg?
                       </h3>
                       <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                        Batas berat badan bisa lebih tinggi untuk kantong 450 mL (mis. 55 kg menurut Permenkes 91/2015). Petugas PMI yang menimbang dan memutuskan.
+                        Batas berat badan berbeda antar sumber: 45 kg atau 55 kg menurut Permenkes (tergantung volume), umumnya 50 kg menurut WHO. Petugas PMI yang menimbang dan memutuskan.{" "}
+                        <SourceLinks refs={[{ id: "permenkes", locator: "hal. 56-57" }, { id: "who-eligibility" }]} />
                       </p>
                       
                       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -673,7 +692,8 @@ export default function App() {
                         Apakah kamu cukup istirahat dan merasa sehat hari ini, {visitorName}?
                       </h3>
                       <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                        PMI menganjurkan tidur cukup sebelum donor. Kami tidak menetapkan jumlah jam tidur tertentu.
+                        PMI menganjurkan tidur cukup sebelum donor. Kami tidak menetapkan jumlah jam tidur tertentu.{" "}
+                        <SourceLinks refs={[{ id: "pmi-faq" }]} />
                       </p>
 
                       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -705,7 +725,8 @@ export default function App() {
                         Apakah kamu sedang sakit, atau sedang menjalani pengobatan / minum obat tertentu (termasuk antibiotik)?
                       </h3>
                       <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                        Petugas menilai penyakit dan jenis obatnya satu per satu. Sebutkan semua obat yang kamu minum saat pemeriksaan.
+                        Petugas menilai penyakit dan jenis obatnya satu per satu. Sebutkan semua obat yang kamu minum saat pemeriksaan.{" "}
+                        <SourceLinks refs={[{ id: "permenkes", locator: "hal. 60, 277" }]} />
                       </p>
 
                       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -737,7 +758,8 @@ export default function App() {
                         Pertanyaan terakhir: apakah kamu baru-baru ini donor darah (dalam 3 bulan terakhir), atau membuat tato, tindik, atau akupunktur (dalam 1 tahun terakhir)?
                       </h3>
                       <p className="text-slate-500 text-xs mt-2 leading-relaxed">
-                        Jeda minimal berbeda antar sumber resmi (donor: 2-3 bulan; tato/tindik: beberapa bulan hingga 1 tahun), jadi kami memakai rentang yang paling hati-hati. Petugas PMI yang memutuskan.
+                        Jeda minimal berbeda antar sumber resmi (donor: 2-3 bulan; tato/tindik: beberapa bulan hingga 1 tahun), jadi kami memakai rentang yang paling hati-hati. Petugas PMI yang memutuskan.{" "}
+                        <SourceLinks refs={[{ id: "permenkes", locator: "hal. 59, 64" }, { id: "pmi-faq" }, { id: "who-eligibility" }]} />
                       </p>
 
                       <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -795,7 +817,9 @@ export default function App() {
                       <div className="relative z-10">
                         {parseMarkdown(quizResult)}
                         <p className="mt-4 text-[11px] font-semibold text-slate-600">
-                          Ringkasan ini disusun otomatis dari 4 jawabanmu dan tidak dikirim ke mana pun.
+                          Ringkasan ini disusun otomatis dari 4 jawabanmu dan tidak dikirim ke mana pun. Ini edukasi awal dan tidak menggantikan penilaian petugas UTD.{" "}
+                          <SourceLinks refs={[{ id: "permenkes" }, { id: "pmi-faq" }, { id: "who-eligibility" }]} />{" "}
+                          <a href="#sumber-informasi" className="underline text-red-800">Semua sumber</a>
                         </p>
                       </div>
                     </div>
@@ -855,6 +879,8 @@ export default function App() {
 
       <Faq />
 
+      <SourcesSection />
+
       <PrivacyNotice />
 
       {/* DETAILED FOOTER SECTION */}
@@ -878,6 +904,7 @@ export default function App() {
               <a href="#pmi-locator-container" className="hover:text-red-500 transition-colors">📍 Contoh Lokasi (Data Demo)</a>
               <a href="#quiz-section" className="hover:text-red-500 transition-colors">🩺 Kuis Panduan Awal</a>
               <a href="#faq-section" className="hover:text-red-500 transition-colors">💬 Tanya Jawab (FAQ)</a>
+              <a href="#sumber-informasi" className="hover:text-red-500 transition-colors">📚 Sumber Informasi</a>
               <a href="#privasi" className="hover:text-red-500 transition-colors">🔒 Privasi & Data</a>
             </div>
           </div>
@@ -889,7 +916,8 @@ export default function App() {
             <p className="text-[11px] text-slate-500 leading-relaxed">
               Kuis dan teks di AyoDonor hanya untuk edukasi. Bukan diagnosis, bukan keputusan kelayakan, dan bukan nasihat medis. Kelayakan donor ditentukan petugas PMI lewat pemeriksaan langsung. Data lokasi dan stok di situs ini adalah contoh yang belum diverifikasi.
               <span className="block mt-2">
-                Sumber utama: Permenkes No. 91 Tahun 2015 tentang Standar Pelayanan Transfusi Darah dan FAQ PMI (ayodonor.pmi.or.id). Daftar klaim dan sumbernya ada di docs/medical-claims.md.
+                <SourceLinks refs={[{ id: "permenkes" }, { id: "pmi-faq" }, { id: "who-eligibility" }]} className="text-[11px] text-slate-300" />{" "}
+                <a href="#sumber-informasi" className="underline text-slate-200">Semua sumber dan perbedaannya</a>. Daftar klaim dan statusnya ada di docs/medical-claims.md.
               </span>
             </p>
           </div>

@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { FAQ_CATEGORIES, FAQ_ITEMS, searchFaq } from "../data/faq";
+import SourceLinks from "./SourceLinks";
 
 export default function Faq() {
   const [query, setQuery] = useState("");
@@ -13,7 +14,7 @@ export default function Faq() {
             Tanya Jawab (FAQ) 💬
           </h2>
           <p className="text-slate-600 text-sm mt-1">
-            Jawaban umum seputar donor darah beserta sumbernya. Bukan nasihat medis; petugas PMI yang memutuskan.
+            Jawaban umum seputar donor darah beserta tautan sumbernya (lengkap di <a href="#sumber-informasi" className="underline text-red-800">Sumber informasi</a>). Bukan nasihat medis; petugas PMI yang memutuskan.
           </p>
         </div>
 
@@ -52,7 +53,11 @@ export default function Faq() {
                         {item.question}
                       </summary>
                       <p className="text-sm text-slate-700 leading-relaxed mt-3">{item.answer}</p>
-                      <p className="text-[11px] text-slate-500 mt-2">Sumber: {item.source}</p>
+                      <p className="mt-2">
+                        <SourceLinks refs={item.refs} />
+                        {item.refs.length > 0 && item.note ? " " : ""}
+                        {item.note && <span className="text-[11px] text-slate-600">Catatan: {item.note}.</span>}
+                      </p>
                     </details>
                   ))}
                 </div>

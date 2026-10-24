@@ -32,12 +32,12 @@ const BANNED: Rule[] = [
   { name: "invented tiers/codes", pattern: /PLATINUM|HERO-2026|kode verifikasi|verification code/i },
   { name: "unsupported benefit claims", pattern: /glow-?up|darah kotor|kulit cerah|stamina (malah )?tambah|\bplak\b|reset pabrik/i },
   { name: "free check-up framing", pattern: /mini medical|medical check[- ]?up|check ?up gratis|terproteksi dari/i },
-  { name: "unverified numeric criteria", pattern: /17 sampai 60|17-60|\b5 jam\b|56 hari|BB >= 45/i },
+  { name: "unverified numeric criteria", pattern: /\b5 jam\b|56 hari|BB >= 45/i },
   { name: "live/official labels on demo data", pattern: /real-?time|kontak resmi|cek stok darah|buka 24 jam/i },
 ];
 
 // Lines that explicitly DENY a claim are fine (e.g. "AyoDonor tidak mengklaim ... kolesterol").
-const DENIAL = /tidak mengklaim|jangan (pernah )?(mengklaim|menyebut|mengarang)|bukan (sertifikat|pengganti)/i;
+const DENIAL = /tidak (kami )?(mengulang|menjanjikan)|tanpa rujukan|tidak mengklaim|jangan (pernah )?(mengklaim|menyebut|mengarang)|bukan (sertifikat|pengganti)/i;
 
 describe("claims that must not reappear", () => {
   for (const rule of BANNED) {
@@ -55,6 +55,18 @@ describe("claims that must not reappear", () => {
       expect(hits).toEqual([]);
     });
   }
+
+  it("only quotes the 17-60 age range when attributed to its source (PMI)", () => {
+    const hits: string[] = [];
+    for (const file of FILES) {
+      fs.readFileSync(file, "utf8")
+        .split("\n")
+        .forEach((line, i) => {
+          if (/17 sampai 60|17-60/.test(line) && !/PMI|FAQ|^\s*pmi:/.test(line)) hits.push(`${path.relative(ROOT, file)}:${i + 1}`);
+        });
+    }
+    expect(hits).toEqual([]);
+  });
 
   it("never presents cholesterol benefits outside an explicit denial", () => {
     const hits: string[] = [];

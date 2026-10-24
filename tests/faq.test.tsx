@@ -7,12 +7,14 @@ import { FAQ_ITEMS, searchFaq } from "../src/data/faq";
 afterEach(cleanup);
 
 describe("FAQ data", () => {
-  it("has a source for every answer and no clearance or benefit claims", () => {
-    expect(FAQ_ITEMS.length).toBeGreaterThanOrEqual(10);
+  it("cites a source (or honestly labels general advice) and makes no clearance or benefit claims", () => {
+    expect(FAQ_ITEMS.length).toBeGreaterThanOrEqual(15);
     for (const item of FAQ_ITEMS) {
-      expect(item.source.length, item.id).toBeGreaterThan(3);
+      expect(item.refs.length > 0 || Boolean(item.note), item.id).toBe(true);
       const text = `${item.question} ${item.answer}`;
-      expect(text, item.id).not.toMatch(/\blolos\b|100\s?%|sertifikat|pasti boleh|kolesterol|kulit cerah|stamina|kalori/i);
+      expect(text, item.id).not.toMatch(/\blolos\b|100\s?%|sertifikat|pasti boleh|kulit cerah|stamina/i);
+      // Benefit topics may appear only as an explicit "we do not repeat this" statement.
+      if (/kolesterol|kalori/i.test(text)) expect(text, item.id).toMatch(/tidak (menjanjikan|mengulang)|tanpa rujukan/i);
     }
     expect(new Set(FAQ_ITEMS.map((i) => i.id)).size).toBe(FAQ_ITEMS.length);
   });
@@ -22,7 +24,10 @@ describe("FAQ data", () => {
     expect(get("jeda")).toMatch(/2 bulan/);
     expect(get("jeda")).toMatch(/3 bulan/);
     expect(get("tato")).toMatch(/1 tahun/);
-    expect(get("haid")).toMatch(/tidak menemukan ketentuan resmi/);
+    expect(get("tato")).toMatch(/6 bulan/);
+    expect(get("berat")).toMatch(/45 kg/);
+    expect(get("berat")).toMatch(/50 kg/);
+    expect(get("haid")).toMatch(/tidak ada di Permenkes/);
   });
 
   it("searches case-insensitively over questions and answers", () => {
@@ -46,6 +51,7 @@ describe("FAQ component", () => {
   it("lists every answer's source and points to the official portal", () => {
     const { container } = render(<Faq />);
     expect(container.textContent).toMatch(/Sumber: Permenkes 91\/2015/);
+    expect(container.querySelectorAll('a[href^="https://jdih.kemkes.go.id"]').length).toBeGreaterThan(5);
     expect(container.textContent).toMatch(/ayodonor\.pmi\.or\.id/);
     expect(container.querySelectorAll("details").length).toBe(FAQ_ITEMS.length);
   });
