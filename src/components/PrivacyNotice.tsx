@@ -5,7 +5,7 @@ export default function PrivacyNotice() {
     <section id="privasi" aria-labelledby="privasi-title" className="section privacy">
       <div className="wrap section__inner">
         <div className="section__head">
-          <p className="kicker">07 · Privasi</p>
+          <p className="kicker">Privasi</p>
           <h2 id="privasi-title">Privasi &amp; Data</h2>
           <p className="deck">Ringkasan teknis tentang data yang kamu masukkan di situs ini.</p>
         </div>

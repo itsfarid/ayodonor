@@ -2,6 +2,7 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import Faq from "../src/components/Faq";
+import { Router } from "../src/router";
 import { FAQ_ITEMS, searchFaq } from "../src/data/faq";
 
 afterEach(cleanup);
@@ -39,7 +40,7 @@ describe("FAQ data", () => {
 
 describe("FAQ component", () => {
   it("filters as the user types and shows an empty state", () => {
-    render(<Faq />);
+    render(<Router initialPath="/panduan"><Faq /></Router>);
     const input = screen.getByLabelText(/cari pertanyaan/i);
     fireEvent.change(input, { target: { value: "tato" } });
     expect(screen.getByText(/boleh donor kalau punya tato/i)).toBeTruthy();
@@ -49,7 +50,7 @@ describe("FAQ component", () => {
   });
 
   it("lists every answer's source and points to the official portal", () => {
-    const { container } = render(<Faq />);
+    const { container } = render(<Router initialPath="/panduan"><Faq /></Router>);
     expect(container.textContent).toMatch(/Sumber: Permenkes 91\/2015/);
     expect(container.querySelectorAll('a[href^="https://jdih.kemkes.go.id"]').length).toBeGreaterThan(5);
     expect(container.textContent).toMatch(/ayodonor\.pmi\.or\.id/);

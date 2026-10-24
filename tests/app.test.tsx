@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import App from "../src/App";
+import { allPagesText, renderPage } from "./helpers";
 import { MEDICAL_DISCLAIMER } from "../shared/content";
 
 let fetchMock: ReturnType<typeof vi.fn>;
@@ -32,7 +32,7 @@ const NO_CLEARANCE = [/\blolos\b/i, /100\s?%/, /(?<!bukan )sertifikat/i, /fit lu
 
 describe("quiz (client-side only)", () => {
   it("shows a neutral summary immediately, with the disclaimer, and never calls the network", () => {
-    render(<App />);
+    renderPage("/panduan");
     runQuiz();
     expect(resultText()).toContain("bukan keputusan kelayakan");
     expect(resultText()).toContain(MEDICAL_DISCLAIMER);
@@ -42,7 +42,7 @@ describe("quiz (client-side only)", () => {
   });
 
   it("uses the ask-PMI framing for non-safe answers, never a rejection", () => {
-    render(<App />);
+    renderPage("/panduan");
     runQuiz(["unsafe", "safe", "unsafe", "unsafe"]);
     expect(resultText()).toMatch(/tanyakan|bertanya/i);
     expect(resultText()).toMatch(/bukan berarti kamu tidak bisa donor/i);
@@ -52,14 +52,14 @@ describe("quiz (client-side only)", () => {
   });
 
   it("offers the non-certifying intent card after the quiz", () => {
-    render(<App />);
+    renderPage("/panduan");
     runQuiz();
     expect(resultText()).toContain("Kartu Niat Donor");
     expect(resultText()).toMatch(/bukan sertifikat/i);
   });
 
   it("can be retaken", () => {
-    render(<App />);
+    renderPage("/panduan");
     runQuiz();
     fireEvent.click(screen.getByRole("button", { name: /ulangi kuis/i }));
     expect(document.getElementById("quiz-results")).toBeNull();
@@ -67,7 +67,7 @@ describe("quiz (client-side only)", () => {
   });
 
   it("questions do not assert unverified criteria", () => {
-    render(<App />);
+    renderPage("/panduan");
     fireEvent.change(screen.getByLabelText(/nama panggilan/i), { target: { value: "Tes" } });
     fireEvent.click(screen.getByRole("button", { name: /mulai kuis/i }));
     const seen: string[] = [];
@@ -84,8 +84,8 @@ describe("quiz (client-side only)", () => {
 
 describe("AI chat is gone", () => {
   it("exposes no chat interface, AI status, model name or provider wording", () => {
-    const { container } = render(<App />);
-    const text = container.textContent ?? "";
+    const text = allPagesText();
+    const { container } = renderPage("/panduan");
     expect(container.querySelector("#chat-section")).toBeNull();
     expect(container.querySelector("#chat-message-input")).toBeNull();
     expect(screen.queryByRole("button", { name: /kirim pesan/i })).toBeNull();
@@ -95,13 +95,13 @@ describe("AI chat is gone", () => {
   });
 
   it("renders the FAQ in its place", () => {
-    const { container } = render(<App />);
+    const { container } = renderPage("/panduan");
     expect(container.querySelector("#faq-section")).not.toBeNull();
     expect(screen.getByLabelText(/cari pertanyaan/i)).toBeTruthy();
   });
 
-  it("makes no network request on load", () => {
-    render(<App />);
+  it("makes no network request on load, on any page", () => {
+    allPagesText();
     expect(fetchMock).not.toHaveBeenCalled();
   });
 });

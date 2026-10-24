@@ -3,6 +3,7 @@ import os from "os";
 import path from "path";
 import { build, preview, type PreviewServer } from "vite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { canonicalUrl, NOT_FOUND_META, ROUTES } from "../src/routes";
 
 // Builds the real site into a temp directory (never touching ./dist) and inspects what a static
 // host such as Cloudflare Pages would serve. Needs no API key, server or network.
@@ -68,10 +69,34 @@ describe("static build output", () => {
     expect(html).not.toMatch(/https?:\/\/(?:localhost|127\.0\.0\.1)/);
   });
 
-  it("contains only static web assets and Cloudflare Pages control files", () => {
+  it("contains only static web assets, one HTML file per page, and Cloudflare control files", () => {
     for (const f of files.map(rel)) {
-      expect(f, f).toMatch(/^(index\.html|favicon\.svg|_headers|assets\/[\w.-]+\.(js|css))$/);
+      expect(f, f).toMatch(/^(index|panduan|fakta-mitos|lokasi|tentang|404)\.html$|^(favicon\.svg|_headers)$|^assets\/[\w.-]+\.(js|css)$/);
     }
+  });
+
+  it("has a prerendered HTML file for every route, with its own title, description and canonical address", () => {
+    const seenTitles = new Set<string>();
+    for (const r of ROUTES) {
+      const file = r.path === "/" ? "index.html" : `${r.path.slice(1)}.html`;
+      expect(fs.existsSync(path.join(outDir, file)), file).toBe(true);
+      const html = text(path.join(outDir, file));
+      expect(html, file).toContain(`<title>${r.title}</title>`);
+      expect(html, file).toContain(`content="${r.description}"`);
+      expect(html, file).toContain(`<link rel="canonical" href="${canonicalUrl(r.path)}" />`);
+      expect(html, file).toContain('<div id="root">');
+      expect(html, file).toMatch(/\/assets\/[\w.-]+\.js/);
+      expect(html, file).toMatch(/\/assets\/[\w.-]+\.css/);
+      seenTitles.add(r.title);
+    }
+    expect(seenTitles.size).toBe(ROUTES.length);
+  });
+
+  it("has a 404.html that is not indexed and has no canonical address", () => {
+    const html = text(path.join(outDir, "404.html"));
+    expect(html).toContain(`<title>${NOT_FOUND_META.title}</title>`);
+    expect(html).toContain('<meta name="robots" content="noindex" />');
+    expect(html).not.toContain('rel="canonical"');
   });
 
   it("exposes no source maps, env files, server bundles or worker code", () => {
@@ -131,14 +156,15 @@ describe("static build output", () => {
 });
 
 describe("routing configuration", () => {
-  it("needs no redirects: the app has a single page and no client-side router", () => {
+  it("needs no redirects or fallback rule: every route is its own HTML file, and the router is a small History API one", () => {
     expect(fs.existsSync(path.join(ROOT, "public", "_redirects"))).toBe(false);
     const src = fs
       .readdirSync(path.join(ROOT, "src"), { recursive: true, withFileTypes: true })
       .filter((e) => e.isFile() && /\.tsx?$/.test(e.name))
       .map((e) => fs.readFileSync(path.join(e.parentPath, e.name), "utf8"))
       .join("\n");
-    expect(src).not.toMatch(/react-router|pushState|replaceState|location\.pathname|createBrowserRouter/);
+    expect(src).not.toMatch(/react-router|createBrowserRouter|BrowserRouter/);
+    expect(JSON.stringify(Object.keys(JSON.parse(fs.readFileSync(path.join(ROOT, "package.json"), "utf8")).dependencies))).not.toMatch(/router/);
   });
 
   it("has no Pages Functions or worker directory", () => {

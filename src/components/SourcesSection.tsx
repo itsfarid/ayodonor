@@ -19,7 +19,7 @@ export default function SourcesSection() {
     <section id="sumber-informasi" aria-labelledby="sumber-title" className="section">
       <div className="wrap section__inner">
         <div className="section__head">
-          <p className="kicker">05 · Rujukan</p>
+          <p className="kicker">Rujukan</p>
           <h2 id="sumber-title">Sumber informasi</h2>
           <p className="deck">Daftar rujukan menurut jenisnya, perbedaan antar sumber, dan batas masing-masing.</p>
         </div>
@@ -89,7 +89,7 @@ export default function SourcesSection() {
             );
           })}
 
-          <div className="refs-group">
+          <div className="refs-group" id="perbedaan-sumber">
             <h3>Perbedaan antar sumber</h3>
             <div className="prose" style={{ marginTop: "var(--s-3)" }}>
               <p>

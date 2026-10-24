@@ -1,7 +1,8 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import App from "../src/App";
+import { allPagesText, renderPage } from "./helpers";
+import { Router } from "../src/router";
 import Faq from "../src/components/Faq";
 import { CRITERIA_COMPARISON, getSource, SOURCES } from "../src/data/sources";
 import { FAQ_ITEMS } from "../src/data/faq";
@@ -55,19 +56,20 @@ describe("source data", () => {
 });
 
 describe("Sumber informasi section", () => {
-  it("is present, headed, and linked from the hero and footer", () => {
-    const { container } = render(<App />);
+  it("is present and headed on /tentang, and linked from the header menu, footer, FAQ and guide", () => {
+    const { container } = renderPage("/tentang");
     const section = container.querySelector("#sumber-informasi")!;
     expect(section).not.toBeNull();
     expect(section.querySelector("h2")?.textContent).toMatch(/Sumber informasi/);
-    const navLinks = [...container.querySelectorAll('a[href="#sumber-informasi"]')];
-    expect(navLinks.length).toBeGreaterThanOrEqual(3); // hero, footer nav, FAQ/other
-    expect(container.querySelector("header a[href='#sumber-informasi']")).not.toBeNull();
-    expect(container.querySelector("footer a[href='#sumber-informasi']")).not.toBeNull();
+    expect(container.querySelector('header a[href="/tentang"]')).not.toBeNull();
+    expect(container.querySelector('footer a[href="/tentang#sumber-informasi"]')).not.toBeNull();
+    cleanup();
+    const guide = renderPage("/panduan").container;
+    expect(guide.querySelectorAll('a[href="/tentang#sumber-informasi"]').length).toBeGreaterThanOrEqual(2); // FAQ intro + chapter note + footer
   });
 
   it("lists every source as an external link with safe attributes and full metadata", () => {
-    const { container } = render(<App />);
+    const { container } = renderPage("/tentang");
     const section = container.querySelector("#sumber-informasi")!;
     for (const s of SOURCES) {
       const item = section.querySelector(`#sumber-${s.id}`)!;
@@ -82,7 +84,7 @@ describe("Sumber informasi section", () => {
   });
 
   it("is keyboard accessible: links are focusable, the table scrolls by keyboard and has headers", () => {
-    const { container } = render(<App />);
+    const { container } = renderPage("/tentang");
     const section = container.querySelector("#sumber-informasi") as HTMLElement;
     for (const a of section.querySelectorAll("a")) {
       expect(a.getAttribute("tabindex")).not.toBe("-1");
@@ -98,14 +100,13 @@ describe("Sumber informasi section", () => {
   });
 
   it("states that the UTD officer decides and never claims medical or PMI approval", () => {
-    const { container } = render(<App />);
-    const text = container.textContent ?? "";
+    const text = allPagesText();
     expect(text).toMatch(/petugas UTD yang memutuskan/);
     expect(text).not.toMatch(/(?<!belum )ditinjau oleh (tenaga medis|dokter|ahli|PMI)|telah ditinjau|disetujui (oleh )?(PMI|Kemenkes)|bersertifikat/i);
   });
 
   it("explains that benefit claims from the Kemenkes articles are not repeated", () => {
-    const { container } = render(<App />);
+    const { container } = renderPage("/tentang");
     const text = container.querySelector("#sumber-informasi")!.textContent!;
     expect(text).toMatch(/tidak menjanjikan manfaat kesehatan pribadi/);
   });
@@ -113,7 +114,7 @@ describe("Sumber informasi section", () => {
 
 describe("contextual source links", () => {
   it("every FAQ item renders a link for each of its source references", () => {
-    const { container } = render(<Faq />);
+    const { container } = render(<Router initialPath="/panduan"><Faq /></Router>);
     const items = container.querySelectorAll("details");
     expect(items.length).toBe(FAQ_ITEMS.length);
     FAQ_ITEMS.forEach((item, i) => {
@@ -132,12 +133,13 @@ describe("contextual source links", () => {
   });
 
   it("education panels, stats and footer link to their sources", () => {
-    const { container } = render(<App />);
+    const { container } = renderPage("/panduan");
+    const home = renderPage("/").container;
     const hrefs = (root: Element | null) => [...(root?.querySelectorAll("a") ?? [])].map((a) => a.getAttribute("href"));
     expect(hrefs(container.querySelector("#content-kesehatan"))).toContain(getSource("permenkes").url);
     expect(hrefs(container.querySelector("#content-kesehatan"))).toContain(getSource("pmi-faq").url);
     expect(hrefs(container.querySelector("footer"))).toContain(getSource("permenkes").url);
-    const stats = container.querySelector("#sekilas")!;
+    const stats = home.querySelector("#sekilas")!;
     expect(hrefs(stats)).toContain(getSource("kemkes-pers").url);
     // All three chapters are rendered at once (no tabs hide content), each with its own sources.
     expect(hrefs(container.querySelector("#content-sosial"))).toContain(getSource("who-safety").url);
@@ -145,7 +147,7 @@ describe("contextual source links", () => {
   });
 
   it("the quiz result carries source links and the not-a-substitute statement", () => {
-    const { container } = render(<App />);
+    const { container } = renderPage("/panduan");
     fireEvent.change(screen.getByLabelText(/nama panggilan/i), { target: { value: "Uji" } });
     fireEvent.click(screen.getByRole("button", { name: /mulai kuis/i }));
     ["q1", "q2", "q3", "q4"].forEach((id) => fireEvent.click(document.getElementById(`btn-${id}-safe`)!));
@@ -156,10 +158,9 @@ describe("contextual source links", () => {
 });
 
 describe("claims that must stay out", () => {
-  it("the displayed page restores no benefit claims, certificates or 'real' PMI data", () => {
-    const { container } = render(<App />);
+  it("no displayed page restores benefit claims, certificates or 'real' PMI data", () => {
     // Sentences that explicitly deny or decline to repeat a claim are fine; only positive claims count.
-    const text = (container.textContent ?? "").replace(/[^.]*tidak (mengklaim|menjanjikan|kami ulang|mengulang)[^.]*\./gi, "");
+    const text = allPagesText().replace(/[^.]*tidak (mengklaim|menjanjikan|kami ulang|mengulang)[^.]*\./gi, "");
     expect(text).not.toMatch(/menurunkan kolesterol|mencegah kanker|mencegah penyakit jantung|kulit cerah|membakar kalori|menambah stamina|meningkatkan stamina/i);
     expect(text).not.toMatch(/sertifikat kelayakan|100\s?%\s?lolos|real-?time|kontak resmi/i);
     expect(text).toMatch(/bisa belum lengkap atau sudah berubah/);

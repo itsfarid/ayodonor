@@ -3,7 +3,8 @@ import fs from "fs";
 import path from "path";
 import { cleanup, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import App from "../src/App";
+import { allPagesText, renderPage } from "./helpers";
+import { ROUTES } from "../src/routes";
 
 const ROOT = path.join(__dirname, "..");
 
@@ -13,15 +14,42 @@ beforeEach(() => {
 afterEach(cleanup);
 
 describe("page structure and footer", () => {
-  it("every in-page anchor points at an element that exists", () => {
-    const { container } = render(<App />);
-    const hrefs = [...container.querySelectorAll('a[href^="#"]')].map((a) => a.getAttribute("href")!.slice(1));
-    expect(hrefs.length).toBeGreaterThan(4);
-    for (const id of hrefs) expect(document.getElementById(id), `#${id}`).not.toBeNull();
+  it("every in-page anchor on every page points at an element that exists", () => {
+    for (const r of ROUTES) {
+      const { container, unmount } = renderPage(r.path);
+      const hrefs = [...container.querySelectorAll('a[href^="#"]')].map((a) => a.getAttribute("href")!.slice(1));
+      for (const id of hrefs) expect(document.getElementById(id), `${r.path} -> #${id}`).not.toBeNull();
+      unmount();
+    }
   });
 
-  it("states independence from PMI/Kemenkes and the educational-only scope", () => {
-    const { container } = render(<App />);
+  it("every cross-page link with an #anchor points at an element that exists on that page", () => {
+    const targets = new Map<string, Set<string>>();
+    for (const r of ROUTES) {
+      const { container, unmount } = renderPage(r.path);
+      targets.set(r.path, new Set([...container.querySelectorAll("[id]")].map((e) => e.id)));
+      unmount();
+    }
+    for (const r of ROUTES) {
+      const { container, unmount } = renderPage(r.path);
+      for (const a of container.querySelectorAll('a[href^="/"]')) {
+        const [pathPart, hash] = a.getAttribute("href")!.split("#");
+        expect(targets.has(pathPart || "/"), `${r.path}: unknown route ${pathPart}`).toBe(true);
+        if (hash) expect(targets.get(pathPart || "/")!.has(hash), `${r.path}: ${pathPart}#${hash}`).toBe(true);
+      }
+      unmount();
+    }
+  });
+
+  it("states independence from PMI/Kemenkes and the educational-only scope in the footer of every page", () => {
+    for (const r of ROUTES) {
+      const { container, unmount } = renderPage(r.path);
+      const footer = container.querySelector("footer")!.textContent!;
+      expect(footer, r.path).toMatch(/tidak berafiliasi dengan PMI maupun Kemenkes/);
+      expect(footer, r.path).toMatch(/bukan keputusan kelayakan/);
+      unmount();
+    }
+    const { container } = renderPage("/");
     const footer = container.querySelector("footer")!.textContent!;
     expect(footer).toMatch(/tidak berafiliasi dengan PMI maupun Kemenkes/);
     expect(footer).toMatch(/bukan keputusan kelayakan/);
@@ -29,8 +57,8 @@ describe("page structure and footer", () => {
     expect(footer).toMatch(/tidak menampilkan stok darah/);
   });
 
-  it("has a privacy section that matches the real (client-only) data flows", () => {
-    const { container } = render(<App />);
+  it("has a privacy section on /tentang that matches the real (client-only) data flows", () => {
+    const { container } = renderPage("/tentang");
     const privacy = container.querySelector("#privasi")!.textContent!;
     expect(privacy).toMatch(/hanya diproses di browser/);
     expect(privacy).toMatch(/tidak ada yang dikirim ke server/i);
@@ -66,33 +94,50 @@ describe("no third-party font or script requests", () => {
 });
 
 describe("accessibility landmarks", () => {
-  it("has a skip link, one h1, a main landmark, and labelled navigation", () => {
-    const { container } = render(<App />);
-    expect(container.querySelector('a.skip-link[href="#konten"]')).not.toBeNull();
-    expect(container.querySelector("main#konten")).not.toBeNull();
-    expect(container.querySelectorAll("h1")).toHaveLength(1);
-    for (const nav of container.querySelectorAll("nav")) expect(nav.getAttribute("aria-label"), nav.outerHTML.slice(0, 60)).toBeTruthy();
+  it("every page has a skip link, exactly one h1, a main landmark, and labelled navigation", () => {
+    for (const r of ROUTES) {
+      const { container, unmount } = renderPage(r.path);
+      expect(container.querySelector('a.skip-link[href="#konten"]'), r.path).not.toBeNull();
+      expect(container.querySelector("main#konten"), r.path).not.toBeNull();
+      expect(container.querySelectorAll("h1"), r.path).toHaveLength(1);
+      for (const nav of container.querySelectorAll("nav")) expect(nav.getAttribute("aria-label"), `${r.path} ${nav.outerHTML.slice(0, 60)}`).toBeTruthy();
+      unmount();
+    }
   });
 
-  it("never nests interactive elements inside role=button and has no emoji-only controls", () => {
-    const { container } = render(<App />);
-    expect(container.querySelectorAll('[role="button"]')).toHaveLength(0);
-    for (const b of container.querySelectorAll("button")) {
-      expect((b.textContent ?? "").replace(/\s/g, "") || b.getAttribute("aria-label"), b.outerHTML.slice(0, 80)).toBeTruthy();
+  it("headings never skip a level on any page", () => {
+    for (const r of ROUTES) {
+      const { container, unmount } = renderPage(r.path);
+      let prev = 0;
+      for (const h of container.querySelectorAll("h1,h2,h3,h4,h5,h6")) {
+        const level = Number(h.tagName[1]);
+        expect(level - prev, `${r.path}: ${h.textContent?.slice(0, 40)}`).toBeLessThanOrEqual(1);
+        prev = level;
+      }
+      unmount();
+    }
+  });
+
+  it("never nests interactive elements inside role=button and gives every button a name", () => {
+    for (const r of ROUTES) {
+      const { container, unmount } = renderPage(r.path);
+      expect(container.querySelectorAll('[role="button"]')).toHaveLength(0);
+      for (const b of container.querySelectorAll("button")) {
+        expect((b.textContent ?? "").replace(/\s/g, "") || b.getAttribute("aria-label"), `${r.path} ${b.outerHTML.slice(0, 80)}`).toBeTruthy();
+      }
+      unmount();
     }
   });
 
   it("does not use emoji as interface decoration", () => {
-    const { container } = render(<App />);
-    const text = container.textContent ?? "";
+    const text = allPagesText();
     expect(text).not.toMatch(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/u);
   });
 });
 
 describe("no stale text about the removed demo locator", () => {
   it("the page and FAQ no longer call locations or stock 'demo', 'contoh' or unverified examples", () => {
-    const { container } = render(<App />);
-    const text = container.textContent ?? "";
+    const text = allPagesText();
     expect(text).not.toMatch(/data demo|data contoh|contoh (lokasi|yang belum diverifikasi)|lokasi demo|status stok|stok.{0,20}fiktif/i);
     expect(text).toMatch(/disalin dari halaman Kontak PMI/);
   });

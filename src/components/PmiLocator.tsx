@@ -132,9 +132,9 @@ export default function PmiLocator({ units = UTD_RECORDS }: PmiLocatorProps) {
 
   return (
     <div id="pmi-locator" className="locator" role="group" aria-labelledby="locator-title">
-      <h3 id="locator-title" className="chapter__title">
-        Cari UDD/UTD PMI di kotamu
-      </h3>
+      <h2 id="locator-title" className="chapter__title">
+        Cari berdasarkan kota atau provinsi
+      </h2>
       <p className="prose">
         Ketik nama kota, kabupaten, atau provinsi untuk melihat alamat dan telepon unit donor darah PMI (UDD/UTD) yang tercantum di situs resmi PMI.
       </p>

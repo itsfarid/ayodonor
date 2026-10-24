@@ -102,7 +102,7 @@ describe("shipped data (no coordinates)", () => {
 
   it("filters by province and combines it with the text search", () => {
     render(<PmiLocator />);
-    fireEvent.change(screen.getByLabelText(/provinsi/i), { target: { value: "Bali" } });
+    fireEvent.change(screen.getByLabelText(/^provinsi$/i), { target: { value: "Bali" } });
     expect(screen.getAllByRole("listitem").length).toBeGreaterThan(0);
     for (const li of within(screen.getByRole("list", { name: /hasil pencarian/i })).getAllByRole("listitem")) {
       expect(li.textContent).toContain("Bali");
@@ -125,7 +125,7 @@ describe("shipped data (no coordinates)", () => {
 
   it("pages long results instead of rendering them all at once", () => {
     render(<PmiLocator />);
-    fireEvent.change(screen.getByLabelText(/provinsi/i), { target: { value: "Jawa Timur" } });
+    fireEvent.change(screen.getByLabelText(/^provinsi$/i), { target: { value: "Jawa Timur" } });
     expect(resultNames().length).toBe(20);
     fireEvent.click(screen.getByRole("button", { name: /tampilkan lebih banyak/i }));
     expect(resultNames().length).toBe(37);
@@ -216,7 +216,7 @@ describe("with sourced coordinates: location flow", () => {
     at(-6.9, 107.6);
     render(<PmiLocator units={FIXTURES} />);
     await click(locateButton());
-    fireEvent.change(screen.getByLabelText(/provinsi/i), { target: { value: "Jawa Timur" } });
+    fireEvent.change(screen.getByLabelText(/^provinsi$/i), { target: { value: "Jawa Timur" } });
     expect(resultNames()).toEqual(["Unit Surabaya"]);
   });
 
@@ -316,7 +316,7 @@ describe("accessibility", () => {
     const { container } = render(<PmiLocator units={FIXTURES} />);
     search("unit");
     expect(screen.getByLabelText(/cari kota/i)).toBeTruthy();
-    expect(screen.getByLabelText(/provinsi/i)).toBeTruthy();
+    expect(screen.getByLabelText(/^provinsi$/i)).toBeTruthy();
     for (const el of container.querySelectorAll("button, a, select, input")) {
       const name = (el.textContent ?? "").trim() || el.getAttribute("aria-label") || (el as HTMLInputElement).labels?.[0]?.textContent;
       expect(name, el.outerHTML.slice(0, 80)).toBeTruthy();
