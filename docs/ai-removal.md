@@ -49,3 +49,9 @@ awal memakai AI; riwayat tidak ditulis ulang.
 - Referensi AI yang sengaja tersisa: kutipan hero `"AI bisa bikin segalanya, tapi belum bisa bikin setetes darah"`
   (retorika, bukan fitur), catatan riwayat di README dan docs, dan `.env.local` lokal milik pengguna (tidak disentuh).
 - Key lama: bila masih aktif di konsol Google, cabut secara manual; tidak dilakukan otomatis.
+
+## Pembaruan
+
+Server Express yang dipertahankan setelah penghapusan AI kemudian juga dihapus; situs kini sepenuhnya statis
+([docs/static-migration.md](static-migration.md)). Bagian "Dipertahankan" dan "Backend" di atas mencerminkan keadaan
+pada saat penghapusan AI.

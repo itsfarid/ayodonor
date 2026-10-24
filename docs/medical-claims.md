@@ -71,7 +71,7 @@ Tidak diverifikasi: teks UU 17/2023 dan PP 28/2024 (hanya terlihat lewat kutipan
 ## Aliran data pribadi (ringkas)
 
 - Nama panggilan dan 4 jawaban kuis hanya diproses di browser; tidak dikirim ke server mana pun. Tidak ada layanan AI.
-- Server tidak menyimpan data pengguna dan log aplikasi tidak memuat isi request.
+- Situs statis: tidak ada server aplikasi atau basis data. Penyedia hosting dapat mencatat metadata teknis permintaan.
 - Lokasi pengguna hanya diproses di browser.
 - Browser memuat font dari Google Fonts.
 

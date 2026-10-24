@@ -1,4 +1,4 @@
-// Plain-language summary of the app's actual data flows (verified against server/ and src/).
+// Plain-language summary of the app's actual data flows (verified against src/).
 // This is a technical summary, not a complete legal privacy policy.
 export default function PrivacyNotice() {
   return (
@@ -14,7 +14,7 @@ export default function PrivacyNotice() {
             <strong>Kuis dan FAQ:</strong> nama panggilan (boleh nama samaran) dan jawaban kuismu hanya diproses di browser. Tidak ada yang dikirim ke server atau pihak ketiga.
           </li>
           <li>
-            <strong>Penyimpanan:</strong> aplikasi ini tidak punya basis data, tidak memakai layanan AI, dan tidak menyimpan data yang kamu masukkan. Log server hanya mencatat metadata teknis (waktu, alamat halaman, status, durasi).
+            <strong>Penyimpanan:</strong> situs ini statis: tidak punya server aplikasi atau basis data, tidak memakai layanan AI, dan tidak menyimpan data yang kamu masukkan. Penyedia hosting dapat mencatat metadata teknis permintaan sesuai kebijakannya sendiri.
           </li>
           <li>
             <strong>Lokasi:</strong> hanya dipakai di browsermu untuk mengurutkan contoh lokasi dan tidak dikirim ke server. Browser akan meminta izinmu dulu.
