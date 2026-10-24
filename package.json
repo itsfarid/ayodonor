@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "clean": "rm -rf dist",
     "check:links": "node scripts/check-source-links.mjs",
+    "check:seo": "node scripts/seo-audit.mjs",
     "lint": "tsc --noEmit",
     "test": "vitest run"
   },
