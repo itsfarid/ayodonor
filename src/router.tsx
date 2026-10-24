@@ -21,17 +21,38 @@ function setMeta(selector: string, attr: string, value: string) {
   document.head.querySelector(selector)?.setAttribute(attr, value);
 }
 
+function addMeta(tag: "meta" | "link", attrs: Record<string, string>) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
+  document.head.appendChild(el);
+}
+
 /** Keeps the document head accurate for the current page (the prerendered HTML already has it for first load). */
 function applyHead(path: string) {
-  const meta = findRoute(path) ?? NOT_FOUND_META;
+  const route = findRoute(path);
+  const meta = route ?? NOT_FOUND_META;
   document.title = meta.title;
   setMeta('meta[name="description"]', "content", meta.description);
   setMeta('meta[property="og:title"]', "content", meta.title);
   setMeta('meta[property="og:description"]', "content", meta.description);
   setMeta('meta[name="twitter:title"]', "content", meta.title);
   setMeta('meta[name="twitter:description"]', "content", meta.description);
-  setMeta('meta[property="og:url"]', "content", canonicalUrl(normalizePath(path)));
-  setMeta('link[rel="canonical"]', "href", canonicalUrl(normalizePath(path)));
+  const url = canonicalUrl(normalizePath(path));
+  if (route) {
+    // Arrived from the prerendered 404 page (noindex, no canonical): restore what a real page carries.
+    if (document.head.querySelector('meta[name="robots"]')) {
+      document.head.querySelector('meta[name="robots"]')?.remove();
+      if (!document.head.querySelector('link[rel="canonical"]')) addMeta("link", { rel: "canonical", href: url });
+      if (!document.head.querySelector('meta[property="og:url"]')) addMeta("meta", { property: "og:url", content: url });
+    }
+    setMeta('meta[property="og:url"]', "content", url);
+    setMeta('link[rel="canonical"]', "href", url);
+  } else {
+    // An unknown address must not claim a canonical address or be indexed (same head as the prerendered 404.html).
+    document.head.querySelector('link[rel="canonical"]')?.remove();
+    document.head.querySelector('meta[property="og:url"]')?.remove();
+    if (!document.head.querySelector('meta[name="robots"]')) addMeta("meta", { name: "robots", content: "noindex" });
+  }
 }
 
 function scrollToHash(hash: string): boolean {

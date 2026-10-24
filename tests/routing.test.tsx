@@ -56,6 +56,20 @@ describe("pages", () => {
     expect(screen.getByRole("link", { name: /^ke beranda$/i }).getAttribute("href")).toBe("/");
   });
 
+  it("moving from the noindex 404 head to a real page restores canonical and og:url and drops noindex, and back", () => {
+    document.head.innerHTML = '<meta name="robots" content="noindex" />';
+    const first = renderPage("/lokasi");
+    expect(document.head.querySelector('meta[name="robots"]')).toBeNull();
+    expect(document.head.querySelector('link[rel="canonical"]')?.getAttribute("href")).toBe("https://ayodonor.web.id/lokasi");
+    expect(document.head.querySelector('meta[property="og:url"]')?.getAttribute("content")).toBe("https://ayodonor.web.id/lokasi");
+    first.unmount();
+    renderPage("/tidak-ada");
+    expect(document.head.querySelector('meta[name="robots"]')?.getAttribute("content")).toBe("noindex");
+    expect(document.head.querySelector('link[rel="canonical"]')).toBeNull();
+    expect(document.head.querySelector('meta[property="og:url"]')).toBeNull();
+    document.head.innerHTML = "";
+  });
+
   it("the home page is concise: previews only, no FAQ, quiz, source table or location dataset", () => {
     const { container } = renderPage("/");
     expect(container.querySelector("#faq-section")).toBeNull();
