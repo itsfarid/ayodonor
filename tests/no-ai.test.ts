@@ -17,6 +17,17 @@ describe("no AI provider and no server runtime", () => {
   const pkg = JSON.parse(read("package.json"));
   const deps = { ...pkg.dependencies, ...pkg.devDependencies };
 
+  it("package.json has no AI SDK, key loader or server framework", () => {
+    for (const name of Object.keys(deps)) {
+      expect(name).not.toMatch(/genai|generative-ai|gemini|openai|anthropic|dotenv|^express|^tsx$/i);
+    }
+  });
+
+  it("the lockfile has none of them either", () => {
+    const locked = Object.keys(JSON.parse(read("package-lock.json")).packages);
+    expect(locked.filter((n) => /@google\/genai|\/dotenv$|node_modules\/express(-rate-limit)?$/.test(n))).toEqual([]);
+  });
+
   it("build is a plain Vite build and nothing starts a Node server", () => {
     expect(pkg.scripts.build).toBe("vite build");
     expect(pkg.scripts.start).toBeUndefined();
