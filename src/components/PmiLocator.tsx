@@ -75,12 +75,25 @@ export default function PmiLocator({ units = UTD_RECORDS }: PmiLocatorProps) {
   }, [units]);
 
   const matches = useMemo(() => {
-    const tokens = normalize(query).split(" ").filter(Boolean);
-    return units.filter((u) => {
+    const phrase = normalize(query);
+    const tokens = phrase.split(" ").filter(Boolean);
+    const found = units.filter((u) => {
       if (province && u.province !== province) return false;
       const haystack = normalize(`${u.name} ${u.province} ${u.address}`);
       return tokens.every((t) => haystack.includes(t));
     });
+    if (!phrase) return found;
+    // Relevance, so "jawa timur" lists Jawa Timur units before a Central Java address that merely says "sebelah timur".
+    // 0: whole phrase in the name or province; 1: all words in the name or province; 2: words only found via the address.
+    const rank = (u: UtdRecord) => {
+      const head = normalize(`${u.name} ${u.province}`);
+      if (head.includes(phrase)) return 0;
+      return tokens.every((t) => head.includes(t)) ? 1 : 2;
+    };
+    return found
+      .map((u, index) => ({ u, index, r: rank(u) }))
+      .sort((x, y) => x.r - y.r || x.index - y.index)
+      .map(({ u }) => u);
   }, [units, query, province]);
 
   const hasCriteria = query.trim() !== "" || province !== "";

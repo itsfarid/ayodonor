@@ -1360,3 +1360,14 @@ a:hover {
     padding-top: 0.2rem;
   }
 }
+
+.locator__geo {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+}
+
+.locator__geo .hint {
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  margin: 0;
+}

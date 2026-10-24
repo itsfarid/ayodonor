@@ -93,6 +93,13 @@ describe("shipped data (no coordinates)", () => {
     expect(resultNames()).not.toContain("UDD PMI Kota Makassar");
   });
 
+  it("ranks name/province matches above address-only matches (\"jawa timur\" must not lead with a Central Java address)", () => {
+    render(<PmiLocator />);
+    search("jawa timur");
+    const firstItems = within(screen.getByRole("list", { name: /hasil pencarian/i })).getAllByRole("listitem").slice(0, 20);
+    for (const li of firstItems) expect(li.querySelector(".loc__meta")!.textContent).toBe("Jawa Timur");
+  });
+
   it("filters by province and combines it with the text search", () => {
     render(<PmiLocator />);
     fireEvent.change(screen.getByLabelText(/provinsi/i), { target: { value: "Bali" } });
