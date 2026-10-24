@@ -7,7 +7,6 @@ import { CRITERIA_COMPARISON, getSource, SOURCES } from "../src/data/sources";
 import { FAQ_ITEMS } from "../src/data/faq";
 import fs from "fs";
 import path from "path";
-import { INITIAL_PMI_DATA } from "../src/components/PmiLocator";
 
 beforeEach(() => {
   Element.prototype.scrollIntoView = vi.fn();
@@ -163,7 +162,7 @@ describe("claims that must stay out", () => {
     const text = (container.textContent ?? "").replace(/[^.]*tidak (mengklaim|menjanjikan|kami ulang|mengulang)[^.]*\./gi, "");
     expect(text).not.toMatch(/menurunkan kolesterol|mencegah kanker|mencegah penyakit jantung|kulit cerah|membakar kalori|menambah stamina|meningkatkan stamina/i);
     expect(text).not.toMatch(/sertifikat kelayakan|100\s?%\s?lolos|real-?time|kontak resmi/i);
-    expect(text).toMatch(/belum diverifikasi/);
+    expect(text).toMatch(/bisa belum lengkap atau sudah berubah/);
   });
 });
 
@@ -185,11 +184,12 @@ describe("docs/medical-claims.md stays in sync with the app", () => {
     expect(doc).toMatch(/Perbedaan antar sumber yang belum terselesaikan/);
   });
 
-  it("lists each demo PMI location as unverified, so none is presented as real data", () => {
-    for (const loc of INITIAL_PMI_DATA) {
-      const row = doc.split("\n").find((l) => l.startsWith(`| ${loc.name} |`));
-      expect(row, loc.name).toBeDefined();
-      expect(row, loc.name).toMatch(/Tidak terverifikasi/);
-    }
+  it("documents the locator audit: removed demo data, official source, and the missing coordinates", () => {
+    expect(doc).toContain("https://ayodonor.pmi.or.id/?page=kontak");
+    expect(doc).toMatch(/dihapus/);
+    expect(doc).toMatch(/Koordinat: \*\*tidak ada\*\*/);
+    const audit = fs.readFileSync(path.join(__dirname, "..", "docs", "locator-audit.md"), "utf8");
+    expect(audit).toMatch(/Akar masalah yang terkonfirmasi/);
+    expect(audit).toMatch(/bukan\*\* penyebabnya/);
   });
 });

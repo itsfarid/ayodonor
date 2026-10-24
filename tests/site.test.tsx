@@ -25,7 +25,8 @@ describe("page structure and footer", () => {
     const footer = container.querySelector("footer")!.textContent!;
     expect(footer).toMatch(/tidak berafiliasi dengan PMI maupun Kemenkes/);
     expect(footer).toMatch(/bukan keputusan kelayakan/);
-    expect(footer).toMatch(/belum diverifikasi/);
+    expect(footer).toMatch(/bisa belum lengkap atau sudah berubah/);
+    expect(footer).toMatch(/tidak menampilkan stok darah/);
   });
 
   it("has a privacy section that matches the real (client-only) data flows", () => {

@@ -64,7 +64,7 @@ npm run preview        # sajikan dist/ secara lokal, http://localhost:4173
 
 Situs statis mengurangi permukaan serangan sisi server, tetapi bukan jaminan keamanan:
 - Teks edukasi, FAQ, dan kuis belum ditinjau tenaga medis/PMI (lihat `docs/medical-claims.md`).
-- Data 7 lokasi PMI (alamat, telepon, koordinat) tidak terverifikasi; status stok fiktif.
+- Daftar 228 UDD/UTD disalin dari halaman Kontak PMI (tanpa koordinat, bisa belum lengkap); stok darah tidak ditampilkan.
 - Pembatasan laju dan log aplikasi tidak ada lagi; bila diperlukan, atur di Cloudflare.
 - Situs memakai font sistem dan tidak memuat font pihak ketiga; CSP belum dipasang.
 - Tautan keluar ke Google Maps/LinkedIn hanya terbuka saat diklik.

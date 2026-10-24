@@ -17,6 +17,7 @@ langsung bacaannya.
 | `permenkes` | Permenkes No. 91 Tahun 2015 tentang Standar Pelayanan Transfusi Darah. Kemenkes RI. <https://jdih.kemkes.go.id/documents/peraturan-menteri-kesehatan-nomor-91-tahun-2015> | Ditetapkan 31 Des 2015, diundangkan 13 Jan 2016; status JDIH "Berlaku", tanpa relasi mengubah/dicabut | Halaman JDIH dibuka; **PDF lengkap (290 hlm) diunduh dari JDIH dan dibaca sebagai teks**, nomor halaman dicocokkan dengan nomor cetak di bagian atas halaman | Terbitan 2015. Regulasi yang lebih baru tidak diperiksa. Tidak menyebut haid atau menyusui |
 | `pmi-faq` | FAQ Donor Darah, PMI AyoDonor. <https://ayodonor.pmi.or.id/?page=faq> | Tanpa tanggal | HTML mentah diunduh dan dibaca | Tanpa tanggal; berbeda dari Permenkes di beberapa angka; satuan waktu kehamilan tidak tertulis |
 | `pmi-stok` | Stok Darah, PMI AyoDonor. <https://ayodonor.pmi.or.id/?page=stok> | Tanpa tanggal; kolom "Update" kosong | HTML mentah diunduh dan dibaca | Tabel dimuat dinamis dan kosong; tidak ada angka stok yang disalin. Memuat disclaimer bahwa stok dapat berubah sewaktu-waktu |
+| `pmi-kontak` | Kontak PMI: daftar UDD/UTD, PMI AyoDonor. <https://ayodonor.pmi.or.id/?page=kontak> | Tanpa tanggal | HTML mentah diunduh dan di-parse (228 baris: nama, provinsi, alamat, telepon) | Tanpa koordinat dan jam layanan; bisa belum lengkap atau berubah; ada salah eja di sumber ("Jakarta Tmur"); tidak dikonfirmasi ke tiap unit |
 | `who-safety` | WHO, Blood safety and availability (lembar fakta). <https://www.who.int/news-room/fact-sheets/detail/blood-safety-and-availability> | Halaman bertanggal 12 Jun 2026 | Dibuka lewat alat pengambil halaman (isi diringkas oleh alat) | Tidak memuat kriteria pendonor dan tidak menyebut manfaat bagi pendonor |
 | `who-guidelines` | WHO, Blood donor selection: guidelines on assessing donor suitability for blood donation. <https://www.who.int/publications/i/item/blood-donor-selection-guidelines-on-assessing-donor-suitability-for-blood-donation> | 1 Jan 2012 (118 hlm, ISBN 9789241548519) | Halaman ringkasan dibuka lewat alat pengambil halaman | **PDF lengkap tidak dibuka**; halaman ringkasan tidak memuat angka kriteria |
 | `who-eligibility` | WHO, Who can give blood? <https://www.who.int/campaigns/world-blood-donor-day/who-can-give-blood> | Tanpa tanggal (hanya © 2026) | Dibuka lewat alat pengambil halaman | Angka umum dan bervariasi antar negara; tidak membahas obat, haid, atau jeda antar donor |
@@ -25,7 +26,7 @@ langsung bacaannya.
 | `kemkes-pers` | Kemenkes, Kemenkes Ajak Masyarakat Bantu Sesama Lewat Kegiatan Donor Darah. <https://kemkes.go.id/id/kemenkes-ajak-masyarakat-bantu-sesama-lewat-kegiatan-donor-darah> | 15 Jun 2022 | Dibuka lewat alat pengambil halaman | Pernyataan lisan pejabat, bukan standar atau penelitian |
 
 "Dibuka lewat alat pengambil halaman" berarti isi diringkas oleh alat; angka penting dari halaman itu sebaiknya dibaca ulang
-di sumbernya sebelum peluncuran. Kesembilan URL dijawab HTTP 2xx pada tanggal akses (`npm run check:links`).
+di sumbernya sebelum peluncuran. Semua URL diperiksa dengan `npm run check:links` pada tanggal akses; beberapa situs Kemenkes menjawab 403 terhadap skrip meski terbuka di browser.
 
 ## 2. Inventaris klaim yang tampil di situs
 
@@ -86,23 +87,22 @@ Ditampilkan apa adanya di bagian "Sumber informasi" situs. AyoDonor tidak memili
 | Demam/flu | 2 minggu setelah gejala hilang | 1 minggu setelah sembuh | penolakan (lama tak disebut) | tidak disebut |
 | Haid | tidak disebut | tidak disebut | tidak disebut | tidak ditemukan |
 
-## 5. Lokasi PMI contoh (`PmiLocator.tsx`)
+## 5. Pencari UDD/UTD PMI (`PmiLocator.tsx`, `src/data/utd.ts`)
 
-Tujuh lokasi dicari satu per satu (alamat, telepon, jam layanan, stok) di sumber resmi pada 24 Oktober 2026. **Tidak satu pun dapat
-diverifikasi** dari situs resmi PMI; pencarian hanya menemukan dokumen akademik, daftar pihak ketiga, atau tidak menemukan apa pun.
-Karena itu **semuanya tetap berlabel data demo/belum diverifikasi**, stok tetap fiktif, dan tidak dipresentasikan sebagai real-time.
+Rincian audit dan akar masalah: [locator-audit.md](locator-audit.md).
 
-| Lokasi contoh | Alamat/telepon di aplikasi | Hasil pencarian | Status |
-|---|---|---|---|
-| UTD PMI DKI Jakarta | Jl. Kramat Raya No. 47; (021) 3906350 | Menurut ringkasan hasil pencarian (dokumennya tidak dibuka), surat keputusan gubernur 2021 mengaitkan alamat itu dengan pengurus PMI DKI (bukan unit donor aktif). Ringkasan hasil pencarian menyebut unit donor baru di Jl. Pacenongan No. 82 dan pernyataan bahwa warga tidak perlu lagi ke Kramat Raya; halaman itu **gagal dibuka** (domain tidak terjangkau), jadi ini petunjuk, bukan fakta terverifikasi | **Tidak terverifikasi**; kemungkinan sudah tidak aktif sebagai unit donor |
-| UDD PMI Kota Bandung | Jl. Aceh No. 79; (022) 4207052 | Tidak ada hasil relevan | Tidak terverifikasi |
-| UTD PMI Kota Surabaya | Jl. Embong Ploso No. 7-15; (031) 5313555 | Jurnal akademik lama menyebut Embong Ploso 7-9; berita menyebut markas PMI di Jl. Sumatera; daftar pihak ketiga menyebut (031) 99443899 | Tidak terverifikasi; ada sumber yang berbeda |
-| UTD PMI Kota Yogyakarta | Jl. Tegalgendu No. 25; (0274) 372176 | Skripsi menyebut Jl. Tegal Gendu No. 25; berita Lebaran 2024 mencantumkan 0274 372176 sebagai posko, bukan jalur UTD | Tidak terverifikasi (sumber bukan resmi) |
-| UTD PMI Kota Semarang | Jl. Sugiopranoto No. 31; (024) 3515050 | Tidak ada hasil relevan | Tidak terverifikasi |
-| UTD PMI Kota Medan | Jl. Palang Merah No. 17; (061) 4567232 | Satu direktori pihak ketiga menyebut alamat serupa, tanpa telepon | Tidak terverifikasi |
-| UTD PMI Kota Makassar | Jl. Kandea No. 16; (0411) 3612502 | Tidak ada hasil relevan | Tidak terverifikasi |
-
-Jam layanan "24 jam" sudah dihapus dari data. Stok tidak dapat disalin: halaman stok PMI memuat tabel dinamis yang kosong saat dibuka.
+- Tujuh lokasi demo lama (alamat, telepon, koordinat, stok) **dihapus**. Dibandingkan dengan halaman Kontak PMI resmi, dua di
+  antaranya salah (Medan, Makassar), tiga berbeda nomor jalan atau telepon, dan koordinat serta stok tidak punya sumber.
+- Diganti 228 UDD/UTD yang tercantum di <https://ayodonor.pmi.or.id/?page=kontak> (diakses 24 Oktober 2026), disalin apa
+  adanya: nama, provinsi, alamat, telepon, ditambah URL sumber dan tanggal akses pada tiap rekaman. "Terverifikasi" berarti
+  *tercantum di halaman resmi pada tanggal itu*; bukan jaminan alamat/telepon masih berlaku atau jam layanan.
+- Cakupan: sebanyak yang dimuat halaman sumber, yang tidak bertanggal dan bisa belum lengkap. Ejaan sumber dipertahankan
+  (mis. "Jakarta Tmur"; kolom "Provinsi" sumber juga memuat nama kota untuk lima baris Jakarta).
+- Koordinat: **tidak ada** di sumber, jadi tidak disimpan. Jarak dari posisi pengguna hanya dihitung untuk rekaman yang punya
+  `coordinates` dengan `source` yang bisa dikutip; saat ini tidak ada, sehingga tombol lokasi tidak ditampilkan.
+- Stok darah: tidak ditampilkan. Halaman stok PMI memuat tabel dinamis yang kosong saat dibuka.
+- Untuk menambah koordinat: isi `coordinates: { lat, lng, source }` per rekaman dari sumber yang bisa dikutip, lalu tes data
+  (`tests/utd-data.test.ts`) harus diubah dengan sengaja; tombol lokasi akan muncul otomatis.
 
 ## 6. Celah verifikasi yang masih terbuka
 
@@ -112,13 +112,13 @@ Jam layanan "24 jam" sudah dihapus dari data. Stok tidak dapat disalin: halaman 
 4. Batas atas usia, persetujuan orang tua untuk usia 17, haid, menyusui menurut Permenkes, durasi obat untuk donor darah lengkap.
 5. Pernyataan "3 nyawa" dari PMI sendiri.
 6. Klaim editorial C16, C18, C20-C22 adalah penilaian AyoDonor, bukan kutipan sumber.
-7. Alamat, telepon, jam layanan, dan stok ketujuh lokasi contoh.
+7. Daftar UDD/UTD belum dikonfirmasi ke tiap unit (alamat, telepon, jam layanan); koordinat unit belum ada, jadi jarak tidak dihitung.
 
 ## 7. Aliran data pribadi
 
 - Nama panggilan dan 4 jawaban kuis hanya diproses di browser; tidak dikirim ke server mana pun. Tidak ada layanan AI.
 - Situs statis: tidak ada server aplikasi atau basis data. Penyedia hosting dapat mencatat metadata teknis permintaan.
-- Lokasi pengguna hanya diproses di browser.
+- Lokasi pengguna (hanya bila ada rekaman berkoordinat dan pengguna menekan tombolnya) hanya diproses di browser, tidak dikirim, dan tidak dicatat. Tautan Google Maps hanya memuat nama dan alamat unit.
 - Situs memakai font bawaan perangkat; tidak ada font yang dimuat dari pihak ketiga. Tautan peta membuka Google Maps hanya saat diklik.
 
 Catatan riwayat: versi awal mengirim nama, jawaban kuis, dan pesan chat ke Google Gemini API. Fitur itu telah dihapus.

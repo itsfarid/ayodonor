@@ -628,7 +628,7 @@ export default function App() {
                   <a href="#education">Dasar-dasar Donor Darah</a>
                 </li>
                 <li>
-                  <a href="#pmi-locator-container">Contoh Lokasi (Data Demo)</a>
+                  <a href="#pmi-locator-container">Cari UDD/UTD PMI</a>
                 </li>
                 <li>
                   <a href="#quiz-section">Kuis Panduan Awal</a>
@@ -648,7 +648,7 @@ export default function App() {
             <div>
               <h2>Informasi medis &amp; disclaimer</h2>
               <p>
-                Kuis dan teks di AyoDonor hanya untuk edukasi. Bukan diagnosis, bukan keputusan kelayakan, dan bukan nasihat medis. Kelayakan donor ditentukan petugas PMI lewat pemeriksaan langsung. Data lokasi dan stok di situs ini adalah contoh yang belum diverifikasi.
+                Kuis dan teks di AyoDonor hanya untuk edukasi. Bukan diagnosis, bukan keputusan kelayakan, dan bukan nasihat medis. Kelayakan donor ditentukan petugas PMI lewat pemeriksaan langsung. Daftar UDD/UTD disalin dari halaman Kontak PMI dan bisa belum lengkap atau sudah berubah; AyoDonor tidak menampilkan stok darah.
               </p>
               <p style={{ marginBottom: 0 }}>
                 <SourceLinks refs={[{ id: "permenkes" }, { id: "pmi-faq" }, { id: "who-eligibility" }]} />

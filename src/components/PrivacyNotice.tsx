@@ -18,10 +18,10 @@ export default function PrivacyNotice() {
             <strong>Penyimpanan:</strong> situs ini statis: tidak punya server aplikasi atau basis data, tidak memakai layanan AI, dan tidak menyimpan data yang kamu masukkan. Penyedia hosting dapat mencatat metadata teknis permintaan sesuai kebijakannya sendiri.
           </li>
           <li>
-            <strong>Lokasi:</strong> hanya dipakai di browsermu untuk mengurutkan contoh lokasi dan tidak dikirim ke server. Browser akan meminta izinmu dulu.
+            <strong>Lokasi:</strong> pencarian UDD/UTD memakai ketikan kota dan pilihan provinsimu, bukan posisi perangkatmu. Bila fitur posisi tersedia, ia hanya jalan setelah kamu menekan tombolnya, browser meminta izinmu dulu, dan posisi hanya dipakai di browsermu: tidak dikirim ke server dan tidak dicatat.
           </li>
           <li>
-            <strong>Pihak ketiga:</strong> situs ini memakai font bawaan perangkatmu dan tidak memuat font dari layanan lain. Tautan peta membuka Google Maps, yang berada di luar kendali AyoDonor. AyoDonor tidak memasang cookie atau pelacak analitik sendiri.
+            <strong>Pihak ketiga:</strong> situs ini memakai font bawaan perangkatmu dan tidak memuat font dari layanan lain. Tautan Google Maps membawa nama dan alamat unit (bukan posisimu) dan berada di luar kendali AyoDonor. AyoDonor tidak memasang cookie atau pelacak analitik sendiri.
           </li>
         </ul>
       </div>

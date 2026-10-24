@@ -1,436 +1,318 @@
-import React, { useState, useEffect } from "react";
+import React, { useMemo, useState } from "react";
+import SourceLinks from "./SourceLinks";
+import { UTD_RECORDS, UTD_RETRIEVED_ON, type UtdRecord } from "../data/utd";
+import { isValidCoordinates, sortByDistance, type LatLng } from "../lib/geo";
+import { COARSE_ACCURACY_M, locate, type LocateFailure, type LocatedPosition } from "../lib/geolocation";
 
-export type StockStatus = "Aman" | "Cukup" | "Kritis";
-export const BLOOD_TYPES = ["A", "B", "O", "AB"] as const;
-export type BloodType = (typeof BLOOD_TYPES)[number];
+const PAGE_SIZE = 20;
 
-interface PmiLocation {
-  id: string;
-  name: string;
-  address: string;
-  city: string;
-  region: "Jawa" | "Sumatera" | "Sulawesi" | "Kalimantan" | "Lainnya";
-  lat: number;
-  lng: number;
-  phone: string;
-  status: string;
-  stocks: Record<BloodType, StockStatus>;
+type LocationState =
+  | { kind: "idle" }
+  | { kind: "loading" }
+  | { kind: "ok"; position: LocatedPosition }
+  | { kind: "error"; reason: LocateFailure };
+
+const ERROR_TEXT: Record<LocateFailure, { title: string; body: string }> = {
+  denied: {
+    title: "Izin lokasi ditolak",
+    body: "Browser tidak memberi AyoDonor akses ke posisimu. Kamu bisa mengizinkannya di pengaturan situs browser lalu mencoba lagi, atau cukup pakai pencarian kota di atas.",
+  },
+  timeout: {
+    title: "Posisi tidak ditemukan tepat waktu",
+    body: "Browser tidak menjawab dalam 15 detik. Coba lagi, pindah ke tempat yang sinyalnya lebih baik, atau pakai pencarian kota.",
+  },
+  unavailable: {
+    title: "Posisi tidak tersedia",
+    body: "Perangkat atau browser tidak bisa menentukan posisimu saat ini (misalnya layanan lokasi mati). Coba lagi atau pakai pencarian kota.",
+  },
+  unsupported: {
+    title: "Browser tidak mendukung lokasi",
+    body: "Browser ini tidak menyediakan fitur lokasi. Pakai pencarian kota di atas.",
+  },
+  invalid: {
+    title: "Browser memberi koordinat yang tidak valid",
+    body: "Posisi yang diterima tidak masuk akal, jadi tidak dipakai. Coba lagi atau pakai pencarian kota.",
+  },
+};
+
+function normalize(text: string): string {
+  return text.toLowerCase().replace(/\s+/g, " ").trim();
 }
 
-// CATATAN: Data di bawah ini adalah CONTOH untuk demo. Nama unit, alamat, telepon, jam layanan,
-// koordinat, dan terutama status stok BELUM diverifikasi dan stok bersifat fiktif. Belum terhubung
-// ke sistem data PMI resmi. Jangan dipakai untuk keputusan donor.
-// Upaya verifikasi per lokasi pada 24 Oktober 2026 tidak berhasil memastikan satu pun alamat, telepon, atau
-// jam layanan dari sumber resmi (lihat docs/medical-claims.md, bagian 5); label "demo" harus dipertahankan.
-export const INITIAL_PMI_DATA: PmiLocation[] = [
-  {
-    id: "pmi-jkt",
-    name: "UTD PMI DKI Jakarta",
-    address: "Jl. Kramat Raya No.47, Senen, Jakarta Pusat",
-    city: "Jakarta Pusat",
-    region: "Jawa",
-    lat: -6.1844,
-    lng: 106.8444,
-    phone: "(021) 3906350",
-    status: "Jam layanan: belum diverifikasi",
-    stocks: { A: "Aman", B: "Aman", O: "Aman", AB: "Kritis" }
-  },
-  {
-    id: "pmi-bdg",
-    name: "UDD PMI Kota Bandung",
-    address: "Jl. Aceh No.79, Cihapit, Bandung",
-    city: "Bandung",
-    region: "Jawa",
-    lat: -6.9103,
-    lng: 107.6186,
-    phone: "(022) 4207052",
-    status: "Jam layanan: belum diverifikasi",
-    stocks: { A: "Cukup", B: "Aman", O: "Aman", AB: "Kritis" }
-  },
-  {
-    id: "pmi-sby",
-    name: "UTD PMI Kota Surabaya",
-    address: "Jl. Embong Ploso No.7-15, Genteng, Surabaya",
-    city: "Surabaya",
-    region: "Jawa",
-    lat: -7.2651,
-    lng: 112.7423,
-    phone: "(031) 5313555",
-    status: "Jam layanan: belum diverifikasi",
-    stocks: { A: "Aman", B: "Kritis", O: "Aman", AB: "Aman" }
-  },
-  {
-    id: "pmi-yk",
-    name: "UTD PMI Kota Yogyakarta",
-    address: "Jl. Tegalgendu No.25, Kotagede, Yogyakarta",
-    city: "Yogyakarta",
-    region: "Jawa",
-    lat: -7.8242,
-    lng: 110.3956,
-    phone: "(0274) 372176",
-    status: "Jam layanan: belum diverifikasi",
-    stocks: { A: "Kritis", B: "Aman", O: "Aman", AB: "Cukup" }
-  },
-  {
-    id: "pmi-smg",
-    name: "UTD PMI Kota Semarang",
-    address: "Jl. Sugiopranoto No.31, Bulustalan, Semarang",
-    city: "Semarang",
-    region: "Jawa",
-    lat: -6.9829,
-    lng: 110.4092,
-    phone: "(024) 3515050",
-    status: "Jam layanan: belum diverifikasi",
-    stocks: { A: "Aman", B: "Aman", O: "Kritis", AB: "Aman" }
-  },
-  {
-    id: "pmi-mdn",
-    name: "UTD PMI Kota Medan",
-    address: "Jl. Palang Merah No.17, A U R, Medan Maimun, Medan",
-    city: "Medan",
-    region: "Sumatera",
-    lat: 3.5824,
-    lng: 98.6791,
-    phone: "(061) 4567232",
-    status: "Jam layanan: belum diverifikasi",
-    stocks: { A: "Kritis", B: "Aman", O: "Aman", AB: "Kritis" }
-  },
-  {
-    id: "pmi-mks",
-    name: "UTD PMI Kota Makassar",
-    address: "Jl. Kandea No.16, Bontoala Baru, Makassar",
-    city: "Makassar",
-    region: "Sulawesi",
-    lat: -5.1278,
-    lng: 119.4215,
-    phone: "(0411) 3612502",
-    status: "Jam layanan: belum diverifikasi",
-    stocks: { A: "Aman", B: "Kritis", O: "Aman", AB: "Aman" }
-  }
-];
-
-// Helper to calculate straight-line distance in km using the Haversine formula (not a driving route)
-export function getDistanceKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // Radius of earth in km
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLon = ((lon2 - lon1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+/** A phone number the browser can dial as one link. Entries such as "(021) 906666/327711" hold two numbers and stay plain text. */
+function dialHref(phone: string): string | null {
+  const p = phone.trim();
+  if (!/^\+?[\d\s()-]{6,}$/.test(p)) return null;
+  return `tel:${p.replace(/[^\d+]/g, "")}`;
 }
 
-export default function PmiLocator() {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
-  const [isLocating, setIsLocating] = useState(false);
-  const [locateError, setLocateError] = useState<string | null>(null);
-  const [selectedLocation, setSelectedLocation] = useState<PmiLocation | null>(INITIAL_PMI_DATA[0]);
+function mapsHref(unit: UtdRecord): string {
+  // Only the unit's name and address are put in the link; the visitor's position never is.
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${unit.name}, ${unit.address}`)}`;
+}
 
-  // Directly derive filtered and sorted locations using useMemo for bulletproof live reactive updates!
-  const filteredLocations = React.useMemo(() => {
-    const query = searchQuery.toLowerCase().trim();
-    let result = INITIAL_PMI_DATA;
+interface PmiLocatorProps {
+  /** Records to search. Defaults to the PMI list; tests pass fixtures. */
+  units?: UtdRecord[];
+}
 
-    if (query) {
-      result = INITIAL_PMI_DATA.filter((p) => {
-        return (
-          p.name.toLowerCase().includes(query) ||
-          p.address.toLowerCase().includes(query) ||
-          p.city.toLowerCase().includes(query)
-        );
-      });
-    }
+export default function PmiLocator({ units = UTD_RECORDS }: PmiLocatorProps) {
+  const [query, setQuery] = useState("");
+  const [province, setProvince] = useState("");
+  const [visible, setVisible] = useState(PAGE_SIZE);
+  const [location, setLocation] = useState<LocationState>({ kind: "idle" });
 
-    if (userLocation) {
-      result = [...result].sort((a, b) => {
-        const distA = getDistanceKm(userLocation.lat, userLocation.lng, a.lat, a.lng);
-        const distB = getDistanceKm(userLocation.lat, userLocation.lng, b.lat, b.lng);
-        return distA - distB;
-      });
-    }
+  // Distances need valid coordinates on both sides. With no sourced coordinates in the data, the location button is not offered.
+  const coordsOf = (u: UtdRecord): LatLng | null =>
+    u.coordinates && isValidCoordinates(u.coordinates.lat, u.coordinates.lng) ? { lat: u.coordinates.lat, lng: u.coordinates.lng } : null;
+  const measurableCount = useMemo(() => units.filter((u) => coordsOf(u) !== null).length, [units]);
+  const canMeasure = measurableCount > 0;
 
-    return result;
-  }, [searchQuery, userLocation]);
+  const provinces = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const u of units) counts.set(u.province, (counts.get(u.province) ?? 0) + 1);
+    return [...counts.entries()].sort((a, b) => a[0].localeCompare(b[0], "id"));
+  }, [units]);
 
-  // Straight-line distance to the closest demo location, used to warn when none is actually nearby.
-  const nearestDemoKm = React.useMemo(() => {
-    if (!userLocation) return null;
-    return Math.min(...INITIAL_PMI_DATA.map((p) => getDistanceKm(userLocation.lat, userLocation.lng, p.lat, p.lng)));
-  }, [userLocation]);
+  const matches = useMemo(() => {
+    const tokens = normalize(query).split(" ").filter(Boolean);
+    return units.filter((u) => {
+      if (province && u.province !== province) return false;
+      const haystack = normalize(`${u.name} ${u.province} ${u.address}`);
+      return tokens.every((t) => haystack.includes(t));
+    });
+  }, [units, query, province]);
 
-  // Keep selectedLocation up to date with search changes
-  useEffect(() => {
-    if (filteredLocations.length > 0) {
-      // If no valid selected location is active, fallback to the first item matching query
-      if (!selectedLocation || !filteredLocations.some((f) => f.id === selectedLocation.id)) {
-        setSelectedLocation(filteredLocations[0]);
-      }
-    } else {
-      setSelectedLocation(null);
-    }
-  }, [filteredLocations, selectedLocation]);
+  const hasCriteria = query.trim() !== "" || province !== "";
+  const position = location.kind === "ok" ? location.position : null;
+  const showResults = hasCriteria || (position !== null && canMeasure);
 
-  // Request high precision geolocation
-  const handleDetectLocation = () => {
-    if (!navigator.geolocation) {
-      setLocateError("Oops, browsermu tidak mendukung fitur lokalisasi GPS.");
-      return;
-    }
+  const rows = useMemo(() => {
+    if (position && canMeasure) return sortByDistance(matches, position, coordsOf);
+    return matches.map((item) => ({ item, km: null as number | null }));
+  }, [matches, position, canMeasure]);
 
-    setIsLocating(true);
-    setLocateError(null);
-
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const coords = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude
-        };
-        setUserLocation(coords);
-        setIsLocating(false);
-      },
-      (error) => {
-        console.error("Geolocation error", error);
-        let errorMsg = "Pencarian GPS gagal. Pastikan izin lokasi diaktifkan di browsermu.";
-        if (error.code === error.PERMISSION_DENIED) {
-          errorMsg = "Akses lokasi ditolak. Silakan beri izin lokasi di browser kamu.";
-        }
-        setLocateError(errorMsg);
-        setIsLocating(false);
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
+  const handleLocate = async () => {
+    // Drop any earlier position first so a failure can never leave a stale one on screen.
+    setLocation({ kind: "loading" });
+    const result = await locate();
+    setLocation("position" in result ? { kind: "ok", position: result.position } : { kind: "error", reason: result.reason });
+    setVisible(PAGE_SIZE);
   };
 
-  // Coordinates for the rough latitude/longitude diagram (not a map): Indonesia spans about lng 95-141, lat -11 to 6.
-  const getMapCoords = (lat: number, lng: number) => {
-    const minLng = 95;
-    const maxLng = 141;
-    const minLat = -11;
-    const maxLat = 6;
-
-    const x = ((lng - minLng) / (maxLng - minLng)) * 100;
-    // Latitude is inverted in screen coordinates
-    const y = (1 - (lat - minLat) / (maxLat - minLat)) * 100;
-
-    return { x: `${Math.max(5, Math.min(95, x))}%`, y: `${Math.max(8, Math.min(92, y))}%` };
+  const onQuery = (value: string) => {
+    setQuery(value);
+    setVisible(PAGE_SIZE);
+  };
+  const onProvince = (value: string) => {
+    setProvince(value);
+    setVisible(PAGE_SIZE);
+  };
+  const reset = () => {
+    setQuery("");
+    setProvince("");
+    setVisible(PAGE_SIZE);
   };
 
-  const routeUrl = (pmi: PmiLocation) =>
-    `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(pmi.name + ", " + pmi.address)}`;
+  const shown = rows.slice(0, visible);
+  const measuredShown = rows.filter((r) => r.km !== null).length;
 
   return (
     <div id="pmi-locator" className="locator" role="group" aria-labelledby="locator-title">
       <h3 id="locator-title" className="chapter__title">
-        Contoh daftar lokasi UTD PMI
+        Cari UDD/UTD PMI di kotamu
       </h3>
+      <p className="prose">
+        Ketik nama kota, kabupaten, atau provinsi untuk melihat alamat dan telepon unit donor darah PMI (UDD/UTD) yang tercantum di situs resmi PMI.
+      </p>
 
-      <div className="callout callout--caution">
-        <p className="kicker">Data demo · belum terverifikasi</p>
+      <div className="callout callout--note">
+        <p className="kicker">Asal data</p>
         <p>
-          Daftar ini hanya memuat {INITIAL_PMI_DATA.length} kota sebagai contoh tampilan. Nama unit, alamat, telepon, jam layanan, dan status stok <strong>belum diverifikasi</strong> sebagai data resmi.
+          {units.length} unit, disalin apa adanya dari halaman Kontak PMI, diakses {UTD_RETRIEVED_ON}.{" "}
+          <SourceLinks refs={[{ id: "pmi-kontak" }]} />
         </p>
         <p>
-          Untuk lokasi, jam layanan, dan stok darah yang resmi, buka{" "}
+          Daftar ini bisa belum lengkap atau sudah berubah, dan halaman sumbernya tidak mencantumkan jam layanan. Hubungi unit untuk memastikan alamat dan jam layanan sebelum datang. Info resmi:{" "}
           <a href="https://ayodonor.pmi.or.id" target="_blank" rel="noopener noreferrer">
             ayodonor.pmi.or.id
-          </a>{" "}
-          atau hubungi UTD PMI setempat.
+          </a>
+          .
         </p>
       </div>
 
-      <div className="locator__bar">
-        <div className="field">
-          <label htmlFor="pmi-search-input">Cari lokasi PMI</label>
-          <input
-            id="pmi-search-input"
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Kota, jalan, atau nama UDD PMI"
-            className="input"
-            autoComplete="off"
-          />
+      <div className="tool">
+        <div className="locator__bar">
+          <div className="field">
+            <label htmlFor="pmi-search-input">Cari kota, kabupaten, atau nama unit</label>
+            <input
+              id="pmi-search-input"
+              type="search"
+              value={query}
+              onChange={(e) => onQuery(e.target.value)}
+              placeholder="Contoh: Makassar, Sleman, Bandung"
+              className="input"
+              autoComplete="off"
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="pmi-province-select">Provinsi</label>
+            <select id="pmi-province-select" value={province} onChange={(e) => onProvince(e.target.value)} className="input">
+              <option value="">Semua provinsi</option>
+              {provinces.map(([name, count]) => (
+                <option key={name} value={name}>
+                  {name} ({count})
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <button id="btn-geolocate" onClick={handleDetectLocation} disabled={isLocating} className="btn btn--quiet">
-          {isLocating ? "Mencari lokasi..." : userLocation ? "Diurutkan dari posisimu" : "Urutkan contoh lokasi dari posisiku"}
-        </button>
+        {canMeasure ? (
+          <div className="locator__geo">
+            <button id="btn-geolocate" type="button" onClick={handleLocate} disabled={location.kind === "loading"} className="btn btn--quiet">
+              {location.kind === "loading" ? "Mencari posisimu..." : location.kind === "ok" ? "Perbarui posisiku" : "Gunakan posisiku"}
+            </button>
+            <p className="hint">
+              Opsional. Browser akan meminta izinmu dulu. Posisimu hanya dipakai di browser ini dan tidak dikirim ke server mana pun.
+            </p>
+          </div>
+        ) : (
+          <p className="hint locator__geo">
+            Jarak dari posisimu belum ditampilkan: daftar PMI tidak menyertakan koordinat unit, dan AyoDonor tidak memakai koordinat yang belum terverifikasi. Pencarian kota di atas tetap berlaku.
+          </p>
+        )}
       </div>
 
-      {locateError && (
+      {/* Location outcome: one distinct state at a time */}
+      <div aria-live="polite">
+        {location.kind === "loading" && (
+          <div className="callout callout--note" role="status">
+            <p>Menunggu browser menentukan posisimu...</p>
+          </div>
+        )}
+        {location.kind === "ok" && (
+          <div className="callout callout--note" role="status">
+            <p className="kicker">Posisi diterima</p>
+            <p>
+              Daftar diurutkan menurut <strong>perkiraan</strong> jarak garis lurus dari posisimu, bukan jarak tempuh berkendara atau jalan kaki.
+              {location.position.accuracyM !== null && (
+                <> Browser melaporkan ketelitian sekitar {Math.round(location.position.accuracyM).toLocaleString("id-ID")} m.</>
+              )}
+            </p>
+            {location.position.accuracyM !== null && location.position.accuracyM > COARSE_ACCURACY_M && (
+              <p>Posisi ini kasar (biasanya dari jaringan atau IP), jadi urutan jarak bisa meleset jauh.</p>
+            )}
+            <p>
+              Hanya {measurableCount} dari {units.length} unit yang punya koordinat bersumber; unit lain tidak ikut diurutkan, jadi urutan teratas belum tentu yang paling dekat.
+            </p>
+            <button type="button" className="linkbutton" onClick={() => setLocation({ kind: "idle" })}>
+              Hapus posisi
+            </button>
+          </div>
+        )}
+      </div>
+      {location.kind === "error" && (
         <div role="alert" className="callout callout--caution">
-          <p>{locateError}</p>
+          <p className="kicker">{ERROR_TEXT[location.reason].title}</p>
+          <p>{ERROR_TEXT[location.reason].body}</p>
+          {location.reason !== "unsupported" && (
+            <button type="button" className="btn btn--quiet" onClick={handleLocate}>
+              Coba lagi
+            </button>
+          )}
         </div>
       )}
 
-      {userLocation && nearestDemoKm !== null && nearestDemoKm > 100 && (
-        <div role="alert" className="callout callout--caution">
-          <p>
-            Contoh lokasi terdekat berjarak sekitar {Math.round(nearestDemoKm).toLocaleString("id-ID")} km dari posisimu. Daftar demo ini hanya memuat {INITIAL_PMI_DATA.length} kota, jadi belum tentu ada unit PMI contoh di dekatmu. Cari UTD terdekat lewat ayodonor.pmi.or.id.
-          </p>
-        </div>
-      )}
-
-      {userLocation && (
-        <div className="callout callout--note">
-          <p>
-            Daftar diurutkan menurut perkiraan jarak garis lurus dari posisimu (bukan rute). Lokasimu hanya diproses di browser dan tidak dikirim ke server.
-          </p>
-          <button onClick={() => setUserLocation(null)} className="linkbutton">
-            Hapus lokasi
-          </button>
-        </div>
-      )}
-
-      <div className="locator__cols">
-        <div>
-          <p className="small muted" role="status">
-            {filteredLocations.length === 0 ? "Tidak ada contoh lokasi yang cocok." : `${filteredLocations.length} contoh lokasi`}
-          </p>
-
-          {filteredLocations.length === 0 ? (
-            <div className="callout callout--note">
-              <p>Coba kata kunci kota atau jalan lain. Untuk lokasi resmi, buka ayodonor.pmi.or.id.</p>
-            </div>
-          ) : (
-            <ul className="loc-list">
-              {filteredLocations.map((pmi) => {
-                const distance = userLocation ? getDistanceKm(userLocation.lat, userLocation.lng, pmi.lat, pmi.lng) : null;
-                const isSelected = selectedLocation?.id === pmi.id;
-
+      {/* Results */}
+      <div className="locator__results">
+        {!showResults ? (
+          <div className="callout callout--note" role="status">
+            <p>Belum ada pencarian. Ketik nama kota atau pilih provinsi untuk menampilkan unit. Daftar ini berisi {units.length} unit di {provinces.length} wilayah menurut halaman sumber.</p>
+          </div>
+        ) : matches.length === 0 ? (
+          <div className="callout callout--note" role="status">
+            <p className="kicker">Tidak ada hasil</p>
+            <p>
+              Tidak ada unit di daftar PMI yang cocok dengan{query.trim() ? <> &ldquo;{query.trim()}&rdquo;</> : ""}
+              {province ? <> di {province}</> : ""}. Itu belum tentu berarti tidak ada unit di sana: daftar ini bisa belum lengkap.
+            </p>
+            <ul className="ruled">
+              <li>Coba nama kota atau kabupaten lain, atau ejaan yang lebih singkat.</li>
+              <li>
+                Buka{" "}
+                <a href="https://ayodonor.pmi.or.id/?page=kontak" target="_blank" rel="noopener noreferrer">
+                  halaman Kontak PMI
+                  <span className="sr-only"> (membuka tab baru)</span>
+                </a>{" "}
+                atau hubungi PMI setempat.
+              </li>
+            </ul>
+            <button type="button" className="linkbutton" onClick={reset}>
+              Hapus pencarian
+            </button>
+          </div>
+        ) : (
+          <>
+            <p className="small muted" role="status">
+              {matches.length} unit ditemukan
+              {position && canMeasure ? `; ${measuredShown} punya koordinat sehingga jaraknya bisa diperkirakan` : ""}.
+            </p>
+            <ul className="loc-list" aria-label="Hasil pencarian UDD/UTD PMI">
+              {shown.map(({ item: unit, km }) => {
+                const dial = unit.phone ? dialHref(unit.phone) : null;
                 return (
-                  <li key={pmi.id} className="loc" data-selected={isSelected}>
-                    <button
-                      type="button"
-                      className="loc__select"
-                      aria-pressed={isSelected}
-                      aria-label={`Pilih ${pmi.name}`}
-                      onClick={() => setSelectedLocation(pmi)}
-                    >
-                      <span className="loc__meta">
-                        {pmi.region} · {pmi.city}
-                      </span>
-                      <span className="loc__name">{pmi.name}</span>
-                      <span className="loc__addr">{pmi.address}</span>
-                    </button>
-
-                    {distance !== null && <span className="loc__dist">≈ {distance.toFixed(1)} km (garis lurus)</span>}
-
-                    <p className="loc__stock">
-                      Contoh status stok (fiktif):{" "}
-                      {BLOOD_TYPES.map((type, i) => (
-                        <span key={type} data-blood-type={type} data-status={pmi.stocks[type]}>
-                          {i > 0 && " · "}
-                          {type} {pmi.stocks[type]}
-                        </span>
-                      ))}
-                    </p>
-
+                  <li key={unit.no} className="loc">
+                    <span className="loc__meta">{unit.province}</span>
+                    <span className="loc__name">{unit.name}</span>
+                    <dl className="loc__facts">
+                      <div>
+                        <dt>Alamat</dt>
+                        <dd>{unit.address}</dd>
+                      </div>
+                      <div>
+                        <dt>Telepon</dt>
+                        <dd>
+                          {unit.phone ? (
+                            dial ? (
+                              <a href={dial}>{unit.phone}</a>
+                            ) : (
+                              unit.phone
+                            )
+                          ) : (
+                            "Tidak tercantum di sumber"
+                          )}
+                        </dd>
+                      </div>
+                    </dl>
+                    {km !== null && <span className="loc__dist">Perkiraan jarak garis lurus: ≈ {km < 10 ? km.toFixed(1) : Math.round(km)} km</span>}
                     <div className="loc__links">
-                      <a href={`tel:${pmi.phone.replace(/[() ]/g, "")}`}>{pmi.phone}</a>
-                      <a href={routeUrl(pmi)} target="_blank" rel="noopener noreferrer">
-                        Petunjuk arah
-                        <span className="sr-only"> ke {pmi.name} (membuka tab baru)</span>
+                      <a href={mapsHref(unit)} target="_blank" rel="noopener noreferrer">
+                        Cari di Google Maps
+                        <span className="sr-only"> untuk {unit.name} (membuka tab baru)</span>
                       </a>
                     </div>
                   </li>
                 );
               })}
             </ul>
-          )}
-        </div>
-
-        <div className="locator__detail">
-          <p className="kicker kicker--plain">Diagram posisi kasar (lintang-bujur), bukan peta</p>
-          <div className="schematic">
-            {userLocation && (
-              <div
-                className="pin pin--you"
-                role="img"
-                aria-label="Posisimu (perkiraan)"
-                style={{ left: getMapCoords(userLocation.lat, userLocation.lng).x, top: getMapCoords(userLocation.lat, userLocation.lng).y }}
-              >
-                <span className="pin-label">Kamu</span>
-              </div>
-            )}
-
-            {filteredLocations.map((pmi) => {
-              const isSelected = selectedLocation?.id === pmi.id;
-              const coords = getMapCoords(pmi.lat, pmi.lng);
-              return (
-                <button
-                  key={pmi.id}
-                  type="button"
-                  className="pin"
-                  aria-pressed={isSelected}
-                  aria-label={`Pilih lokasi ${pmi.name}`}
-                  onClick={() => setSelectedLocation(pmi)}
-                  style={{ left: coords.x, top: coords.y, zIndex: isSelected ? 2 : 1 }}
-                >
-                  {isSelected && <span className="pin-label">{pmi.city}</span>}
+            {rows.length > shown.length && (
+              <p>
+                <button type="button" className="btn btn--quiet" onClick={() => setVisible((v) => v + PAGE_SIZE)}>
+                  Tampilkan lebih banyak ({rows.length - shown.length} lagi)
                 </button>
-              );
-            })}
-          </div>
-
-          {selectedLocation && (
-            <div className="detail">
-              <p className="kicker kicker--plain">Lokasi terpilih</p>
-              <h4 className="loc__name">{selectedLocation.name}</h4>
-              <p className="small" style={{ margin: "var(--s-1) 0 0" }}>
-                {selectedLocation.address}
               </p>
+            )}
+          </>
+        )}
+      </div>
 
-              <dl>
-                <div>
-                  <dt>Jam layanan</dt>
-                  <dd>{selectedLocation.status}</dd>
-                </div>
-                <div>
-                  <dt>Telepon (belum diverifikasi)</dt>
-                  <dd>{selectedLocation.phone}</dd>
-                </div>
-                <div>
-                  <dt>Wilayah</dt>
-                  <dd>{selectedLocation.region}</dd>
-                </div>
-              </dl>
-
-              <p style={{ margin: 0 }}>
-                <a href={routeUrl(selectedLocation)} target="_blank" rel="noopener noreferrer" className="btn btn--quiet">
-                  Buka rute
-                  <span className="sr-only"> ke {selectedLocation.name} (membuka tab baru)</span>
-                </a>
-              </p>
-
-              <div style={{ marginTop: "var(--s-4)" }}>
-                <p className="small" style={{ margin: 0 }}>
-                  <strong>Contoh status stok (fiktif)</strong> <span className="demo-tag">Ilustrasi demo</span>
-                </p>
-                <div className="stock-grid">
-                  {BLOOD_TYPES.map((type) => {
-                    const status = selectedLocation.stocks[type];
-                    return (
-                      <div key={type} data-blood-type={type} data-status={status}>
-                        <span className="type">Gol {type}</span>
-                        <span className="state">{status}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-                <p className="small muted" style={{ margin: 0 }}>
-                  Status stok fiktif untuk ilustrasi. Jangan dipakai untuk keputusan donor; cek stok resmi di ayodonor.pmi.or.id.
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
+      <div className="callout callout--note">
+        <p className="kicker">Stok darah</p>
+        <p>
+          AyoDonor tidak menampilkan stok darah. PMI menyatakan stok dapat berubah sewaktu-waktu dan menyarankan menghubungi UTD terkait.{" "}
+          <SourceLinks refs={[{ id: "pmi-stok" }]} />
+        </p>
       </div>
     </div>
   );

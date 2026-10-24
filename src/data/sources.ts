@@ -63,6 +63,19 @@ export const SOURCES: Source[] = [
     limits: "Data stok dimuat dinamis; isi tabel tidak terbaca saat kami membukanya, jadi tidak ada angka stok yang kami salin.",
   },
   {
+    id: "pmi-kontak",
+    label: "Kontak PMI (daftar UDD/UTD)",
+    title: "Kontak PMI: daftar UDD/UTD, PMI AyoDonor",
+    publisher: "Palang Merah Indonesia (PMI)",
+    kind: "Panduan praktis PMI",
+    url: "https://ayodonor.pmi.or.id/?page=kontak",
+    published: "Tidak ada tanggal pada halaman",
+    accessed: ACCESSED_ON,
+    supports: "Nama, provinsi, alamat, dan telepon 228 UDD/UTD pada pencari lokasi, disalin apa adanya (jumlah baris pada tanggal akses).",
+    limits:
+      "Tanpa tanggal terbit, koordinat, atau jam layanan. Bisa belum lengkap atau sudah berubah, dan kami tidak menghubungi tiap unit. Ada salah eja di sumber (mis. \"Jakarta Tmur\"), yang kami biarkan.",
+  },
+  {
     id: "who-safety",
     label: "WHO: Blood safety and availability",
     title: "Blood safety and availability (lembar fakta)",

@@ -1,10 +1,10 @@
 # AyoDonor
 
 Proyek edukasi independen tentang donor darah untuk anak muda Indonesia: dasar-dasar donor, kuis panduan awal,
-contoh lokasi (data demo), dan FAQ yang bisa dicari. Tidak memakai AI dan tidak butuh API key.
+pencari UDD/UTD PMI (daftar dari halaman Kontak PMI), dan FAQ yang bisa dicari. Tidak memakai AI dan tidak butuh API key.
 
 > **Bukan layanan medis.** AyoDonor tidak berafiliasi dengan PMI atau Kemenkes. Kuis **bukan** keputusan kelayakan:
-> petugas PMI yang menentukan lewat pemeriksaan langsung. Data lokasi dan stok adalah contoh yang belum diverifikasi.
+> petugas PMI yang menentukan lewat pemeriksaan langsung. Daftar UDD/UTD disalin dari halaman Kontak PMI dan bisa belum lengkap atau sudah berubah; stok darah tidak ditampilkan.
 > Klaim kesehatan dan sumbernya dicatat di [docs/medical-claims.md](docs/medical-claims.md).
 
 ## Teknologi
@@ -41,7 +41,7 @@ Detail, header, domain, dan risiko: [docs/static-deployment.md](docs/static-depl
 ## Struktur
 
 ```
-src/               aplikasi React (kuis, FAQ di src/data/faq.ts, lokasi demo)
+src/               aplikasi React (kuis, FAQ di src/data/faq.ts, pencari UDD/UTD di src/data/utd.ts)
 shared/content.ts  teks ringkasan kuis
 public/            favicon dan _headers (Cloudflare Pages)
 tests/             vitest (node + jsdom)

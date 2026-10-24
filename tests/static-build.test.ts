@@ -125,7 +125,7 @@ describe("static build output", () => {
   it("keeps the disclaimer and demo-data warnings in the shipped bundle", () => {
     const js = files.filter((x) => x.endsWith(".js")).map(text).join("\n");
     expect(js).toContain("Ini bukan diagnosis atau keputusan medis");
-    expect(js).toContain("belum diverifikasi");
+    expect(js).toContain("bisa belum lengkap atau sudah berubah");
     expect(js).toContain("tidak berafiliasi dengan PMI");
   });
 });
