@@ -1,7 +1,7 @@
 # AyoDonor
 
 Proyek edukasi independen tentang donor darah untuk anak muda Indonesia: dasar-dasar donor, kuis panduan awal,
-contoh lokasi (data demo), dan asisten AI untuk pertanyaan umum.
+contoh lokasi (data demo), dan FAQ yang bisa dicari. Tidak memakai AI dan tidak butuh API key.
 
 > **Bukan layanan medis.** AyoDonor tidak berafiliasi dengan PMI atau Kemenkes. Kuis **bukan** keputusan kelayakan:
 > petugas PMI yang menentukan lewat pemeriksaan langsung. Data lokasi dan stok adalah contoh yang belum diverifikasi.
@@ -9,8 +9,9 @@ contoh lokasi (data demo), dan asisten AI untuk pertanyaan umum.
 
 ## Teknologi
 
-React 19 + Vite 6 + Tailwind 4 (frontend), Express + TypeScript (server), Google Gemini lewat `@google/genai`
-(opsional; tanpa API key aplikasi memakai ringkasan otomatis yang diberi label).
+React 19 + Vite 6 + Tailwind 4 (frontend), Express + TypeScript (server kecil untuk menyajikan aset dan health check).
+Kuis dihitung di browser; tidak ada data pengguna yang dikirim ke server. Versi awal proyek ini memakai Google Gemini
+untuk acara terkait GCP; fitur itu sudah dihapus ([docs/ai-removal.md](docs/ai-removal.md)), riwayat Git tetap menyimpannya.
 
 ## Menjalankan
 
@@ -18,7 +19,6 @@ Prasyarat: Node.js 22.12+ (diuji di Node 26).
 
 ```bash
 npm install
-cp .env.example .env.local   # opsional: isi GEMINI_API_KEY untuk mengaktifkan AI (jangan di-commit)
 npm run dev                  # mode pengembangan (Vite), http://127.0.0.1:3000
 ```
 
@@ -37,50 +37,48 @@ menjalankan Vite dev server. Server produksi gagal start dengan pesan jelas bila
 | Perintah | Fungsi |
 |---|---|
 | `npm run lint` | Pengecekan tipe (`tsc --noEmit`) |
-| `npm test` | Semua tes (vitest): API, produksi, proxy/shutdown, konten, UI |
+| `npm test` | Semua tes (vitest): API, produksi, proxy/shutdown, konten, UI, FAQ |
 | `npm run smoke:prod` | Build, jalankan server hasil build **tanpa** `NODE_ENV`, cek rute, path sensitif, shutdown |
 | `npm run smoke:dev` | Jalankan mode dev, cek Vite aktif, shutdown |
 | `npm run clean` | Hapus `dist` |
 
-Tes memakai Gemini tiruan; tidak butuh API key dan tidak memanggil layanan berbayar.
+Tes tidak butuh API key, jaringan, atau layanan berbayar.
 
 ## Konfigurasi (environment)
 
-Lihat [.env.example](.env.example). Ringkasnya: `GEMINI_API_KEY`, `PORT` (default 3000), `HOST`, `TRUST_PROXY`,
-`GEMINI_TIMEOUT_MS`, `STATIC_DIR`.
+Tidak ada secret yang dibutuhkan. Variabel opsional (lihat [.env.example](.env.example)): `PORT` (default 3000), `HOST`,
+`TRUST_PROXY`, `STATIC_DIR`. File `.env` tidak lagi dimuat otomatis; atur lewat shell atau platform.
 
 ### Asumsi deployment yang wajib diperhatikan
 
-- **Alamat IP klien dan rate limit.** Batas 10 permintaan/menit/IP (jendela 60 detik) berlaku untuk
-  `/api/gemini/evaluate` dan `/api/gemini/chat` (satu penghitung bersama), dihitung **sebelum** body diparse.
-  Defaultnya `X-Forwarded-For` **diabaikan**. Bila aplikasi berjalan di balik reverse proxy/platform (mis. Cloud Run),
-  atur `TRUST_PROXY=<jumlah proxy di depan>` (mis. `1`); kalau tidak, semua pengguna berbagi satu penghitung.
-  Jangan pakai `true`. Penghitung ada di memori per instance, jadi bukan pembatas terdistribusi: dengan beberapa instance
-  batas efektifnya dikalikan jumlah instance. Pasang juga batas biaya/kuota di sisi Gemini.
+- **Alamat IP klien dan rate limit.** Batas 60 permintaan/menit/IP (jendela 60 detik) berlaku untuk semua path `/api`
+  dan dihitung **sebelum** body diparse (body dibatasi 1 KB). Defaultnya `X-Forwarded-For` **diabaikan**. Bila aplikasi
+  berjalan di balik reverse proxy/platform (mis. Cloud Run), atur `TRUST_PROXY=<jumlah proxy di depan>` (mis. `1`);
+  kalau tidak, semua pengguna berbagi satu penghitung. Jangan pakai `true`. Penghitung ada di memori per instance, jadi
+  bukan pembatas terdistribusi.
 - **Health check:** `GET /api/health`. **Shutdown:** SIGTERM/SIGINT menghentikan koneksi baru, menunggu request berjalan
   maksimal 10 detik, lalu keluar (kode 0, atau 1 bila dipaksa).
-- **Log:** satu baris JSON per request (id, path, status, durasi) dan kegagalan upstream (jenis, status). Isi pesan,
-  nama, dan jawaban kuis tidak dicatat.
+- **Log:** satu baris JSON per request (id, path tanpa query, status, durasi). Isi body tidak dicatat.
 
 ## API
 
-| Endpoint | Body | Catatan |
-|---|---|---|
-| `GET /api/health` | - | `{status:"ok"}` |
-| `POST /api/gemini/evaluate` | `{name?, ageWeight, sleep, meds, recency}` (`safe`\|`unsafe`\|``), maks 4 KB | Ringkasan hasil kuis |
-| `POST /api/gemini/chat` | `{message (<=500), history[<=20 x {role:user\|model, text<=2000}]}`, maks 96 KB | Chat |
+Hanya satu endpoint: `GET /api/health` memberi `{status:"ok"}`. Path `/api/*` lain (termasuk endpoint `/api/gemini/*`
+yang lama) menjawab `404 {success:false, code:"not_found"}`. Galat umum: 400 `invalid_json`, 413 `payload_too_large`,
+429 `rate_limited`, 500 `internal_error`, semuanya berbentuk `{success:false, code, error}`.
 
-Sukses: `{success:true, source:"ai"|"fallback", fallbackReason?, text}`. `source:"fallback"` berarti teks otomatis
-(tanpa API key atau kuota habis), bukan jawaban AI. Galat: `{success:false, code, error}` dengan 400 (`invalid_request`,
-`invalid_json`), 413 (`payload_too_large`), 429 (`rate_limited`), 502/504 (`upstream_*`), 500 (`internal_error`).
+### Apakah server masih diperlukan?
+
+Tidak ada penyimpanan, autentikasi, atau data eksternal dinamis; kuis, FAQ, dan lokasi demo sepenuhnya di frontend.
+Satu-satunya fungsi server adalah menyajikan `dist/public` dan `GET /api/health`. Hosting statis (hanya isi `dist/public`)
+secara teknis memungkinkan. Migrasi tidak dilakukan di sini; ini keputusan deployment terpisah.
 
 ## Struktur
 
 ```
-server.ts          entry (config, Gemini client, shutdown)
-server/            app (createApp), validation, errors, gemini, prompts, config, shutdown, logger
-shared/content.ts  teks aman bersama (ringkasan kuis, balasan chat otomatis)
-src/               aplikasi React
+server.ts          entry (config, shutdown)
+server/            app (createApp), errors, config, shutdown, logger
+shared/content.ts  teks ringkasan kuis
+src/               aplikasi React (kuis, FAQ di src/data/faq.ts, lokasi demo)
 tests/             vitest (node + jsdom)
 scripts/           smoke test dev/produksi
 docs/              klaim medis & sumber, bukti rate limit

@@ -36,3 +36,16 @@ awal memakai AI; riwayat tidak ditulis ulang.
   Key yang pernah dipakai sebaiknya dicabut di konsol Google bila tidak dipakai lagi (tindakan manual).
 - **Backend:** setelah penghapusan, satu-satunya endpoint adalah `/api/health`. Tidak ada penyimpanan, autentikasi, atau data
   eksternal dinamis, jadi aplikasi sebenarnya dapat dilayani sebagai situs statis. Migrasi tidak dilakukan di sini.
+
+## Hasil
+
+- Endpoint `/api/gemini/*`, modul Gemini/prompt/validasi, chat UI, label status AI, `@google/genai`, `dotenv`,
+  `GEMINI_API_KEY` dan `GEMINI_TIMEOUT_MS` sudah dihapus. Tidak ada variabel lingkungan yang wajib.
+- Kuis berjalan di browser; FAQ statis (`src/data/faq.ts`) menggantikan chat.
+- Dipertahankan: kontrol keamanan umum (ID request, log aman, penanganan error, rate limit, batas body, `TRUST_PROXY`,
+  shutdown), penyajian produksi tanpa bundel/sourcemap server, peringatan medis, label data demo PMI.
+- `metadata.json`: capability `MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API` (konfigurasi AI Studio) dihapus dan deskripsi
+  disesuaikan.
+- Referensi AI yang sengaja tersisa: kutipan hero `"AI bisa bikin segalanya, tapi belum bisa bikin setetes darah"`
+  (retorika, bukan fitur), catatan riwayat di README dan docs, dan `.env.local` lokal milik pengguna (tidak disentuh).
+- Key lama: bila masih aktif di konsol Google, cabut secara manual; tidak dilakukan otomatis.

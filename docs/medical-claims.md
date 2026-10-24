@@ -40,7 +40,7 @@ Tidak diverifikasi: teks UU 17/2023 dan PP 28/2024 (hanya terlihat lewat kutipan
 | Skrining itu "bukan pengganti pemeriksaan kesehatan pribadi" | **Rumusan kami sendiri** | S1 tidak menyatakannya; S2/S4 menyebut donor sebagai bentuk pemeriksaan. Perlu ditinjau ahli |
 | "Hingga 3 nyawa per kantong" | S6 (pejabat Kemenkes: "setidaknya 3 nyawa"); S5 mengaitkan "hingga tiga nyawa" dengan American Red Cross | Pernyataan PMI sendiri tidak ditemukan |
 | Komponen darah (PRC, plasma, trombosit) dan contoh penggunaannya | S1 menyebut komponen dan standar mutunya | **Contoh penggunaan adalah pengetahuan umum, tidak bersumber ke halaman resmi.** Perlu ditinjau |
-| Sebagian orang bisa pusing/lemas setelah donor; istirahat dan ikuti petugas | Pengetahuan umum; S2 menganjurkan menghindari aktivitas berat | Tidak bersumber resmi. Perlu ditinjau |
+| Sebagian orang bisa pusing/lemas setelah donor; istirahat dan ikuti petugas (FAQ) | Pengetahuan umum; S2 menganjurkan menghindari aktivitas berat | Tidak bersumber resmi. Perlu ditinjau |
 | Rasa jarum berbeda-beda | Pengetahuan umum | Bukan klaim medis |
 | Stok dan lokasi resmi ada di ayodonor.pmi.or.id | S2, S3 | Hanya mengarahkan; tidak menyalin data |
 
@@ -66,12 +66,13 @@ Tidak diverifikasi: teks UU 17/2023 dan PP 28/2024 (hanya terlihat lewat kutipan
 4. Hubungan S1 dengan regulasi yang lebih baru (UU 17/2023 dan turunannya) belum diperiksa teksnya.
 5. Pernyataan "3 nyawa" dari PMI sendiri.
 6. Alamat, telepon, jam layanan, dan koordinat 7 lokasi contoh di `PmiLocator.tsx`: **tidak diverifikasi** (dan stoknya fiktif).
-7. Tinjauan oleh tenaga medis/PMI atas seluruh teks edukasi dan perilaku jawaban AI.
+7. Tinjauan oleh tenaga medis/PMI atas seluruh teks edukasi dan FAQ.
 
 ## Aliran data pribadi (ringkas)
 
-- Nama panggilan + 4 jawaban kuis dan pesan chat (+ hingga 10 pesan AI terakhir) dikirim ke server saat pengguna menekan tombol.
-- Bila `GEMINI_API_KEY` diatur, server meneruskannya ke Google Gemini API. Tanpa key, server memakai ringkasan otomatis dan melabelinya.
-- Server tidak menyimpan data itu dan log aplikasi tidak memuatnya (diuji di `tests/upstream.test.ts`).
+- Nama panggilan dan 4 jawaban kuis hanya diproses di browser; tidak dikirim ke server mana pun. Tidak ada layanan AI.
+- Server tidak menyimpan data pengguna dan log aplikasi tidak memuat isi request.
 - Lokasi pengguna hanya diproses di browser.
 - Browser memuat font dari Google Fonts.
+
+Catatan riwayat: versi sebelumnya mengirim nama, jawaban kuis, dan pesan chat ke Google Gemini API. Fitur itu telah dihapus.

@@ -1,6 +1,7 @@
 {
   "name": "AyoDonor",
-  "description": "Platform edukasi interaktif kelayakan dan manfaat donor darah untuk generasi muda Indonesia dengan gaya bahasa santai dan simulasi kelayakan instan.",
-  "requestFramePermissions": ["geolocation"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "description": "Proyek edukasi independen tentang donor darah untuk generasi muda Indonesia: dasar-dasar donor, kuis panduan awal (bukan keputusan kelayakan), dan FAQ.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
 }
