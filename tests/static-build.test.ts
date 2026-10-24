@@ -1,9 +1,10 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { JSDOM } from "jsdom";
 import { build, preview, type PreviewServer } from "vite";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { canonicalUrl, NOT_FOUND_META, ROUTES } from "../src/routes";
+import { canonicalUrl, NOT_FOUND_META, ROUTES, SITE_URL } from "../src/routes";
 
 // Builds the real site into a temp directory (never touching ./dist) and inspects what a static
 // host such as Cloudflare Pages would serve. Needs no API key, server or network.
@@ -71,7 +72,7 @@ describe("static build output", () => {
 
   it("contains only static web assets, one HTML file per page, and Cloudflare control files", () => {
     for (const f of files.map(rel)) {
-      expect(f, f).toMatch(/^(index|panduan|fakta-mitos|lokasi|tentang|404)\.html$|^(favicon\.svg|_headers)$|^assets\/[\w.-]+\.(js|css)$/);
+      expect(f, f).toMatch(/^(index|panduan|fakta-mitos|lokasi|tentang|404)\.html$|^(favicon\.svg|_headers|robots\.txt|sitemap\.xml)$|^assets\/[\w.-]+\.(js|css)$/);
     }
   });
 
@@ -152,6 +153,59 @@ describe("static build output", () => {
     expect(js).toContain("Ini bukan diagnosis atau keputusan medis");
     expect(js).toContain("bisa belum lengkap atau sudah berubah");
     expect(js).toContain("tidak berafiliasi dengan PMI");
+  });
+});
+
+describe("sitemap.xml and robots.txt", () => {
+  const routeFile = (p: string) => (p === "/" ? "index.html" : `${p.slice(1)}.html`);
+
+  it("sitemap.xml is well-formed UTF-8 XML listing exactly the five canonical pages, with no invented lastmod", () => {
+    const xml = text(path.join(outDir, "sitemap.xml"));
+    expect(xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>')).toBe(true);
+    // jsdom's XML parser throws on malformed XML.
+    const doc = new JSDOM(xml, { contentType: "application/xml" }).window.document;
+    expect(doc.documentElement.namespaceURI).toBe("http://www.sitemaps.org/schemas/sitemap/0.9");
+    const locs = [...doc.querySelectorAll("url > loc")].map((n) => n.textContent!);
+    expect(locs).toEqual(ROUTES.map((r) => canonicalUrl(r.path)));
+    expect(locs).toEqual([
+      "https://ayodonor.web.id/",
+      "https://ayodonor.web.id/panduan",
+      "https://ayodonor.web.id/fakta-mitos",
+      "https://ayodonor.web.id/lokasi",
+      "https://ayodonor.web.id/tentang",
+    ]);
+    for (const loc of locs) expect(loc, loc).not.toMatch(/[?#]|\.html$|\/404|\/assets\/|[^:/]\/\//);
+    for (const loc of locs.filter((l) => l !== `${SITE_URL}/`)) expect(loc, loc).not.toMatch(/\/$/); // no trailing-slash variants
+    expect(doc.querySelectorAll("lastmod, changefreq, priority").length).toBe(0);
+  });
+
+  it("every sitemap URL is a built page whose own canonical is that URL and that is not noindex", () => {
+    const doc = new JSDOM(text(path.join(outDir, "sitemap.xml")), { contentType: "application/xml" }).window.document;
+    for (const loc of [...doc.querySelectorAll("loc")].map((n) => n.textContent!)) {
+      const route = ROUTES.find((r) => canonicalUrl(r.path) === loc)!;
+      const html = text(path.join(outDir, routeFile(route.path)));
+      expect(html, loc).toContain(`<link rel="canonical" href="${loc}" />`);
+      expect(html, loc).not.toMatch(/name="robots"/i);
+    }
+  });
+
+  it("robots.txt allows everything, blocks no assets, and points at the absolute sitemap URL", () => {
+    const robots = text(path.join(outDir, "robots.txt"));
+    const lines = robots.split("\n").map((l) => l.trim()).filter((l) => l && !l.startsWith("#"));
+    expect(lines).toContain("User-agent: *");
+    expect(lines).toContain("Allow: /");
+    expect(lines.filter((l) => /^disallow:/i.test(l))).toEqual([]); // no Disallow at all: not "/", not /assets/
+    expect(lines).toContain(`Sitemap: ${SITE_URL}/sitemap.xml`);
+    expect(robots).not.toMatch(/noindex/i); // robots.txt noindex is not supported by Google
+  });
+
+  it("serves robots.txt and sitemap.xml with matching content types", async () => {
+    const robots = await fetch(baseUrl + "/robots.txt");
+    expect(robots.status).toBe(200);
+    expect(robots.headers.get("content-type")).toMatch(/text\/plain/);
+    const sitemap = await fetch(baseUrl + "/sitemap.xml");
+    expect(sitemap.status).toBe(200);
+    expect(sitemap.headers.get("content-type")).toMatch(/xml/);
   });
 });
 

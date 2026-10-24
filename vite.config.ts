@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import {defineConfig, type Plugin} from 'vite';
 import {canonicalUrl, NOT_FOUND_META, ROUTES, type RouteMeta} from './src/routes';
+import {buildSitemap} from './src/seo';
 
 const escapeAttr = (v: string) => v.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 const escapeText = (v: string) => v.replace(/&/g, '&amp;').replace(/</g, '&lt;');
@@ -52,6 +53,7 @@ function routeHtml(): Plugin {
         fs.writeFileSync(path.join(dir, file), html);
       }
       fs.writeFileSync(path.join(dir, '404.html'), withRouteHead(base, NOT_FOUND_META, null));
+      fs.writeFileSync(path.join(dir, 'sitemap.xml'), buildSitemap());
     },
   };
 }

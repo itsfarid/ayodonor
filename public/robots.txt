@@ -1,0 +1,6 @@
+# AyoDonor is a public site: every page, script and stylesheet may be crawled.
+# robots.txt controls crawling only. It does not remove pages from search results and is not access control.
+User-agent: *
+Allow: /
+
+Sitemap: https://ayodonor.web.id/sitemap.xml
