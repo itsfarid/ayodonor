@@ -87,9 +87,6 @@ export default function App() {
   // Navigation / Interactive Education Cards state
   const [activeEducationTab, setActiveEducationTab] = useState<string>("kesehatan");
   
-  // Blood Split Simulator state
-  const [bloodAmountMl, setBloodAmountMl] = useState<number>(350);
-
   // App Name context
   const [visitorName, setVisitorName] = useState<string>("");
   const [hasEnteredName, setHasEnteredName] = useState<boolean>(false);
@@ -264,7 +261,7 @@ export default function App() {
           <div className="flex-1 text-center md:text-left">
             <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wider text-red-100 mb-4 border border-white/20">
               <span className="w-2.5 h-2.5 bg-red-300 rounded-full animate-heartbeat" />
-              #GlowUpTubuh & #Save3Nyawa
+              #AyoDonor · Edukasi Donor Darah
             </div>
             
             <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-none mb-3">
@@ -281,13 +278,13 @@ export default function App() {
                 href="#education" 
                 className="bg-white text-red-600 px-6 py-3 rounded-xl font-bold text-sm shadow-md hover:bg-red-50 hover:shadow-lg active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-red-600"
               >
-                Intip Manfaat Gokil 💡
+                Pelajari Dasar-dasarnya 💡
               </a>
               <a 
                 href="#quiz-section" 
                 className="bg-red-700/40 text-white border border-white/30 backdrop-blur-md px-6 py-3 rounded-xl font-semibold text-sm hover:bg-red-700/60 active:scale-95 transition-all outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-red-600"
               >
-                Cek Kelayakan Kamu 🔍
+                Coba Kuis Panduan Awal 🔍
               </a>
             </div>
           </div>
@@ -313,11 +310,11 @@ export default function App() {
             
             <div className="mt-4 text-center">
               <div className="text-xl font-extrabold text-white">Droppy, AyoDonor Buddy</div>
-              <p className="text-xs text-red-200 mt-1">Edukator Donor Darah yang Humoris & Siap Bantu Tubuhmu Makin Fit!</p>
+              <p className="text-xs text-red-200 mt-1">Teman belajar soal donor darah. Bukan petugas medis dan tidak berafiliasi dengan PMI.</p>
             </div>
 
             <div className="mt-3 bg-red-800/60 text-red-100 text-[11px] font-mono py-1 px-3 rounded-full uppercase tracking-wider">
-              ❤️ PMI READY PARTNER
+              🩸 PROYEK EDUKASI INDEPENDEN
             </div>
           </div>
 
@@ -337,8 +334,8 @@ export default function App() {
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-800">1 Kantong</div>
-              <div className="text-xs text-slate-500 font-medium">Bisa Menyelamatkan 3 Nyawa</div>
+              <div className="text-2xl font-black text-slate-800">Hingga 3 Nyawa</div>
+              <div className="text-xs text-slate-500 font-medium">per kantong darah (perkiraan yang dikutip Kemenkes)</div>
             </div>
           </div>
 
@@ -349,8 +346,8 @@ export default function App() {
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-800">3 Nyawa</div>
-              <div className="text-xs text-slate-500 font-medium">Potensi Terselamatkan per Kantong</div>
+              <div className="text-2xl font-black text-slate-800">Beberapa Komponen</div>
+              <div className="text-xs text-slate-500 font-medium">Satu kantong bisa dipisah untuk pasien berbeda</div>
             </div>
           </div>
 
@@ -361,8 +358,8 @@ export default function App() {
               </svg>
             </div>
             <div>
-              <div className="text-2xl font-black text-slate-800">Gratis</div>
-              <div className="text-xs text-slate-500 font-medium">Mini Medical Check Up Berkala</div>
+              <div className="text-2xl font-black text-slate-800">Diperiksa Petugas</div>
+              <div className="text-xs text-slate-500 font-medium">Hb, tekanan darah, dan riwayat kesehatan dicek sebelum donor</div>
             </div>
           </div>
         </div>
@@ -371,7 +368,7 @@ export default function App() {
       {/* PMI LOCATOR SECTION */}
       <div id="pmi-locator-container">
         <p className="max-w-6xl mx-auto w-full px-4 pt-6 text-center text-xs text-slate-500 leading-relaxed">
-          Lokasi berikut adalah contoh data untuk demo. Untuk info stok darah akurat, hubungi PMI terdekat atau cek pmi.or.id.
+          Bagian lokasi di bawah memakai data contoh yang belum diverifikasi. Untuk lokasi dan stok darah resmi, buka ayodonor.pmi.or.id atau hubungi PMI terdekat.
         </p>
         <PmiLocator />
       </div>
@@ -381,10 +378,10 @@ export default function App() {
         
         <div className="text-center mb-10">
           <h2 className="text-3xl font-black text-slate-800 tracking-tight">
-            Dashboard Manfaat Multi-Dimensi 💡
+            Dasar-dasar Donor Darah 💡
           </h2>
           <p className="text-slate-500 max-w-xl mx-auto mt-2 text-sm">
-            Siapa bilang donor darah cuma bikin lemas? Donormu itu investasi terbaik buat kesehatan sendiri sekaligus aksi pahlawan sejati!
+            Pelajari apa yang terjadi setelah donor, kenapa darah donor dibutuhkan, dan apa saja yang diperiksa petugas sebelum donor.
           </p>
         </div>
 
@@ -399,7 +396,7 @@ export default function App() {
                 : "text-slate-600 hover:text-slate-900 hover:bg-white/30"
             }`}
           >
-            🔥 Glow-Up Tubuh
+            🔄 Setelah Donor
           </button>
           <button 
             id="tab-sosial"
@@ -410,7 +407,7 @@ export default function App() {
                 : "text-slate-600 hover:text-slate-900 hover:bg-white/30"
             }`}
           >
-            🦸 Live Pahlawan
+            🩸 Kenapa Dibutuhkan
           </button>
           <button 
             id="tab-personal"
@@ -421,279 +418,192 @@ export default function App() {
                 : "text-slate-600 hover:text-slate-900 hover:bg-white/30"
             }`}
           >
-            🩺 Profit Personal
+            🩺 Sebelum Donor
           </button>
         </div>
 
-        {/* TAB 1: KESEHATAN (Glow-Up Tubuh) */}
+        {/* TAB 1: SETELAH DONOR */}
         {activeEducationTab === "kesehatan" && (
-          <div id="content-kesehatan" className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white rounded-3xl p-6 md:p-10 shadow-lg border border-slate-100 transition-all duration-300">
+          <div id="content-kesehatan" className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white rounded-3xl p-6 md:p-10 shadow-lg border border-slate-100">
             <div>
-              <div className="w-12 h-12 bg-red-100 text-red-600 flex items-center justify-center rounded-2xl mb-4 text-xl">
-                ⚙️
+              <div className="w-12 h-12 bg-red-100 text-red-600 flex items-center justify-center rounded-2xl mb-4 text-xl" aria-hidden="true">
+                🔄
               </div>
               <h3 className="text-2xl font-extrabold text-slate-800 mb-4">
-                Reset Pabrik Sel Darah Kita: Seperti Ganti Oli Mobil!
+                Tubuh Mengganti Darah yang Didonorkan
               </h3>
-              
+
               <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
                 <p>
-                  Pas kita donor, tubuh kita mendadak "kehilangan" sekitar 350ml-450ml darah. Otak langsung ngasih komando supercepat ke sumsum tulang belakang: <strong className="text-slate-900">"Woi darurat! Bikin sel darah merah baru sekarang juga!"</strong>
-                </p>
-                
-                <p className="bg-red-50/50 p-4 rounded-2xl border-l-4 border-red-500 text-slate-700 italic">
-                  "Hasilnya? Sel darah usangmu yang udah lambat di-tackle diganti sama sel darah baru gres yang dipenuhi oksigen murni tinggi. Kamu langsung dapet alami Glow-Up kesegaran organ tubuh & kulit cerah!"
+                  Saat donor, sebagian darahmu diambil. Standar pelayanan transfusi darah menyebut kantong donor berisi sekitar <strong className="text-slate-900">350 mL atau 450 mL</strong>. Setelah itu tubuh mengganti darah yang diambil. Menurut FAQ PMI, sel darah merah pengganti terbentuk dalam sekitar 4-8 minggu.
                 </p>
 
                 <ul className="space-y-2">
                   <li className="flex items-start gap-2">
-                    <span className="text-red-500">✔</span>
-                    <span><strong>Turunkan Kolesterol:</strong> Sirkulasi lancar otomatis cegah sumbatan plak di pembuluh arteri jantung.</span>
+                    <span className="text-red-500" aria-hidden="true">✔</span>
+                    <span><strong>Ada jeda antar donor.</strong> Permenkes 91/2015 menyebut minimal 2 bulan antar donor darah lengkap agar tubuh sempat pulih. Sumber lain menyebut 3 bulan, jadi petugas PMI yang memastikan jedamu.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-red-500">✔</span>
-                    <span><strong>Tubuh Regenerasi Darah:</strong> Saat mengganti volume yang didonorkan, tubuh memakai energi ekstra — bonus sampingan saja; motivasi utamanya tetap menyelamatkan nyawa.</span>
+                    <span className="text-red-500" aria-hidden="true">✔</span>
+                    <span><strong>Ada pemeriksaan dulu.</strong> Hemoglobin, tekanan darah, dan riwayat kesehatanmu dinilai sebelum donor demi keselamatan pendonor dan penerima.</span>
                   </li>
                   <li className="flex items-start gap-2">
-                    <span className="text-red-500">✔</span>
-                    <span><strong>Keseimbangan Zat Besi:</strong> Membantu menjaga kadar zat besi tubuh tetap seimbang.</span>
+                    <span className="text-red-500" aria-hidden="true">✔</span>
+                    <span><strong>Tanpa janji manfaat pribadi.</strong> AyoDonor tidak mengklaim donor menurunkan kolesterol, mempercantik kulit, atau menambah stamina. Alasan utama donor adalah membantu pasien.</span>
                   </li>
                 </ul>
               </div>
             </div>
 
-            {/* Visual illustration for health tab */}
-            <div className="bg-gradient-to-br from-red-50 to-rose-100/50 rounded-2xl p-6 flex flex-col items-center justify-center border border-red-100 shadow-inner relative overflow-hidden">
-              <div className="text-center font-mono text-xs text-red-600 font-semibold mb-4 uppercase tracking-wider relative z-10">
-                ⚡ INDONESIA FIT RED-CYCLE ENGINE
-              </div>
-              
-              {/* Animation Graphic Gear-like system */}
-              <div className="relative w-48 h-48 flex items-center justify-center mb-4">
-                <div className="absolute w-44 h-44 rounded-full border-4 border-dashed border-red-300 animate-spin opacity-50" />
-                <div className="absolute w-32 h-32 rounded-full border-4 border-red-500 border-t-transparent animate-spin" style={{ animationDirection:"reverse", animationDuration: "3s" }} />
-                
-                <span className="text-7xl relative z-10 animate-bounce">🏎️</span>
-              </div>
-              
-              <div className="bg-white/80 backdrop-blur-md p-4 rounded-xl text-center shadow-sm max-w-sm border border-slate-100">
-                <div className="text-sm font-bold text-slate-800">"Sistem Sirkulasi Ter-Reset"</div>
-                <p className="text-xs text-slate-500 mt-1">Darah kotor tersaring keluar, sel darah muda yang superaktif meluncur demi menaikkan staminamu!</p>
+            <div className="bg-gradient-to-br from-red-50 to-rose-100/50 rounded-2xl p-6 flex flex-col items-center justify-center border border-red-100 text-center">
+              <span className="text-6xl" aria-hidden="true">🩸</span>
+              <div className="bg-white/80 p-4 rounded-xl shadow-sm max-w-sm border border-slate-100 mt-4">
+                <div className="text-sm font-bold text-slate-800">Informasi umum</div>
+                <p className="text-xs text-slate-500 mt-1">Bukan nasihat medis pribadi. Sumber: Permenkes 91/2015 dan FAQ PMI (ayodonor.pmi.or.id).</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* TAB 2: SOSIAL (Pahlawan Real-Life) */}
+        {/* TAB 2: KENAPA DIBUTUHKAN */}
         {activeEducationTab === "sosial" && (
-          <div id="content-sosial" className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white rounded-3xl p-6 md:p-10 shadow-lg border border-slate-100 transition-all duration-300">
+          <div id="content-sosial" className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white rounded-3xl p-6 md:p-10 shadow-lg border border-slate-100">
             <div>
-              <div className="w-12 h-12 bg-red-100 text-red-600 flex items-center justify-center rounded-2xl mb-4 text-xl">
-                🦸‍♂️
+              <div className="w-12 h-12 bg-red-100 text-red-600 flex items-center justify-center rounded-2xl mb-4 text-xl" aria-hidden="true">
+                🩸
               </div>
               <h3 className="text-2xl font-extrabold text-slate-800 mb-4">
-                1 Kantong Istimewa, 3 Jiwa Pulang ke Rumah!
+                Satu Kantong, Beberapa Komponen
               </h3>
-              
+
               <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
                 <p>
-                  Darah merah pekat yang kamu donor itu gak bakal langsung dituang mentah-mentah ke pasien lain. Di laboratorium palang merah, cairan berhargamu disaring dan dipecah jadi **3 pahlawan kecil**:
+                  Darah donor biasanya dipisah di unit transfusi darah menjadi beberapa komponen, yang diberikan ke pasien berbeda sesuai kebutuhan medisnya. Kemenkes pernah menyebut satu kantong dapat membantu hingga 3 nyawa.
                 </p>
 
                 <div className="grid grid-cols-1 gap-3 my-4">
                   <div className="flex items-start gap-3 bg-red-50/50 p-3 rounded-xl border border-red-100">
-                    <span className="text-xl">🎒</span>
+                    <span className="text-xl" aria-hidden="true">🎒</span>
                     <div>
-                      <strong className="text-slate-800 text-sm block">1. Sel Darah Merah (PRC)</strong>
-                      <span className="text-xs text-slate-500">Membantu banget nyawa korban kecelakaan parah hebat, anemia akut berat, atau ibu pasca melahirkan pendarahan.</span>
+                      <strong className="text-slate-800 text-sm block">Sel darah merah (PRC)</strong>
+                      <span className="text-xs text-slate-600">Untuk pasien yang kehilangan banyak darah atau mengalami anemia berat.</span>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-3 bg-yellow-50/80 p-3 rounded-xl border border-yellow-100">
-                    <span className="text-xl">🥛</span>
+                    <span className="text-xl" aria-hidden="true">🥛</span>
                     <div>
-                      <strong className="text-slate-800 text-sm block">2. Plasma Cairan Kuning (FFP)</strong>
-                      <span className="text-xs text-slate-500">Penting luar biasa untuk terapi penderita luka bakar parah, syok kekurangan cairan, serta kelainan faktor pembekuan darah.</span>
+                      <strong className="text-slate-800 text-sm block">Plasma (FFP)</strong>
+                      <span className="text-xs text-slate-600">Untuk pasien dengan gangguan pembekuan darah atau kebutuhan plasma tertentu.</span>
                     </div>
                   </div>
 
                   <div className="flex items-start gap-3 bg-rose-50/50 p-3 rounded-xl border border-rose-100">
-                    <span className="text-xl">🧪</span>
+                    <span className="text-xl" aria-hidden="true">🧪</span>
                     <div>
-                      <strong className="text-slate-800 text-sm block">3. Trombosit Konsentrat (TC)</strong>
-                      <span className="text-xs text-slate-500">Sangat vital bagi kesembuhan adik-adik pasien demam berdarah dengue (DBD) parah, penderita leukimia, dan bayi prematur.</span>
+                      <strong className="text-slate-800 text-sm block">Trombosit (TC)</strong>
+                      <span className="text-xs text-slate-600">Untuk pasien dengan jumlah trombosit sangat rendah.</span>
                     </div>
                   </div>
                 </div>
 
-                <p className="text-slate-700">
-                  Kamu gak perlu jadi miliarder dulusan buat jadi penyelamat peradaban atau pahlawan tanpa jubah. Cukup sedekah secangkir cairan cinta merahmu!
+                <p className="text-xs text-slate-500">
+                  Contoh umum. Keputusan transfusi selalu dibuat oleh dokter.
                 </p>
               </div>
             </div>
 
-            {/* Interactive Split Blood Simulator */}
-            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 shadow-inner flex flex-col justify-between">
-              <div>
-                <div className="text-center font-mono text-xs text-red-600 font-semibold mb-4 uppercase tracking-wider">
-                  🩸 INTERACTIVE KANTONG SPLITTER
-                </div>
-                
-                <p className="text-xs text-center text-slate-500 mb-6">
-                  Geser takaran darah di bawah ini buat ngeliat perpecahan komposisi nutrisi penyelamat yang dihasillkan!
-                </p>
-
-                {/* Amount Slider Control */}
-                <div className="bg-white p-4 rounded-xl text-center border border-slate-100 shadow-sm grow-0 max-w-xs mx-auto mb-6">
-                  <div className="text-xs text-slate-400 font-bold uppercase">Volume Kantong Donor</div>
-                  <div className="text-3xl font-black text-red-600 mt-1">{bloodAmountMl} ml</div>
-                  
-                  <input 
-                    id="blood-slider"
-                    type="range" 
-                    min={250} 
-                    max={450} 
-                    value={bloodAmountMl}
-                    onChange={(e) => setBloodAmountMl(parseInt(e.target.value))}
-                    className="w-full accent-red-600 mt-3 cursor-pointer"
-                  />
-                  <div className="flex justify-between text-[10px] text-slate-400 font-mono mt-1">
-                    <span>250ml (Kecil)</span>
-                    <span>450ml (Maks)</span>
-                  </div>
-                </div>
-
-                {/* Composites layout visualizer */}
-                <div className="space-y-3">
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                      <span>🎒 Sel Darah Merah (PRC - 45%)</span>
-                      <span className="text-red-600 font-mono">{Math.round(bloodAmountMl * 0.45)} ml</span>
-                    </div>
-                    <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-red-600 animate-pulse" style={{ width: "45%" }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                      <span>🥛 Plasma Cairan (FFP - 50%)</span>
-                      <span className="text-yellow-600 font-mono">{Math.round(bloodAmountMl * 0.50)} ml</span>
-                    </div>
-                    <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-amber-400" style={{ width: "50%" }} />
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between text-xs font-bold text-slate-700 mb-1">
-                      <span>🧪 Trombosit (TC - 5%)</span>
-                      <span className="text-rose-600 font-mono">{Math.round(bloodAmountMl * 0.05)} ml</span>
-                    </div>
-                    <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-rose-500 animate-pulse" style={{ width: "5%" }} />
-                    </div>
-                  </div>
-                </div>
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 flex flex-col gap-4">
+              <div className="text-center font-mono text-xs text-red-700 font-semibold uppercase tracking-wider">
+                Berapa banyak darah yang diambil?
               </div>
-
-              <div className="mt-6 border-t border-dashed border-slate-200 pt-4 text-center">
-                <span className="inline-block bg-emerald-100 text-emerald-800 text-xs font-bold px-3 py-1.5 rounded-full">
-                  🌟 Menyelematkan Keluarga Pasien dari Krisis Darah!
-                </span>
-              </div>
+              <p className="text-sm text-slate-700 leading-relaxed">
+                Standar pelayanan transfusi darah menyebut kantong donor berisi sekitar 350 mL atau 450 mL. Batas berat badan pendonor bergantung pada volume yang diambil, dan petugas PMI yang menentukan.
+              </p>
+              <p className="text-xs text-slate-500">Sumber: Permenkes 91/2015, Lampiran (standar seleksi donor).</p>
             </div>
           </div>
         )}
 
-        {/* TAB 3: PERSONAL BENEFIT (Medical Check-Up Gratis) */}
+        {/* TAB 3: SEBELUM DONOR */}
         {activeEducationTab === "personal" && (
-          <div id="content-personal" className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white rounded-3xl p-6 md:p-10 shadow-lg border border-slate-100 transition-all duration-300">
+          <div id="content-personal" className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-white rounded-3xl p-6 md:p-10 shadow-lg border border-slate-100">
             <div>
-              <div className="w-12 h-12 bg-red-100 text-red-600 flex items-center justify-center rounded-2xl mb-4 text-xl">
+              <div className="w-12 h-12 bg-red-100 text-red-600 flex items-center justify-center rounded-2xl mb-4 text-xl" aria-hidden="true">
                 🩺
               </div>
               <h3 className="text-2xl font-extrabold text-slate-800 mb-4">
-                Mini Medical Check-Up Berkala Tanpa Bayar Sepeserpun!
+                Apa yang Terjadi Sebelum Darahmu Diambil?
               </h3>
-              
+
               <div className="space-y-4 text-slate-600 text-sm leading-relaxed">
                 <p>
-                  Sering mager keluar duit ratusan ribu buat sekadar berkonsultasi cek tensi dan darah di klinik mewah? Hehehe, di PMI kalian dikasih gratis tuntas tiap 2-3 bulan sekali!
-                </p>
-
-                <p>
-                  Sebelum darahmu dihisap keluar, dokter/petugas medis handal bakal menyaring kelayakanmu lewat serangkaian biosensor cek medis utama:
+                  Sebelum donor, petugas menilai apakah kamu cukup sehat untuk donor dan mencatat faktor risiko. Tujuannya melindungi pendonor sekaligus penerima darah.
                 </p>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-xl block mb-1">🩸</span>
-                    <strong className="text-slate-800 text-xs block">Screening Hb (Hemoglobin)</strong>
-                    <span className="text-[10.5px] text-slate-500">Mendeteksi anemiaku/kekentalan oksigen darahmu.</span>
+                    <span className="text-xl block mb-1" aria-hidden="true">🩸</span>
+                    <strong className="text-slate-800 text-xs block">Hemoglobin (Hb)</strong>
+                    <span className="text-[11px] text-slate-600">Dicek untuk memastikan kadar hemoglobinmu memadai.</span>
                   </div>
 
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-xl block mb-1">💓</span>
-                    <strong className="text-slate-800 text-xs block">Cek Tensi Jantung</strong>
-                    <span className="text-[10.5px] text-slate-500">Memantau laju tekanan darah sistolik dan diastolikmu.</span>
+                    <span className="text-xl block mb-1" aria-hidden="true">💓</span>
+                    <strong className="text-slate-800 text-xs block">Tekanan darah & nadi</strong>
+                    <span className="text-[11px] text-slate-600">Diukur sebelum donor.</span>
                   </div>
 
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-xl block mb-1">🧪</span>
-                    <strong className="text-slate-800 text-xs block">Skrining Menular</strong>
-                    <span className="text-[10.5px] text-slate-500">Terproteksi dari HIV, Sifilis, Hepatitis B, & C bebas biaya.</span>
+                    <span className="text-xl block mb-1" aria-hidden="true">📋</span>
+                    <strong className="text-slate-800 text-xs block">Riwayat kesehatan</strong>
+                    <span className="text-[11px] text-slate-600">Petugas menanyakan penyakit, obat, dan faktor risiko. Jawablah dengan jujur.</span>
                   </div>
 
                   <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <span className="text-xl block mb-1">🍫</span>
-                    <strong className="text-slate-800 text-xs block">Vibe Booster Snack</strong>
-                    <span className="text-[10.5px] text-slate-500">Diberikan suplemen vitamin, telur, biskuit, susu gratis!</span>
+                    <span className="text-xl block mb-1" aria-hidden="true">🧪</span>
+                    <strong className="text-slate-800 text-xs block">Skrining darah donor</strong>
+                    <span className="text-[11px] text-slate-600">Setiap kantong diperiksa untuk HIV, hepatitis B, hepatitis C, dan sifilis demi keamanan penerima.</span>
                   </div>
                 </div>
 
-                <p className="text-xs text-rose-500 italic font-mono">
-                  *Bila terdeteksi ada anomali dilarang donor, petugas bakal memberi tahu rahasia medis ini secara privat dan menyarankan panduan rujukan pemulihan terbaik!
+                <p className="text-xs text-slate-600">
+                  Skrining ini untuk keamanan darah yang diberikan ke pasien. Itu bukan pengganti pemeriksaan kesehatan pribadi. Jika ada hasil yang reaktif, petugas menyampaikannya lewat konseling.
                 </p>
               </div>
             </div>
 
-            {/* Mini Game Visual: Checking health meter */}
-            <div className="bg-gradient-to-tr from-slate-900 to-slate-800 text-white rounded-2xl p-6 flex flex-col justify-between border border-slate-700 shadow-2xl relative min-h-[300px]">
+            <div className="bg-slate-900 text-white rounded-2xl p-6 flex flex-col justify-between border border-slate-700 shadow-2xl min-h-[300px]">
               <div>
                 <div className="flex justify-between items-center mb-6">
-                  <span className="bg-red-500/20 text-red-300 border border-red-500/40 text-[10px] font-mono py-1 px-3 rounded-full uppercase">
-                    👨‍⚕️ STANDAR REKOMENDASI PMI
+                  <span className="bg-red-500/20 text-red-200 border border-red-500/40 text-[10px] font-mono py-1 px-3 rounded-full uppercase">
+                    Referensi umum
                   </span>
-                  <span className="text-xs text-slate-400 font-mono">2026 UPDATE</span>
                 </div>
 
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                    <span className="text-sm font-semibold text-slate-300">Tekanan Darah Sehat:</span>
-                    <span className="font-mono text-emerald-300 font-bold text-sm">90/60 - 160/100 mmHg</span>
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2 gap-3">
+                    <span className="text-sm font-semibold text-slate-300">Hemoglobin (Hb)</span>
+                    <span className="font-mono text-emerald-300 font-bold text-sm text-right">umumnya 12,5 - 17 g/dL</span>
                   </div>
-
-                  <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                    <span className="text-sm font-semibold text-slate-300">Kadar Hemoglobin (Hb):</span>
-                    <span className="font-mono text-emerald-300 font-bold text-sm">12.5 - 17.0 g/dL</span>
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2 gap-3">
+                    <span className="text-sm font-semibold text-slate-300">Tekanan darah & nadi</span>
+                    <span className="text-xs text-slate-300 text-right">diukur, rentang dinilai petugas</span>
                   </div>
-
-                  <div className="flex items-center justify-between border-b border-white/5 pb-2">
-                    <span className="text-sm font-semibold text-slate-300">Berat Badan Ideal:</span>
-                    <span className="font-mono text-emerald-300 font-bold text-sm">Min. 45 Kg</span>
+                  <div className="flex items-center justify-between border-b border-white/5 pb-2 gap-3">
+                    <span className="text-sm font-semibold text-slate-300">Berat badan</span>
+                    <span className="text-xs text-slate-300 text-right">ada batas minimal, bergantung volume donor</span>
                   </div>
-
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-300">Suhu Hangat Tubuh:</span>
-                    <span className="font-mono text-emerald-300 font-bold text-sm">36.5°C - 37.5°C</span>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-semibold text-slate-300">Suhu tubuh</span>
+                    <span className="text-xs text-slate-300 text-right">diperiksa petugas</span>
                   </div>
                 </div>
               </div>
 
-              <div className="mt-8 bg-white/5 border border-white/10 rounded-xl p-3 text-center">
-                <span className="text-xs text-slate-300 italic">"Gak perlu was-was bayar cek laboratorium, semuanya gratis disokong pahlawan nusa!"</span>
-              </div>
+              <p className="mt-8 text-[11px] text-slate-300 leading-relaxed">
+                Sumber: Permenkes 91/2015 (Lampiran) dan FAQ PMI. Angka dapat berbeda antar sumber atau berubah; selalu ikuti petugas PMI.
+              </p>
             </div>
           </div>
         )}
@@ -704,33 +614,33 @@ export default function App() {
       <section className="bg-red-50 py-10 px-4 border-y border-red-100">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-8">
-            <h3 className="text-2xl font-black text-slate-800">Mitos Nyeleneh vs Kebenaran Mutlak 🤔</h3>
-            <p className="text-sm text-slate-500 mt-1">Jangan gampang kemakan gosip tongkrongan sebelah, ini fakta ilmiahnya!</p>
+            <h3 className="text-2xl font-black text-slate-800">Mitos & Fakta Umum 🤔</h3>
+            <p className="text-sm text-slate-500 mt-1">Informasi umum, bukan nasihat medis pribadi.</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             
             <div className="bg-white p-5 rounded-2xl border border-red-100/60 shadow-sm relative overflow-hidden">
               <span className="absolute top-2 right-2 text-xl">🍔</span>
-              <h4 className="font-extrabold text-red-600 mb-2 text-sm">Katanya: Gara-gara donor jadi gemuk?</h4>
+              <h4 className="font-extrabold text-red-600 mb-2 text-sm">Katanya: donor bikin gemuk?</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                <strong>Faktanya:</strong> Donor darah bukan program diet. Tubuh memang memakai energi untuk regenerasi darah — tapi alasan utamanya tetap kemanusiaan. Ngerasa gemuk? Biasanya karena porsi balas dendam bakso jumbo 2 mangkuk setelahnya, ya jelas melar sob!
+                <strong>Faktanya:</strong> Donor darah bukan program diet dan tidak dianjurkan untuk tujuan itu. Alasan utama donor adalah membantu pasien.
               </p>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-red-100/60 shadow-sm relative overflow-hidden">
               <span className="absolute top-2 right-2 text-xl">💉</span>
-              <h4 className="font-extrabold text-red-600 mb-2 text-sm">Katanya: Jarum suntiknya gede & sakit?</h4>
+              <h4 className="font-extrabold text-red-600 mb-2 text-sm">Katanya: jarumnya besar dan sakit?</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                <strong>Faktanya:</strong> Rasa cubitannya cuma kayak digigit semut lewat 3 detik awal! Lebih sakit lagi liat doi gandeng orang lain pas malem minggu belaka.
+                <strong>Faktanya:</strong> Rasanya berbeda-beda. Sebagian orang hanya merasakan sensasi singkat saat jarum masuk, sebagian lain lebih tidak nyaman. Bilang ke petugas kalau kamu takut.
               </p>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-red-100/60 shadow-sm relative overflow-hidden">
               <span className="absolute top-2 right-2 text-xl">🌀</span>
-              <h4 className="font-extrabold text-red-600 mb-2 text-sm">Katanya: Bisa bikin tubuh lemas berhari-hari?</h4>
+              <h4 className="font-extrabold text-red-600 mb-2 text-sm">Katanya: bikin lemas berhari-hari?</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                <strong>Faktanya:</strong> Selama tidurmu sebelum donor di atas 5 jam & cukup minum air putih, stamina malah tambah joss berkat sel muda baru kaya oksigen!
+                <strong>Faktanya:</strong> Sebagian orang bisa merasa pusing atau lemas setelah donor. Tidur cukup, makan, dan minum sebelum donor, istirahat sesudahnya, dan ikuti arahan petugas. Kalau terasa berat atau tidak reda, segera minta bantuan.
               </p>
             </div>
 
@@ -1038,7 +948,7 @@ export default function App() {
                         <span className="text-2xl mt-1">📍</span>
                         <div>
                           <strong className="text-xs text-slate-800 block">Ada di mana Kantor PMI terdekat?</strong>
-                          <span className="text-[10.5px] text-slate-500 block mt-0.5">Sobat bisa buka peta digital cari "PMI terdekat" atau langsung sambangi gedung pusat kota madya masing-masing!</span>
+                          <span className="text-[10.5px] text-slate-500 block mt-0.5">Cari UTD PMI terdekat lewat ayodonor.pmi.or.id atau peta digital, lalu pastikan jam layanannya sebelum datang.</span>
                         </div>
                       </div>
 
@@ -1046,7 +956,7 @@ export default function App() {
                         <span className="text-2xl mt-1">🥤</span>
                         <div>
                           <strong className="text-xs text-slate-800 block">Tips sebelum meluncur:</strong>
-                          <span className="text-[10.5px] text-slate-500 block mt-0.5">Minum minimal 3-4 gelas air putih hangat, hindari konsumsi gorengan kolesterol tinggi sesaat sebelum daftar ya.</span>
+                          <span className="text-[10.5px] text-slate-500 block mt-0.5">Tidur cukup, makan dan minum seperti biasa, lalu ikuti arahan petugas saat di lokasi.</span>
                         </div>
                       </div>
                     </div>
