@@ -3,7 +3,7 @@ import type { AddressInfo } from "net";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { loadConfig } from "../server/config";
 import { createShutdown } from "../server/shutdown";
-import { postJson, startTestServer, type TestServer } from "./helpers/server";
+import { startTestServer, type TestServer } from "./helpers/server";
 
 let server: TestServer | undefined;
 
@@ -19,40 +19,32 @@ afterEach(async () => {
   vi.restoreAllMocks();
 });
 
-const chat = (url: string, ip: string) =>
-  postJson(url, "/api/gemini/chat", { message: "donor", history: [] }, { "X-Forwarded-For": ip });
+const health = (url: string, ip: string) => fetch(url + "/api/health", { headers: { "X-Forwarded-For": ip } });
 
 describe("proxy trust and client IP for rate limiting", () => {
   it("ignores X-Forwarded-For by default, so spoofed headers cannot dodge the limit", async () => {
     server = await startTestServer({ rateLimit: { windowMs: 60_000, limit: 1 } });
-    expect((await chat(server.baseUrl, "1.1.1.1")).status).toBe(200);
-    expect((await chat(server.baseUrl, "2.2.2.2")).status).toBe(429);
+    expect((await health(server.baseUrl, "1.1.1.1")).status).toBe(200);
+    expect((await health(server.baseUrl, "2.2.2.2")).status).toBe(429);
   });
 
   it("uses the forwarded client IP when one proxy hop is trusted", async () => {
     server = await startTestServer({ rateLimit: { windowMs: 60_000, limit: 1 }, trustProxyHops: 1 });
-    expect((await chat(server.baseUrl, "1.1.1.1")).status).toBe(200);
-    expect((await chat(server.baseUrl, "2.2.2.2")).status).toBe(200); // different client
-    expect((await chat(server.baseUrl, "1.1.1.1")).status).toBe(429); // same client again
+    expect((await health(server.baseUrl, "1.1.1.1")).status).toBe(200);
+    expect((await health(server.baseUrl, "2.2.2.2")).status).toBe(200); // different client
+    expect((await health(server.baseUrl, "1.1.1.1")).status).toBe(429); // same client again
   });
 });
 
-describe("loadConfig: proxy and timeout", () => {
-  it("defaults to no trusted proxy and a 20s upstream timeout", () => {
-    expect(loadConfig({}, "/app")).toMatchObject({ trustProxyHops: 0, geminiTimeoutMs: 20_000 });
+describe("loadConfig: proxy", () => {
+  it("defaults to no trusted proxy and needs no API key", () => {
+    expect(loadConfig({}, "/app")).toMatchObject({ trustProxyHops: 0 });
   });
 
   it("accepts a hop count and rejects values that could enable IP spoofing", () => {
     expect(loadConfig({ TRUST_PROXY: "1" }, "/app").trustProxyHops).toBe(1);
     for (const bad of ["true", "false", "-1", "1.5", "11", "loopback"]) {
       expect(() => loadConfig({ TRUST_PROXY: bad }, "/app")).toThrow(/Invalid TRUST_PROXY/);
-    }
-  });
-
-  it("validates GEMINI_TIMEOUT_MS", () => {
-    expect(loadConfig({ GEMINI_TIMEOUT_MS: "5000" }, "/app").geminiTimeoutMs).toBe(5000);
-    for (const bad of ["abc", "10", "999999"]) {
-      expect(() => loadConfig({ GEMINI_TIMEOUT_MS: bad }, "/app")).toThrow(/Invalid GEMINI_TIMEOUT_MS/);
     }
   });
 });

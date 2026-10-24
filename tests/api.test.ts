@@ -1,12 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { fakeGemini, postJson, SAFE_QUIZ, startTestServer, type TestServer } from "./helpers/server";
+import { API_BODY_LIMIT } from "../server/app";
+import { postJson, startTestServer, type TestServer } from "./helpers/server";
 
 let server: TestServer | undefined;
+let logged: string[];
 
 beforeEach(() => {
-  // Error paths log on purpose; keep test output readable.
-  vi.spyOn(console, "error").mockImplementation(() => {});
-  vi.spyOn(console, "warn").mockImplementation(() => {});
+  logged = [];
+  const capture = (...args: unknown[]) => void logged.push(args.map(String).join(" "));
+  vi.spyOn(console, "error").mockImplementation(capture);
+  vi.spyOn(console, "warn").mockImplementation(capture);
+  vi.spyOn(console, "log").mockImplementation(capture);
 });
 
 afterEach(async () => {
@@ -16,71 +20,101 @@ afterEach(async () => {
 });
 
 describe("GET /api/health", () => {
-  it("returns the documented payload", async () => {
+  it("returns the documented payload without any API key or provider configured", async () => {
     server = await startTestServer();
     const res = await fetch(server.baseUrl + "/api/health");
     expect(res.status).toBe(200);
-    expect(await res.json()).toEqual({
-      status: "ok",
-      message: "AyoDonor server running gracefully!",
+    expect(await res.json()).toEqual({ status: "ok", message: "AyoDonor server running gracefully!" });
+  });
+
+  it("sets an X-Request-Id on every response", async () => {
+    server = await startTestServer();
+    const res = await fetch(server.baseUrl + "/api/health");
+    expect(res.headers.get("x-request-id")).toMatch(/^[0-9a-f-]{36}$/);
+  });
+});
+
+describe("removed AI endpoints", () => {
+  const OBSOLETE = [
+    ["POST", "/api/gemini/chat"],
+    ["POST", "/api/gemini/evaluate"],
+    ["GET", "/api/gemini/chat"],
+    ["POST", "/api/chat"],
+    ["POST", "/api/evaluate"],
+  ] as const;
+
+  it.each(OBSOLETE)("%s %s is gone (404, JSON, no SPA fallback)", async (method, path) => {
+    server = await startTestServer();
+    const res = await fetch(server.baseUrl + path, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: method === "POST" ? JSON.stringify({ message: "halo", history: [] }) : undefined,
     });
+    expect(res.status).toBe(404);
+    expect(res.headers.get("content-type")).toMatch(/application\/json/);
+    expect(await res.json()).toMatchObject({ success: false, code: "not_found" });
   });
 });
 
-describe("POST /api/gemini/evaluate", () => {
-  it("uses the mocked Gemini client on the success path", async () => {
-    const gemini = fakeGemini(async () => ({ text: "hasil dari AI palsu" }));
-    server = await startTestServer({ getGeminiClient: () => gemini });
-    const res = await postJson(server.baseUrl, "/api/gemini/evaluate", SAFE_QUIZ);
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.success).toBe(true);
-    expect(body.text).toBe("hasil dari AI palsu");
-    expect(gemini.calls).toHaveLength(1);
-  });
-
-  it("answers from the local fallback when no client is configured", async () => {
+describe("general API controls still apply under /api", () => {
+  it("rejects malformed JSON with 400 and does not echo the body", async () => {
     server = await startTestServer();
-    const res = await postJson(server.baseUrl, "/api/gemini/evaluate", SAFE_QUIZ);
-    expect(res.status).toBe(200);
-    const body = await res.json();
-    expect(body.success).toBe(true);
-    expect(typeof body.text).toBe("string");
-  });
-
-  it("rejects values outside the answer enum", async () => {
-    server = await startTestServer();
-    const res = await postJson(server.baseUrl, "/api/gemini/evaluate", { ...SAFE_QUIZ, sleep: "maybe" });
+    const res = await postJson(server.baseUrl, "/api/anything", '{"secret": "ECHO-CHECK",');
+    const text = await res.text();
     expect(res.status).toBe(400);
-    expect((await res.json()).success).toBe(false);
+    expect(JSON.parse(text)).toEqual({ success: false, error: "Format JSON tidak valid.", code: "invalid_json" });
+    expect(text).not.toContain("ECHO-CHECK");
   });
-});
 
-describe("POST /api/gemini/chat", () => {
-  it("rejects an empty message", async () => {
+  it(`rejects bodies over ${API_BODY_LIMIT} with 413`, async () => {
     server = await startTestServer();
-    const res = await postJson(server.baseUrl, "/api/gemini/chat", { message: "   ", history: [] });
-    expect(res.status).toBe(400);
+    const res = await postJson(server.baseUrl, "/api/anything", { pad: "a".repeat(4096) });
+    expect(res.status).toBe(413);
+    expect((await res.json()).code).toBe("payload_too_large");
   });
 
-  it("rejects a message longer than 500 characters", async () => {
-    server = await startTestServer();
-    const res = await postJson(server.baseUrl, "/api/gemini/chat", { message: "a".repeat(501), history: [] });
-    expect(res.status).toBe(400);
-  });
-});
-
-describe("rate limiting", () => {
-  it("answers 429 with standard headers once the limit is exceeded", async () => {
+  it("answers 429 with standard headers once the limit is exceeded, counting invalid requests too", async () => {
     server = await startTestServer({ rateLimit: { windowMs: 60_000, limit: 3 } });
     const statuses: number[] = [];
     let last: Response | undefined;
-    for (let i = 0; i < 4; i++) {
-      last = await postJson(server.baseUrl, "/api/gemini/chat", { message: "donor", history: [] });
+    const requests = [
+      () => fetch(server!.baseUrl + "/api/health"),
+      () => postJson(server!.baseUrl, "/api/anything", "{bad"),
+      () => fetch(server!.baseUrl + "/api/health"),
+      () => fetch(server!.baseUrl + "/api/health"),
+    ];
+    for (const send of requests) {
+      last = await send();
       statuses.push(last.status);
     }
-    expect(statuses).toEqual([200, 200, 200, 429]);
+    expect(statuses).toEqual([200, 400, 200, 429]);
     expect(last!.headers.get("ratelimit-limit")).toBe("3");
     expect(last!.headers.get("retry-after")).not.toBeNull();
+    expect((await last!.json()).code).toBe("rate_limited");
+  });
+
+  it("recovers after the window using a controlled clock", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      server = await startTestServer({ rateLimit: { windowMs: 60_000, limit: 1 } });
+      const send = () => fetch(server!.baseUrl + "/api/health");
+      expect((await send()).status).toBe(200);
+      expect((await send()).status).toBe(429);
+      vi.setSystemTime(Date.now() + 61_000);
+      expect((await send()).status).toBe(200);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("logs request metadata only, never bodies or query strings", async () => {
+    server = await startTestServer({ logRequests: true });
+    await postJson(server.baseUrl, "/api/anything", { note: "RAHASIA-BODY" });
+    await fetch(server.baseUrl + "/api/health?token=RAHASIA-QUERY");
+    const logs = logged.join("\n");
+    expect(logs).toContain('"event":"request"');
+    expect(logs).toContain('"path":"/api/health"');
+    expect(logs).not.toContain("RAHASIA-BODY");
+    expect(logs).not.toContain("RAHASIA-QUERY");
   });
 });

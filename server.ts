@@ -1,32 +1,6 @@
-import { GoogleGenAI } from "@google/genai";
-import dotenv from "dotenv";
-import { createApp, type GeminiClientLike } from "./server/app";
+import { createApp } from "./server/app";
 import { loadConfig } from "./server/config";
 import { createShutdown } from "./server/shutdown";
-
-dotenv.config({ path: ".env.local", quiet: true });
-dotenv.config({ quiet: true });
-
-// Lazily initialize Gemini to prevent start crashes if GEMINI_API_KEY is not defined yet
-let aiClient: GoogleGenAI | null = null;
-function getGeminiClient(): GeminiClientLike | null {
-  if (!aiClient) {
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey || apiKey === "MY_GEMINI_API_KEY") {
-      console.warn("WARNING: GEMINI_API_KEY environment variable is not set. Using local fallbacks for AI features.");
-      return null;
-    }
-    aiClient = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        }
-      }
-    });
-  }
-  return aiClient;
-}
 
 async function startServer() {
   // NODE_ENV is passed explicitly so the build-time `--define:process.env.NODE_ENV` in
@@ -36,9 +10,7 @@ async function startServer() {
   const app = await createApp({
     mode: config.mode,
     staticDir: config.staticDir,
-    getGeminiClient,
     trustProxyHops: config.trustProxyHops,
-    geminiTimeoutMs: config.geminiTimeoutMs,
     createDevMiddleware: async () => {
       const { createServer: createViteServer } = await import("vite");
       const vite = await createViteServer({

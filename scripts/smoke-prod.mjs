@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Repeatable production smoke test: builds the app, starts the BUILT server with NODE_ENV unset
 // (exactly what `npm start` does), and checks routes and sensitive-path exposure.
-// Never calls Gemini: GEMINI_API_KEY is forced empty and no AI endpoint is requested.
+// The app needs no API keys or provider configuration.
 //
 // Usage: npm run smoke:prod [-- --skip-build]
 import { spawn, spawnSync } from "node:child_process";
@@ -38,7 +38,7 @@ const port = await new Promise((resolve) => {
   });
 });
 
-const env = { ...process.env, PORT: String(port), HOST: "127.0.0.1", GEMINI_API_KEY: "" };
+const env = { ...process.env, PORT: String(port), HOST: "127.0.0.1" };
 delete env.NODE_ENV; // `npm start` does not set it; the built bundle must still run in production mode.
 
 let output = "";
@@ -67,6 +67,8 @@ try {
     const health = await fetch(`${base}/api/health`);
     check("GET /api/health", health.status === 200 && (await health.json()).status === "ok");
 
+    const gone = await fetch(`${base}/api/gemini/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    check("removed AI endpoint /api/gemini/chat answers 404", gone.status === 404);
     const home = await fetch(`${base}/`);
     const html = await home.text();
     check("GET / serves built index.html", home.status === 200 && /<div id="root">/.test(html));

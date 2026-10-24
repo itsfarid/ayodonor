@@ -1,4 +1,4 @@
-// User-facing text shared by the server fallbacks and the client offline mode.
+// User-facing quiz text (computed in the browser).
 //
 // Medical wording rules (see docs/medical-claims.md for sources and open questions):
 // - never state or imply that the quiz clears someone to donate; the PMI officer decides;
@@ -8,9 +8,6 @@
 
 export const MEDICAL_DISCLAIMER =
   "Ini bukan diagnosis atau keputusan medis. Kelayakan donor ditentukan oleh petugas PMI lewat pemeriksaan langsung.";
-
-export const OFFLINE_NOTICE =
-  "Penjelasan AI sedang tidak tersedia, jadi ini ringkasan otomatis yang ditulis tim AyoDonor (bukan hasil AI).";
 
 export const OFFICIAL_INFO_HINT = "Info resmi: ayodonor.pmi.or.id atau hubungi UTD PMI terdekat.";
 
@@ -70,70 +67,4 @@ Dari jawabanmu, ada hal yang sebaiknya kamu tanyakan dulu ke petugas PMI sebelum
 ${notes.join("\n")}
 
 **Ini bukan berarti kamu tidak bisa donor** — hanya saran untuk bertanya dulu. ${OFFICIAL_INFO_HINT}`;
-}
-
-const CHAT_KEYWORDS = [
-  "donor", "darah", "jarum", "sakit", "lemas", "lemes", "pusing", "haid", "obat", "tato", "tindik", "tensi",
-  "hb", "gemuk", "berat", "kelayakan", "tidur", "pmi", "kesehatan", "tubuh", "nyawa", "pahlawan", "hero",
-  "manfaat", "syarat", "plasma", "trombosit", "kantong",
-];
-
-/** Canned chat replies, used only when the AI is unavailable. They are labelled as automatic in the UI. */
-export function buildChatFallback(message: string): string {
-  const msg = (message || "").toLowerCase();
-  const related = CHAT_KEYWORDS.some((kw) => msg.includes(kw));
-
-  if (!related) {
-    return `### 🥤 Waduh, di luar topik nih
-
-Asisten ini khusus membahas donor darah dan persiapannya. Coba tanya, misalnya:
-
-*   'Takut jarum suntik, gimana dong?'
-*   'Apa yang diperiksa sebelum donor?'
-*   'Habis donor sebaiknya ngapain?'`;
-  }
-
-  if (msg.includes("gemuk") || msg.includes("diet")) {
-    return `### 🛑 Soal 'donor bikin gemuk / bikin kurus'
-
-Donor darah **bukan program diet** dan tidak dianjurkan untuk tujuan itu. Alasan donor sebaiknya karena ingin membantu pasien yang membutuhkan darah. ${OFFICIAL_INFO_HINT}`;
-  }
-
-  if (msg.includes("jarum") || msg.includes("takut")) {
-    return `### 💉 Takut jarum? Kamu tidak sendirian
-
-Beberapa hal yang sering membantu:
-
-1.  Bilang ke petugas kalau kamu takut — mereka terbiasa dengan itu.
-2.  Tarik napas pelan dan palingkan pandangan saat jarum dipasang.
-3.  Rasanya berbeda-beda bagi tiap orang. Kalau merasa pusing atau tidak nyaman, segera beri tahu petugas.`;
-  }
-
-  if (msg.includes("lemas") || msg.includes("lemes") || msg.includes("pusing")) {
-    return `### 🌀 Lemas atau pusing setelah donor?
-
-Sebagian orang memang bisa merasa pusing atau lemas. Beberapa hal yang umum dianjurkan:
-
-*   Tidur cukup dan makan sebelum donor.
-*   Istirahat sejenak setelah donor dan ikuti arahan petugas.
-*   Kalau pusingnya berat atau tidak reda, segera hubungi petugas atau fasilitas kesehatan.
-
-Ini informasi umum, bukan nasihat medis pribadi.`;
-  }
-
-  if (msg.includes("tato") || msg.includes("tindik")) {
-    return `### 🎨 Tato atau tindik dan donor darah
-
-Setelah membuat tato, tindik, atau akupunktur ada **jeda sebelum boleh donor**. Lamanya berbeda antar sumber resmi, jadi kami tidak menyebut angka di sini. Tanyakan ke UTD PMI terdekat. ${OFFICIAL_INFO_HINT}`;
-  }
-
-  if (msg.includes("haid") || msg.includes("menstruasi")) {
-    return `### Soal haid dan donor darah
-
-Kami belum menemukan ketentuan resmi yang menyebut haid secara khusus, jadi kami tidak bisa memastikannya. Tanyakan langsung ke petugas PMI. ${OFFICIAL_INFO_HINT}`;
-  }
-
-  return `### 🩸 Jawaban otomatis singkat
-
-AI sedang tidak tersedia, jadi ini jawaban umum: sebelum donor, petugas PMI akan memeriksa kondisimu (mis. hemoglobin, tekanan darah, riwayat kesehatan) dan merekalah yang memutuskan. ${OFFICIAL_INFO_HINT}`;
 }

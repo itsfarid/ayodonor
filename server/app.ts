@@ -1,35 +1,21 @@
 import { randomUUID } from "crypto";
-import express, { type Express, type RequestHandler, type Response } from "express";
+import express, { type Express, type RequestHandler } from "express";
 import fs from "fs";
 import path from "path";
 import rateLimit from "express-rate-limit";
 import { errorBody, errorHandler } from "./errors";
-import { allQuizAnswersSafe, buildChatFallback, buildQuizSummary } from "../shared/content";
-import { generateText, UpstreamError, type UpstreamFailureKind } from "./gemini";
 import { logEvent } from "./logger";
-import { buildEvaluatePrompt, CHAT_SYSTEM_INSTRUCTION, EVALUATE_SYSTEM_INSTRUCTION } from "./prompts";
-import { LIMITS, validateChat, validateEvaluate } from "./validation";
 
-export const GEMINI_MODEL = "gemini-3.5-flash";
-export const DEFAULT_GEMINI_TIMEOUT_MS = 20_000;
-
-/** The small slice of the @google/genai client that the app depends on. */
-export interface GeminiClientLike {
-  models: {
-    generateContent(params: any): Promise<{ text?: string }>;
-  };
-}
+/** JSON body cap for /api. No endpoint reads a body today; this keeps junk requests cheap and rejected with 413/400. */
+export const API_BODY_LIMIT = "1kb";
+export const DEFAULT_API_RATE_LIMIT = { windowMs: 60 * 1000, limit: 60 } as const;
 
 export interface AppOptions {
   mode: "development" | "production";
-  /** Returns the Gemini client, or null when the API key is not configured. */
-  getGeminiClient: () => GeminiClientLike | null;
   /** Development only: creates the middleware that serves the Vite dev build. */
   createDevMiddleware?: () => Promise<RequestHandler>;
   staticDir?: string;
   rateLimit?: { windowMs: number; limit: number };
-  /** Hard deadline for one Gemini call. */
-  geminiTimeoutMs?: number;
   /**
    * Reverse-proxy hops to trust when deriving the client IP (rate limiting).
    * 0 (default) ignores X-Forwarded-For entirely. Set it to the real number of proxies in front of the app.
@@ -39,29 +25,12 @@ export interface AppOptions {
   logRequests?: boolean;
 }
 
-/** Where an answer came from, so the UI can never present a canned reply as live AI. */
-export type AnswerSource = "ai" | "fallback";
-export type FallbackReason = "unconfigured" | "quota";
-
-function sendText(res: Response, text: string, source: AnswerSource, fallbackReason?: FallbackReason) {
-  res.json({ success: true, source, ...(fallbackReason ? { fallbackReason } : {}), text });
-}
-
-const UPSTREAM_RESPONSES: Record<Exclude<UpstreamFailureKind, "quota">, { status: number; code: string; error: string }> = {
-  timeout: { status: 504, code: "upstream_timeout", error: "AI terlalu lama merespons. Coba lagi sebentar ya." },
-  network: { status: 502, code: "upstream_unavailable", error: "AI sedang tidak bisa dihubungi. Coba lagi nanti ya." },
-  invalid_response: { status: 502, code: "upstream_invalid_response", error: "AI memberi jawaban yang tidak bisa dipakai. Coba lagi ya." },
-  upstream_error: { status: 502, code: "upstream_unavailable", error: "AI sedang bermasalah. Coba lagi nanti ya." },
-};
-
 export async function createApp(options: AppOptions): Promise<Express> {
   const app = express();
   app.disable("x-powered-by");
   if (options.trustProxyHops && options.trustProxyHops > 0) {
     app.set("trust proxy", options.trustProxyHops);
   }
-  const getGeminiClient = options.getGeminiClient;
-  const timeoutMs = options.geminiTimeoutMs ?? DEFAULT_GEMINI_TIMEOUT_MS;
 
   // Request ID + one structured log line per request (never bodies or query strings).
   app.use((req, res, next) => {
@@ -83,113 +52,24 @@ export async function createApp(options: AppOptions): Promise<Express> {
     next();
   });
 
-  const aiLimiter = rateLimit({
-    windowMs: options.rateLimit?.windowMs ?? 60 * 1000, // 1 menit
-    limit: options.rateLimit?.limit ?? 10, // maksimal 10 request per menit per IP
+  // --- API: general controls apply to everything under /api, before any parsing ---
+  const apiLimiter = rateLimit({
+    windowMs: options.rateLimit?.windowMs ?? DEFAULT_API_RATE_LIMIT.windowMs,
+    limit: options.rateLimit?.limit ?? DEFAULT_API_RATE_LIMIT.limit,
     message: errorBody("rate_limited", "Terlalu banyak permintaan, coba lagi sebentar ya."),
     standardHeaders: true,
     legacyHeaders: false,
   });
-
-  /** Runs one Gemini call and writes either the AI text, a labelled quota fallback, or a safe error. */
-  async function answer(
-    res: Response,
-    endpoint: "evaluate" | "chat",
-    client: GeminiClientLike,
-    params: any,
-    quotaFallback: () => string
-  ) {
-    const started = Date.now();
-    try {
-      const text = await generateText(client, params, timeoutMs);
-      return sendText(res, text, "ai");
-    } catch (err) {
-      const failure = err instanceof UpstreamError ? err : new UpstreamError("upstream_error");
-      logEvent(failure.kind === "quota" ? "warn" : "error", "gemini_failure", {
-        requestId: res.locals.requestId,
-        endpoint,
-        kind: failure.kind,
-        upstreamStatus: failure.upstreamStatus,
-        durationMs: Date.now() - started,
-      });
-      if (failure.kind === "quota") {
-        // Quota exhaustion is answered with the canned reply, explicitly labelled as a fallback.
-        return sendText(res, quotaFallback(), "fallback", "quota");
-      }
-      const mapped = UPSTREAM_RESPONSES[failure.kind];
-      return res.status(mapped.status).json(errorBody(mapped.code, mapped.error));
-    }
-  }
-
-  // --- API Endpoints ---
+  app.use("/api", apiLimiter, express.json({ limit: API_BODY_LIMIT }));
 
   // Health check
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok", message: "AyoDonor server running gracefully!" });
   });
 
-  // Evaluate donor eligibility quiz with Gemini AI
-  // The limiter runs before the body parser so malformed or oversized requests count too.
-  app.post("/api/gemini/evaluate", aiLimiter, express.json({ limit: LIMITS.evaluateBodyBytes }), async (req, res) => {
-    const parsed = validateEvaluate(req.body);
-    if ("error" in parsed) {
-      return res.status(400).json(errorBody("invalid_request", parsed.error));
-    }
-    const { name, ageWeight, sleep, meds, recency } = parsed.value;
-
-    const client = getGeminiClient();
-
-    // Screening summary only: "all safe" is NOT an eligibility decision.
-    const answers = { ageWeight, sleep, meds, recency };
-    const isEligible = allQuizAnswersSafe(answers);
-    const fallback = () => buildQuizSummary(name, answers);
-
-    if (!client) {
-      return sendText(res, fallback(), "fallback", "unconfigured");
-    }
-
-    return answer(
-      res,
-      "evaluate",
-      client,
-      {
-        model: GEMINI_MODEL,
-        contents: buildEvaluatePrompt(name, answers, isEligible),
-        config: { systemInstruction: EVALUATE_SYSTEM_INSTRUCTION },
-      },
-      fallback
-    );
-  });
-
-  // Chat/Q&A Companion
-  app.post("/api/gemini/chat", aiLimiter, express.json({ limit: LIMITS.chatBodyBytes }), async (req, res) => {
-    const parsed = validateChat(req.body);
-    if ("error" in parsed) {
-      return res.status(400).json(errorBody("invalid_request", parsed.error));
-    }
-    const { message, history } = parsed.value;
-
-    const client = getGeminiClient();
-    const fallback = () => buildChatFallback(message);
-
-    if (!client) {
-      return sendText(res, fallback(), "fallback", "unconfigured");
-    }
-
-    const contents = history.map((h) => ({ role: h.role, parts: [{ text: h.text }] }));
-    contents.push({ role: "user", parts: [{ text: message }] });
-
-    return answer(
-      res,
-      "chat",
-      client,
-      {
-        model: GEMINI_MODEL,
-        contents,
-        config: { systemInstruction: CHAT_SYSTEM_INSTRUCTION },
-      },
-      fallback
-    );
+  // Anything else under /api does not exist (the former /api/gemini/* endpoints were removed).
+  app.use("/api", (req, res) => {
+    res.status(404).json(errorBody("not_found", "Endpoint tidak ditemukan."));
   });
 
   // --- Static Asset Serving & Dev Server Setup ---
@@ -217,11 +97,6 @@ export async function createApp(options: AppOptions): Promise<Express> {
       next();
     });
     app.use(express.static(staticDir, { index: false, dotfiles: "ignore" }));
-
-    // Unknown API routes must not fall through to the SPA shell.
-    app.use("/api", (req, res) => {
-      res.status(404).json({ success: false, error: "Endpoint tidak ditemukan." });
-    });
 
     // SPA routes only: extension-less GET paths get index.html; missing files get a real 404.
     app.get("*", (req, res, next) => {

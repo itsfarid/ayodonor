@@ -1,5 +1,5 @@
 import type { AddressInfo } from "net";
-import type { AppOptions, GeminiClientLike } from "../../server/app";
+import type { AppOptions } from "../../server/app";
 import { createApp } from "../../server/app";
 import { createStaticFixture, type StaticFixture } from "./fixtures";
 
@@ -9,29 +9,12 @@ export interface TestServer {
   close: () => Promise<void>;
 }
 
-/** A fake Gemini client; never touches the network. */
-export function fakeGemini(
-  impl: (params: any) => Promise<{ text?: string }>
-): GeminiClientLike & { calls: any[] } {
-  const calls: any[] = [];
-  return {
-    calls,
-    models: {
-      generateContent: async (params: any) => {
-        calls.push(params);
-        return impl(params);
-      },
-    },
-  };
-}
-
 export async function startTestServer(overrides: Partial<AppOptions> = {}): Promise<TestServer> {
   const fixture = createStaticFixture();
   let app;
   try {
     app = await createApp({
       mode: "production",
-      getGeminiClient: () => null,
       staticDir: fixture.publicDir,
       logRequests: false,
       ...overrides,
@@ -65,5 +48,3 @@ export function postJson(baseUrl: string, path: string, body: unknown, headers: 
     body: typeof body === "string" ? body : JSON.stringify(body),
   });
 }
-
-export const SAFE_QUIZ = { name: "Tester", ageWeight: "safe", sleep: "safe", meds: "safe", recency: "safe" };

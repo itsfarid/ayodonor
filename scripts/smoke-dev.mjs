@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Repeatable development-mode smoke test: starts `tsx server.ts` with NODE_ENV unset and checks
 // that the Vite dev middleware (and NOT the production static server) is serving.
-// Counterpart of scripts/smoke-prod.mjs. Never calls Gemini: GEMINI_API_KEY is forced empty.
+// Counterpart of scripts/smoke-prod.mjs. The app needs no API keys or provider configuration.
 //
 // Usage: npm run smoke:dev
 import { spawn } from "node:child_process";
@@ -22,7 +22,7 @@ const port = await new Promise((resolve) => {
   });
 });
 
-const env = { ...process.env, PORT: String(port), GEMINI_API_KEY: "" };
+const env = { ...process.env, PORT: String(port) };
 delete env.NODE_ENV;
 delete env.HOST;
 
@@ -54,6 +54,8 @@ try {
     const home = await fetch(`${base}/`);
     const html = await home.text();
     check("GET / is served by Vite (HMR client present)", home.status === 200 && html.includes("/@vite/client"));
+    const gone = await fetch(`${base}/api/gemini/chat`, { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+    check("removed AI endpoint /api/gemini/chat answers 404", gone.status === 404);
     const health = await fetch(`${base}/api/health`);
     check("GET /api/health", health.status === 200 && (await health.json()).status === "ok");
   }

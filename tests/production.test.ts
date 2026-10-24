@@ -98,7 +98,7 @@ describe("startup mode selection", () => {
     const fixture = createStaticFixture();
     try {
       await expect(
-        createApp({ mode: "production", getGeminiClient: () => null, staticDir: path.join(fixture.root, "nope") })
+        createApp({ mode: "production", staticDir: path.join(fixture.root, "nope") })
       ).rejects.toThrow(/npm run build/);
     } finally {
       fixture.cleanup();
@@ -118,7 +118,7 @@ describe("startup mode selection", () => {
   });
 
   it("requires a dev middleware factory in development mode", async () => {
-    await expect(createApp({ mode: "development", getGeminiClient: () => null })).rejects.toThrow(/createDevMiddleware/);
+    await expect(createApp({ mode: "development" })).rejects.toThrow(/createDevMiddleware/);
   });
 });
 

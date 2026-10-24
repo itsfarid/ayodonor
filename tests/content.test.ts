@@ -1,14 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { describe, expect, it } from "vitest";
-import {
-  allQuizAnswersSafe,
-  buildChatFallback,
-  buildQuizSummary,
-  type QuizAnswer,
-  type QuizAnswers,
-} from "../shared/content";
-import { buildEvaluatePrompt, CHAT_SYSTEM_INSTRUCTION, EVALUATE_SYSTEM_INSTRUCTION } from "../server/prompts";
+import { allQuizAnswersSafe, buildQuizSummary, type QuizAnswer, type QuizAnswers } from "../shared/content";
 
 // Phrases that would present a quiz result as medical clearance, certification or a guarantee.
 const CLEARANCE_CLAIMS = [/\blolos\b/i, /100\s?%/, /\bpasti\b/i, /fit luar dalam/i, /sertifikat/i, /\btidak layak\b/i, /memenuhi syarat/i, /aman (untuk )?donor/i];
@@ -44,42 +37,6 @@ describe("quiz summary wording", () => {
       expect(text).not.toMatch(/\b\d+\s*jam\b/i);
       expect(text).not.toMatch(/\b\d+\s*(bulan|hari|minggu)\b/i);
     }
-  });
-});
-
-describe("chat fallback wording", () => {
-  const probes = ["donor bikin gemuk?", "takut jarum", "habis donor pusing", "boleh donor kalau bertato?", "lagi haid boleh donor?", "syarat donor apa?", "resep es cendol"];
-
-  it.each(probes)("is safe for %j", (q) => {
-    const text = buildChatFallback(q);
-    for (const claim of CLEARANCE_CLAIMS) expect(text).not.toMatch(claim);
-    expect(text).not.toMatch(/kolesterol|plak|kulit cerah|stamina|bakar|kalori|3 nyawa|\b\d+\s*(bulan|jam)\b/i);
-  });
-
-  it("does not give a tattoo waiting period it cannot source", () => {
-    expect(buildChatFallback("tato boleh donor?")).toMatch(/berbeda antar sumber/);
-  });
-
-  it("does not present donation as a diet", () => {
-    expect(buildChatFallback("bikin gemuk gak?")).toMatch(/bukan program diet/);
-  });
-});
-
-describe("Gemini prompts", () => {
-  const prompt = buildEvaluatePrompt("Tester", { ageWeight: "safe", sleep: "safe", meds: "safe", recency: "safe" }, true);
-
-  it("carry the safety rules and the disclaimer", () => {
-    for (const text of [EVALUATE_SYSTEM_INSTRUCTION, CHAT_SYSTEM_INSTRUCTION]) {
-      expect(text).toMatch(/bukan dokter/i);
-      expect(text).toMatch(/kolesterol/i); // listed as a claim to refuse
-      expect(text).toMatch(/ayodonor\.pmi\.or\.id/);
-    }
-    expect(EVALUATE_SYSTEM_INSTRUCTION).toMatch(/bukan diagnosis atau keputusan medis/i);
-  });
-
-  it("do not embed unverified numeric thresholds", () => {
-    expect(prompt).not.toMatch(/17-60|45 ?kg|5 jam|haid|minimal 2 bulan|6 bulan/i);
-    expect(prompt).toMatch(/BUKAN keputusan kelayakan/);
   });
 });
 
