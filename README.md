@@ -35,15 +35,17 @@ Tes tidak butuh API key, server, atau jaringan.
 
 ## Deployment
 
-Cloudflare Pages: preset Vite, build command `npm run build`, output directory `dist`, tanpa environment variable.
+Cloudflare (Workers static assets atau Pages): build command `npm run build`, output directory `dist`, tanpa environment variable.
+Lima halaman (`/`, `/panduan`, `/fakta-mitos`, `/lokasi`, `/tentang`) masing-masing punya berkas HTML hasil build, jadi tidak perlu aturan fallback.
 Detail, header, domain, dan risiko: [docs/static-deployment.md](docs/static-deployment.md).
 
 ## Struktur
 
 ```
-src/               aplikasi React (kuis, FAQ di src/data/faq.ts, pencari UDD/UTD di src/data/utd.ts)
+src/               aplikasi React: pages/ (lima halaman), layout/, components/, router.tsx, routes.ts (tabel rute dan metadata);
+                   FAQ di data/faq.ts, pencari UDD/UTD di data/utd.ts
 shared/content.ts  teks ringkasan kuis
-public/            favicon dan _headers (Cloudflare Pages)
+public/            favicon dan _headers (Cloudflare)
 tests/             vitest (node + jsdom)
 docs/              klaim medis & sumber, arah desain (design-direction.md), migrasi, deployment, bukti rate limit lama
 ```

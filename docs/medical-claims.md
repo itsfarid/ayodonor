@@ -33,6 +33,11 @@ di sumbernya sebelum peluncuran. Semua URL diperiksa dengan `npm run check:links
 Status: **Didukung** = sesuai teks sumber yang dibaca; **Sebagian** = sebagian didukung atau sumber berbeda; **Editorial** =
 rumusan/sikap AyoDonor, bukan klaim sumber; **Tidak ditemukan** = sumber yang dibaca tidak menyebutnya.
 
+Kolom "lokasi" di tabel ini memakai istilah tampilan satu halaman yang lama. Letaknya sekarang: "tab Setelah Donor / Kenapa
+Dibutuhkan / Sebelum Donor" = bagian *Setelah donor*, *Proses dan darah donor*, *Syarat dan pemeriksaan* di `/panduan`; "stats" =
+*Fakta singkat* (beranda dan `/fakta-mitos`); "kuis" dan "FAQ" = `/panduan`; mitos = `/fakta-mitos`; tabel perbedaan dan sumber =
+`/tentang`. Isi dan sumber tiap klaim tidak berubah oleh pemindahan ini.
+
 | # | Klaim/topik (lokasi) | Sumber dan lokasi | Status | Tindakan |
 |---|---|---|---|---|
 | C1 | Kantong donor sekitar 350 atau 450 mL (tab Setelah Donor, Kenapa Dibutuhkan) | `permenkes` hal. 63 (450 ±10%, 350 ±10%) | Didukung | Tautan sumber ditambahkan |

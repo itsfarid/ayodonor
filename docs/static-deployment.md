@@ -17,14 +17,44 @@ Worker, atau Pages Functions. Dokumen ini belum berarti situs sudah dideploy; de
 Sumber: dokumentasi Cloudflare dan panduan pihak ketiga (output `dist` adalah bawaan Vite). Cocokkan dengan halaman
 pengaturan build Cloudflare saat membuat proyek.
 
-Isi `dist/` (diverifikasi oleh `tests/static-build.test.ts`): `index.html`, `favicon.svg`, `_headers`, dan
-`assets/*.js|css` ber-hash. Tidak ada sourcemap, file `.env`, atau bundel server.
+Isi `dist/` (diverifikasi oleh `tests/static-build.test.ts`): `index.html` dan satu `*.html` per halaman, `404.html`, `favicon.svg`,
+`_headers`, dan `assets/*.js|css` ber-hash. Tidak ada sourcemap, file `.env`, atau bundel server.
 
 ## Routing
 
-Tidak ada `_redirects` karena aplikasi satu halaman tanpa router sisi klien (navigasi memakai anchor `#id`). Menurut dokumentasi
-Cloudflare Pages, proyek tanpa `404.html` tingkat atas diperlakukan sebagai SPA dan semua path dicocokkan ke `/`.
-Jangan menambahkan `404.html` kecuali memang diinginkan. Bila nanti ditambahkan rute sisi klien, uji deep link di preview Pages.
+Situs punya lima halaman: `/`, `/panduan`, `/fakta-mitos`, `/lokasi`, `/tentang`. Router sisi klien kecil (History API, tanpa
+dependensi) menangani perpindahan di dalam aplikasi, tetapi **setiap alamat juga punya berkas HTML sendiri**, ditulis oleh
+`npm run build` (plugin `ayodonor-route-html` di `vite.config.ts`):
+
+| Berkas di `dist/` | Alamat |
+|---|---|
+| `index.html` | `/` |
+| `panduan.html`, `fakta-mitos.html`, `lokasi.html`, `tentang.html` | `/panduan`, `/fakta-mitos`, `/lokasi`, `/tentang` |
+| `404.html` | halaman tidak ditemukan (`noindex`, tanpa canonical) |
+
+Berkas-berkas itu sama dengan `index.html` kecuali kepala dokumen (judul, deskripsi, canonical, `og:*`). Karena itu kunjungan
+langsung, refresh, dan tautan yang dibagikan bekerja di host statis **tanpa aturan rewrite atau fallback SPA**. Tabel rute dan
+metadata ada di `src/routes.ts`; menambah halaman berarti menambah baris di sana dan komponen di `src/pages/`.
+
+### Cloudflare Workers (static assets)
+
+Diuji lokal dengan `wrangler dev --assets dist` (Wrangler 4 / workerd), tanpa berkas konfigurasi dan tanpa
+`not_found_handling`, pada build `dist/` yang sama:
+
+| Permintaan | Hasil |
+|---|---|
+| `/`, `/panduan`, `/fakta-mitos`, `/lokasi`, `/tentang` (juga dengan `?q=` atau `#anchor`) | 200, HTML halaman itu dengan judul sendiri |
+| `/panduan/`, `/panduan.html`, `/index.html` | 307 ke alamat kanonik (`/panduan`, `/`) |
+| `/tidak-ada`, `/assets/tidak-ada.js` | 404 tanpa isi (perilaku bawaan Workers) |
+| `/favicon.svg`, `/assets/*.js` | 200; `/assets/*` ber-cache `immutable` satu tahun |
+| header `_headers` | terpasang (`nosniff`, `Referrer-Policy`, `X-Frame-Options`, `Permissions-Policy`) |
+
+Di peramban, perpindahan lewat menu, tombol kembali, dan buka langsung dengan `#anchor` diperiksa pada server yang sama.
+Hal yang **tidak** diuji: deployment sungguhan. Konfigurasi Worker (nama, aset, `not_found_handling`) berada di luar repositori
+ini dan tidak diubah. Alamat yang salah ketik menghasilkan 404 kosong; bila ingin halaman 404 yang ramah, atur
+`assets.not_found_handling = "404-page"` pada konfigurasi Worker (akan menyajikan `404.html`). Itu keputusan deployment, bukan
+syarat agar kelima rute berfungsi. Di Cloudflare Pages, `404.html` tingkat atas membuat Pages menyajikannya untuk alamat tak dikenal
+(bukan lagi perilaku SPA), sementara kelima rute tetap dilayani dari berkas masing-masing.
 
 ## Header (`public/_headers`)
 
