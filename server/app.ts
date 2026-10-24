@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import rateLimit from "express-rate-limit";
 import { errorBody, errorHandler } from "./errors";
-import { buildChatFallback, buildEvaluateFallback } from "./fallbacks";
+import { allQuizAnswersSafe, buildChatFallback, buildQuizSummary } from "../shared/content";
 import { generateText, UpstreamError, type UpstreamFailureKind } from "./gemini";
 import { logEvent } from "./logger";
 import { buildEvaluatePrompt, CHAT_SYSTEM_INSTRUCTION, EVALUATE_SYSTEM_INSTRUCTION } from "./prompts";
@@ -139,9 +139,10 @@ export async function createApp(options: AppOptions): Promise<Express> {
 
     const client = getGeminiClient();
 
-    // Eligibility check logic (all must be "safe")
-    const isEligible = ageWeight === "safe" && sleep === "safe" && meds === "safe" && recency === "safe";
-    const fallback = () => buildEvaluateFallback(name, ageWeight, sleep, meds, recency, isEligible);
+    // Screening summary only: "all safe" is NOT an eligibility decision.
+    const answers = { ageWeight, sleep, meds, recency };
+    const isEligible = allQuizAnswersSafe(answers);
+    const fallback = () => buildQuizSummary(name, answers);
 
     if (!client) {
       return sendText(res, fallback(), "fallback", "unconfigured");
@@ -153,7 +154,7 @@ export async function createApp(options: AppOptions): Promise<Express> {
       client,
       {
         model: GEMINI_MODEL,
-        contents: buildEvaluatePrompt(name, ageWeight, sleep, meds, recency, isEligible),
+        contents: buildEvaluatePrompt(name, answers, isEligible),
         config: { systemInstruction: EVALUATE_SYSTEM_INSTRUCTION },
       },
       fallback
