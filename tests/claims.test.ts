@@ -16,7 +16,6 @@ function listFiles(dir: string, exts: string[]): string[] {
 
 const FILES = [
   ...listFiles(path.join(ROOT, "src"), [".ts", ".tsx", ".css"]),
-  ...listFiles(path.join(ROOT, "server"), [".ts"]),
   ...listFiles(path.join(ROOT, "shared"), [".ts"]),
   path.join(ROOT, "index.html"),
 ];

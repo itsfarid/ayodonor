@@ -40,10 +40,10 @@ describe("quiz summary wording", () => {
   });
 });
 
-describe("no clearance claims in server or shared sources", () => {
-  const roots = ["server", "shared"];
+describe("no clearance claims in shared and component sources", () => {
+  const roots = ["shared", "src/components", "src/data"];
   const files = roots.flatMap((dir) =>
-    fs.readdirSync(path.join(__dirname, "..", dir)).filter((f) => f.endsWith(".ts")).map((f) => path.join(__dirname, "..", dir, f))
+    fs.readdirSync(path.join(__dirname, "..", dir)).filter((f) => /\.tsx?$/.test(f)).map((f) => path.join(__dirname, "..", dir, f))
   );
 
   it.each(files.map((f) => [path.relative(path.join(__dirname, ".."), f), f] as const))("%s", (_rel, file) => {
