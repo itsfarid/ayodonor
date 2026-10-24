@@ -121,7 +121,7 @@ describe("navigation", () => {
     expect(window.location.pathname).toBe("/panduan");
     expect(document.title).toBe(findRoute("/panduan")!.title);
     expect(screen.getByRole("heading", { level: 1 }).textContent).toMatch(/Panduan donor darah/);
-    expect(window.scrollTo).toHaveBeenCalledWith(0, 0);
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, left: 0, behavior: "instant" });
     expect(document.activeElement?.id).toBe("konten");
     expect(within(menu()).getByRole("link", { name: "Panduan" }).getAttribute("aria-current")).toBe("page");
   });
@@ -179,6 +179,15 @@ describe("navigation", () => {
     window.history.replaceState({}, "", "/panduan#faq-section");
     render(<App />);
     expect((scroll.mock.instances.at(-1) as Element).id).toBe("faq-section");
+  });
+
+  it("the first navigation after loading on an #anchor still returns to the top of the new page", () => {
+    window.history.replaceState({}, "", "/panduan#faq-section");
+    render(<App />);
+    (window.scrollTo as unknown as ReturnType<typeof vi.fn>).mockClear();
+    fireEvent.click(within(screen.getByRole("navigation", { name: /navigasi utama/i })).getByRole("link", { name: "Lokasi" }));
+    expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, left: 0, behavior: "instant" });
+    expect(document.activeElement?.id).toBe("konten");
   });
 
   it("reads the page from the browser address when no path is given", () => {

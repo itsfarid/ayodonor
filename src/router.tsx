@@ -44,7 +44,8 @@ function scrollToHash(hash: string): boolean {
   }
   const el = document.getElementById(id);
   if (!el) return false;
-  el.scrollIntoView();
+  // Instant, not smooth: after a page change the reader should land on the target, not watch the old page scroll.
+  el.scrollIntoView({ behavior: "instant" });
   return true;
 }
 
@@ -66,7 +67,7 @@ export function Router({ children, initialPath }: RouterProps) {
     window.history.pushState({}, "", `${next}${url.search}${url.hash}`);
     if (next === pathRef.current) {
       // Same page (e.g. a link to an anchor further down): nothing re-renders, so scroll here.
-      if (!scrollToHash(url.hash)) window.scrollTo(0, 0);
+      if (!scrollToHash(url.hash)) window.scrollTo({ top: 0, left: 0, behavior: "instant" });
       return;
     }
     pendingHash.current = url.hash;
@@ -89,12 +90,11 @@ export function Router({ children, initialPath }: RouterProps) {
     applyHead(path);
     const hash = pendingHash.current;
     pendingHash.current = "";
+    const isFirstRender = firstRender.current;
+    firstRender.current = false;
     if (scrollToHash(hash)) return;
-    if (firstRender.current) {
-      firstRender.current = false;
-      return;
-    }
-    window.scrollTo(0, 0);
+    if (isFirstRender) return;
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
     document.getElementById("konten")?.focus({ preventScroll: true });
   }, [path]);
 
