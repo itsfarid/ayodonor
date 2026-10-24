@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { MapPin, Navigation, Phone, Search, Compass, Locate, Activity, Clock, Sliders, Check, HelpCircle } from "lucide-react";
+import { MapPin, Navigation, Phone, Search, Compass, Locate, HelpCircle } from "lucide-react";
+
+export type StockStatus = "Aman" | "Cukup" | "Kritis";
+export const BLOOD_TYPES = ["A", "B", "O", "AB"] as const;
+export type BloodType = (typeof BLOOD_TYPES)[number];
 
 interface PmiLocation {
   id: string;
@@ -11,12 +15,7 @@ interface PmiLocation {
   lng: number;
   phone: string;
   status: string;
-  stocks: {
-    A: "Aman" | "Cukup" | "Kritis";
-    B: "Aman" | "Cukup" | "Kritis";
-    O: "Aman" | "Cukup" | "Kritis";
-    AB: "Aman" | "Cukup" | "Kritis";
-  };
+  stocks: Record<BloodType, StockStatus>;
 }
 
 // CATATAN: Data di bawah ini adalah CONTOH untuk demo. Nama unit, alamat, telepon, jam layanan,
@@ -212,7 +211,7 @@ export default function PmiLocator() {
   };
 
   // Get localized stocks style
-  const getStockBadgeColor = (status: "Aman" | "Cukup" | "Kritis") => {
+  const getStockBadgeColor = (status: StockStatus) => {
     switch (status) {
       case "Aman":
         return "bg-emerald-100 text-emerald-800 border-emerald-200";
@@ -406,17 +405,20 @@ export default function PmiLocator() {
                             </span>
                           </div>
                           <div className="grid grid-cols-4 gap-2">
-                            {Object.entries(pmi.stocks).map(([type, status]) => (
-                              <div
-                                key={type}
-                                className={`text-center py-1.5 px-2 rounded-xl border text-xs font-bold flex flex-col justify-center items-center gap-0.5 ${getStockBadgeColor(status as "Aman" | "Cukup" | "Kritis")}`}
-                              >
-                                <span className="text-[10.5px] text-slate-500">Gol {type}</span>
-                                <span className="text-[11px] font-black uppercase text-slate-900 tracking-wider">
-                                  {status === "Aman" ? "Aman 🟢" : status === "Cukup" ? "Cukup 🟡" : "Kritis 🔴"}
-                                </span>
-                              </div>
-                            ))}
+                            {BLOOD_TYPES.map((type) => {
+                              const status = pmi.stocks[type];
+                              return (
+                                <div
+                                  key={type}
+                                  className={`text-center py-1.5 px-2 rounded-xl border text-xs font-bold flex flex-col justify-center items-center gap-0.5 ${getStockBadgeColor(status)}`}
+                                >
+                                  <span className="text-[10.5px] text-slate-500">Gol {type}</span>
+                                  <span className="text-[11px] font-black uppercase text-slate-900 tracking-wider">
+                                    {status === "Aman" ? "Aman 🟢" : status === "Cukup" ? "Cukup 🟡" : "Kritis 🔴"}
+                                  </span>
+                                </div>
+                              );
+                            })}
                           </div>
                           <p className="text-[10px] text-slate-500 mt-2 leading-relaxed italic">
                             *Status stok di sini fiktif, hanya untuk ilustrasi tampilan. Jangan dipakai untuk keputusan donor; cek stok resmi di ayodonor.pmi.or.id.
@@ -639,17 +641,20 @@ export default function PmiLocator() {
                     </span>
                   </div>
                   <div className="grid grid-cols-4 gap-1.5">
-                    {Object.entries(selectedLocation.stocks).map(([type, status]) => (
-                      <div
-                        key={type}
-                        className={`text-center py-1 px-1 rounded-lg border text-[10px] font-bold ${getStockBadgeColor(status)}`}
-                      >
-                        <span className="block text-slate-500 text-[9px]">Gol {type}</span>
-                        <span className="text-slate-900 font-black uppercase tracking-wider">
-                          {status}
-                        </span>
-                      </div>
-                    ))}
+                    {BLOOD_TYPES.map((type) => {
+                      const status = selectedLocation.stocks[type];
+                      return (
+                        <div
+                          key={type}
+                          className={`text-center py-1 px-1 rounded-lg border text-[10px] font-bold ${getStockBadgeColor(status)}`}
+                        >
+                          <span className="block text-slate-500 text-[9px]">Gol {type}</span>
+                          <span className="text-slate-900 font-black uppercase tracking-wider">
+                            {status}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                   <p className="text-[10px] text-amber-400/90 mt-2 leading-relaxed italic">
                     *Status stok fiktif untuk ilustrasi. Cek stok resmi di ayodonor.pmi.or.id.

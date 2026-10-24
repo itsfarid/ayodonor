@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import PmiLocator, { getDistanceKm, INITIAL_PMI_DATA } from "../src/components/PmiLocator";
+import PmiLocator, { BLOOD_TYPES, getDistanceKm, INITIAL_PMI_DATA } from "../src/components/PmiLocator";
 
 afterEach(() => {
   cleanup();
@@ -91,5 +91,34 @@ describe("getDistanceKm (Haversine)", () => {
     expect(getDistanceKm(-6.1844, 106.8444, -6.9103, 107.6186)).toBeCloseTo(117.6, 0);
     expect(getDistanceKm(-6.1844, 106.8444, -7.2651, 112.7423)).toBeCloseTo(662.3, 0);
     expect(getDistanceKm(1, 1, 1, 1)).toBe(0);
+  });
+});
+
+describe("stock badge classification (type fix keeps behaviour)", () => {
+  it("every demo location has all four blood types with a valid status", () => {
+    for (const loc of INITIAL_PMI_DATA) {
+      expect(Object.keys(loc.stocks).sort()).toEqual([...BLOOD_TYPES].sort());
+      for (const t of BLOOD_TYPES) expect(["Aman", "Cukup", "Kritis"]).toContain(loc.stocks[t]);
+    }
+  });
+
+  it("renders blood types in A, B, O, AB order with the matching colour classes", () => {
+    const { container } = render(<PmiLocator />);
+    // First (selected) location is Jakarta: A Aman, B Aman, O Aman, AB Kritis.
+    const panel = [...container.querySelectorAll("h5")].find((h) => h.textContent === INITIAL_PMI_DATA[0].name)!.closest("div.relative")!;
+    const badges = [...panel.querySelectorAll(".grid-cols-4 > div")];
+    // Each badge is two adjacent spans: "Gol <type>" then the status.
+    expect(badges.map((b) => b.textContent)).toEqual(["Gol AAman", "Gol BAman", "Gol OAman", "Gol ABKritis"]);
+    expect(badges[0].className).toContain("bg-emerald-100");
+    expect(badges[3].className).toContain("bg-rose-100");
+    expect(badges[3].className).not.toContain("animate-pulse");
+  });
+
+  it("uses the amber class for 'Cukup'", () => {
+    const { container } = render(<PmiLocator />);
+    const bandung = INITIAL_PMI_DATA.find((l) => l.stocks.A === "Cukup")!;
+    fireEvent.change(screen.getByLabelText(/cari lokasi pmi/i), { target: { value: bandung.city } });
+    const cukup = [...container.querySelectorAll(".grid-cols-4 > div")].find((b) => /^Gol A.*Cukup/.test(b.textContent ?? ""))!;
+    expect(cukup.className).toContain("bg-amber-100");
   });
 });
